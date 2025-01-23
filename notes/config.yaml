@@ -1,2 +1,3 @@
-files: L:/DigitalProjects/Metadata/uo_athletics/Work/processing/20240608_NCAA_4_TF/files
-metadata: C:/Users/briesenb/OneDrive - University Of Oregon/bmr_metadata_general_asstd/OD2_working_files/uo_athletics/20240608_NCAA_4_TF.csv
+files: L:/DigitalProjects/Metadata/uo_athletics/Work/processing/20240815_Seattle_U_SOC/files
+metadata: C:/Users/briesenb/OneDrive - University Of Oregon/_metadata/OD2_working_files/uo_athletics/20240815_Seattle_U_SOC.csv
+# allow for pasting '\' and convert to '\' -- will this need an r-string?
