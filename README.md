@@ -1,2 +1,2 @@
-# od_utils
-some Python scripts to automate processing CSV metadata for loading into OD2
+# od_md_scripts
+Python scripts to automate processing metadata for Oregon Digital 2
