@@ -21,6 +21,8 @@ The angelus exports are located:
     - spot-check random values from [file].csv / against [file]_processed.csv
     - check recto/verso for title match in Oregon Digital using URLs below
     - (!) archival object IDs not checked for matches (!)
+- character encoding
+    - confirmed that garbled characters came from spreadsheets received from SF and were not created during processing
 
 ```
 # recto URL
