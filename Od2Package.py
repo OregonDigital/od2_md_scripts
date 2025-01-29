@@ -14,6 +14,7 @@ class Package:
     # this would be different for complex objects!
     # this only works for simple objects!!
     def check_assets_filenames(self, metadata, assets):
+        print(f"checking metadata filenames against assets dir/ filenames:")
         assets_filenames = os.listdir(assets)
         filenames = []
         with open(metadata, "r", encoding="utf-8-sig") as csvmetadata:
@@ -49,4 +50,4 @@ class Package:
             print("\n")
         else:
             print("filenames in metadata and files/ match")
-
+        print('='*5)
