@@ -31,7 +31,6 @@ class Package:
         else:
             print("# of filenames = # of asset files")
 
-        # still haven't checked values against values, only counts against counts
         # this is still wonky and duplicative?
         diff = list(set(assets_filenames) - set(filenames))
         if len(diff) > 0:
