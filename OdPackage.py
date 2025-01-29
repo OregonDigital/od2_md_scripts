@@ -1,6 +1,6 @@
 import yaml, os, csv
 
-class OdPackage:
+class Package:
 
     def __init__(self, config="files_config.yaml"):
         self = self
@@ -14,7 +14,6 @@ class OdPackage:
     # this would be different for complex objects!
     # this only works for simple objects!!
     def check_assets_filenames(self, metadata, assets):
-        print("\n")
         assets_filenames = os.listdir(assets)
         filenames = []
         with open(metadata, "r", encoding="utf-8-sig") as csvmetadata:
@@ -27,9 +26,9 @@ class OdPackage:
         if difflen != 0:
             print("ERROR: # of filenames != # of asset files:")
             print(f"{len(filenames)} filename values in CSV metadata")
-            print(f"{len(assets_filenames)} files in assets directory\n")
+            print(f"{len(assets_filenames)} files in assets directory")
         else:
-            print("# of filenames = # of asset files\n")
+            print("# of filenames = # of asset files")
 
         # still haven't checked values against values, only counts against counts
         # this is still wonky and duplicative?
@@ -40,7 +39,7 @@ class OdPackage:
                 print(item)
             print("\n")
         else:
-            print("filenames in files/ and metadata match\n")
+            print("filenames in files/ and metadata match")
         
         diff = list(set(filenames) - set(assets_filenames))
         if len(diff) > 0:
@@ -49,10 +48,5 @@ class OdPackage:
                 print(item)
             print("\n")
         else:
-            print("filenames in metadata and files/ match\n")
+            print("filenames in metadata and files/ match")
 
-
-processing = OdPackage()
-metadata = processing.get_files_md()[0]
-assets = processing.get_files_md()[1]
-processing.check_assets_filenames(metadata, assets)
