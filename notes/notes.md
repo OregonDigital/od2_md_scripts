@@ -37,6 +37,10 @@
 - check identifier strings based on collection? 
 - There's lots of collection-specific stuff that *could* be done but...
 - replace old file with new / summarize changes when replacing old file with new?
+- (?) Python virtual environment for windows - for installing libraries etc.
+    - See SO > [virtualenv in PowerShell?](https://stackoverflow.com/questions/1365081/virtualenv-in-powershell): "The latest version of virtualenv supports PowerShell out-of-the-box."
+    - https://pypi.org/project/virtualenv/
+    - https://virtualenv.pypa.io/en/latest/user_guide.html
 
 
 **errors experienced**  
