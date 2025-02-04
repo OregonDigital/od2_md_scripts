@@ -17,8 +17,8 @@
 
 *collection-specific*  
 - UO Athletics
-    - file values begin `PH395_UP`, end `.tif` (not `PHP`)
-    - identifier values begin `PH395_UP` (not `PHP`)
+    - file values begin `PH395_UP`, end `.tif` (not `PHP`) / identifier values begin `PH395_UP` (not `PHP`)
+    - **THEN** confirm filenames in csv and in files/ match
     - local_collection_name = http://opaquenamespace.org/ns/localCollectionName/UniversityPhotosPaulHarveyIV
     - local_collection_id = PH395 UP
     - photographer = http://opaquenamespace.org/ns/creator/HarveyPaulWIV
