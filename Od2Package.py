@@ -1,27 +1,27 @@
-import yaml, os, csv
+import yaml, os, csv, re
 
 class Package(object):
 
     def __init__(self, coll="na", 
-                files_config="files_config.yaml",
-                default_config="default_config.yaml",
-                coll_config="coll_config.yaml"):
+                filesconf="files_config.yaml",
+                defaultconf="default_config.yaml",
+                collconf="coll_config.yaml"):
         self = self
         self.coll = coll
-        self.files_config = files_config
-        self.default_config = default_config
-        self.coll_config = coll_config
+        self.filesconf = filesconf
+        self.defaultconf = defaultconf
+        self.collconf = collconf
 
 
-    def get_files_md(self):
-        with open(self.files_config, "r") as yamlfile:
+    def files_config(self):
+        with open(self.filesconf, "r") as yamlfile:
             paths = yaml.safe_load(yamlfile)
             return [ paths['metadata'], paths['assets'] ]
 
     
     def get_headers(self, metadata):
-        with open(metadata, "r", encoding="utf-8-sig") as csvfile:
-            reader = csv.DictReader(csvfile)
+        with open(metadata, "r", encoding="utf-8-sig") as csvmetadata:
+            reader = csv.DictReader(csvmetadata)
             headers = reader.fieldnames
         return headers
 
@@ -66,9 +66,21 @@ class Package(object):
         print('='*5)
 
 
+    def default_config(self):
+        with open(self.defaultconf, "r") as yamlfile:
+            config = yaml.safe_load(yamlfile)
+        return config
+        
+
+    def coll_config(self):
+        with open(self.collconf, "r") as yamlfile:
+            config = yaml.safe_load(yamlfile)
+        return config
+
+
     def id_match_file(self, metadata):
-        with open(metadata, "r", encoding="utf-8-sig") as csvfile:
-            reader = csv.DictReader(csvfile)
+        with open(metadata, "r", encoding="utf-8-sig") as csvmetadata:
+            reader = csv.DictReader(csvmetadata)
             mismatch = []
             for row in reader:
                 if row['identifier'] == row['file'].split('.')[0]:
@@ -79,4 +91,23 @@ class Package(object):
             return mismatch
         else:
             return "identifier values = filenames - file extension"
+
+
+    # (!) needs further testing (!)
+    # is p.match doing exactly what I think it is?
+    # IT ISNT
+    def check_identifier(self, csvfile, pattern): # add coll arg
+        with open(csvfile, "r", encoding="utf-8-sig") as csvmetadata:
+            reader = csv.DictReader(csvmetadata)
+            p = re.compile(pattern)
+            malformed = []
+            for row in reader:
+                try:
+                    p.match(row['identifier'])
+                except:
+                    malformed.append(row['identifier'])
+        if len(malformed) > 0:
+            return f"CORRECT identifier values: {malformed}"
+        else:
+            return "identifier values match regex" # add "... for coll [collection]"
 
