@@ -97,14 +97,13 @@ class Package(object):
     # is p.match doing exactly what I think it is?
     # IT ISNT
     def check_identifier(self, csvfile, pattern): # add coll arg
+        print(f"regex pattern to match: {pattern}")
         with open(csvfile, "r", encoding="utf-8-sig") as csvmetadata:
             reader = csv.DictReader(csvmetadata)
-            p = re.compile(pattern)
+            p = re.compile(r"{pattern}")
             malformed = []
             for row in reader:
-                try:
-                    p.match(row['identifier'])
-                except:
+                if not re.match(pattern, row['identifier']):
                     malformed.append(row['identifier'])
         if len(malformed) > 0:
             return f"CORRECT identifier values: {malformed}"

@@ -14,7 +14,7 @@ uo-athletics:
     - id_match_file
   identifier: 
     - regex
-    - PH395_UP\S*
+    - ^PH395_UP\S*$
   local_collection_name: 
     - string
     - http://opaquenamespace.org/ns/localCollectionName/UniversityPhotosPaulHarveyIV
