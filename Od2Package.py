@@ -94,20 +94,15 @@ class Package(object):
 
 
     # (!) needs further testing (!)
-    # is p.match doing exactly what I think it is?
-    # IT ISNT
+    # if pattern is in coll_config, I haven't figured out a way to 
+    # make the compile arg a raw string...
     def check_identifier(self, csvfile, pattern): # add coll arg
+        print(f"regex pattern to match: {pattern}\nMalformed values if any:") # add "for coll (...)"
         with open(csvfile, "r", encoding="utf-8-sig") as csvmetadata:
             reader = csv.DictReader(csvmetadata)
-            p = re.compile(pattern)
+            p = re.compile(pattern) # this isn't a raw string... is that ok?
             malformed = []
             for row in reader:
-                try:
-                    p.match(row['identifier'])
-                except:
+                if not re.match(pattern, row['identifier']):
                     malformed.append(row['identifier'])
-        if len(malformed) > 0:
-            return f"CORRECT identifier values: {malformed}"
-        else:
-            return "identifier values match regex" # add "... for coll [collection]"
-
+        return malformed
