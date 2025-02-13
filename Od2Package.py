@@ -2,13 +2,12 @@ import yaml, os, csv, re
 
 class Package(object):
 
-    def __init__(self, 
-                coll="na", 
+    def __init__(self, custom, 
                 filesconf="files_config.yaml",
                 defaultconf="default_config.yaml",
                 customconf="custom_config.yaml"):
         self = self
-        self.coll = coll
+        self.custom = custom
         self.filesconf = filesconf
         self.defaultconf = defaultconf
         self.customconf = customconf
@@ -37,7 +36,7 @@ class Package(object):
     # same as for files_config() -- possible to integrate custom_config 
     # into the class better?
     def custom_config(self):
-        if self.coll != 'na':
+        if self.custom != 'na':
             with open(self.customconf, "r") as yamlfile:
                 config = yaml.safe_load(yamlfile)
             return config
@@ -55,8 +54,8 @@ class Package(object):
     # (!) needs further testing (!)
     # if pattern is in custom_config, I haven't figured out a way to 
     # make the compile arg a raw string...
-    def check_identifier(self, csvfile, pattern): # add coll arg
-        print(f"regex pattern to match: {pattern}\nMalformed values if any:") # add "for coll (...)"
+    def check_identifier(self, csvfile, pattern): # add custom arg
+        print(f"regex pattern to match: {pattern}\nMalformed values if any:") # add "for custom (...)"
         with open(csvfile, "r", encoding="utf-8-sig") as csvmetadata:
             reader = csv.DictReader(csvmetadata)
             p = re.compile(pattern) # this isn't a raw string... is that ok?
