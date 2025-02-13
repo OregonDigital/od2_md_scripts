@@ -2,17 +2,19 @@ import yaml, os, csv, re
 
 class Package(object):
 
-    def __init__(self, coll="na", 
+    def __init__(self, 
+                coll="na", 
                 filesconf="files_config.yaml",
                 defaultconf="default_config.yaml",
-                collconf="coll_config.yaml"):
+                customconf="custom_config.yaml"):
         self = self
         self.coll = coll
         self.filesconf = filesconf
         self.defaultconf = defaultconf
-        self.collconf = collconf
+        self.customconf = customconf
 
-
+    # I want to pass the config file in at instantiation and 
+    # avoid having to call a method in order to get metadata, assets
     def files_config(self):
         """files_config() returs the paths entered in files_config.yaml.
         These are returned as a list: 
@@ -24,17 +26,23 @@ class Package(object):
             paths = yaml.safe_load(yamlfile)
             return [ paths['metadata'], paths['assets'] ]
 
-    
+    # same as for files_config() -- possible to integrate default_config 
+    # into the class better?
     def default_config(self):
         with open(self.defaultconf, "r") as yamlfile:
             config = yaml.safe_load(yamlfile)
         return config
         
 
-    def coll_config(self):
-        with open(self.collconf, "r") as yamlfile:
-            config = yaml.safe_load(yamlfile)
-        return config
+    # same as for files_config() -- possible to integrate custom_config 
+    # into the class better?
+    def custom_config(self):
+        if self.coll != 'na':
+            with open(self.customconf, "r") as yamlfile:
+                config = yaml.safe_load(yamlfile)
+            return config
+        else:
+            return None
 
 
     def get_headers(self, metadata):
@@ -45,7 +53,7 @@ class Package(object):
 
 
     # (!) needs further testing (!)
-    # if pattern is in coll_config, I haven't figured out a way to 
+    # if pattern is in custom_config, I haven't figured out a way to 
     # make the compile arg a raw string...
     def check_identifier(self, csvfile, pattern): # add coll arg
         print(f"regex pattern to match: {pattern}\nMalformed values if any:") # add "for coll (...)"
