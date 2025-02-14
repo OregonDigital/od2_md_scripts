@@ -1,6 +1,7 @@
-file:
-  - function
-  - id_match_file
+dmrec: ~
+file: ~
+title: ~
+description:
 identifier:
   - regex
   - ^PH395_UP\S*$
@@ -13,8 +14,8 @@ local_collection_id:
 photographer:
   - string
   - http://opaquenamespace.org/ns/creator/HarveyPaulWIV
-# subject: use regex? see bulkrax CSV doc for IRI structures?
-# location: use regex for geonames IRIs?
+date: None
+subject: ~ # use regex? see bulkrax CSV doc for IRI constraints
 location:
   - regex
   - https://sws.geonames.org/\S*

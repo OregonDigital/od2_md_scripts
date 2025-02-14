@@ -19,20 +19,16 @@ class UOAIngest(object):
         with open("config/uo-athletics_config.yaml", "r") as yamlfile:
             config = yaml.safe_load(yamlfile)
             return(config)
-    
+
+
     def csv_columns_processing(self):
         with open(self.metadata, "r", encoding="utf-8-sig") as csvfile:
             reader = csv.DictReader(csvfile)
             headers = reader.fieldnames
             for header in headers:
-                # test
-                # try:
-                #     print(self.config[header][0])
-                # except:
-                #     print(f"{header} not in uo-athletics_config.yaml")
                 # punting on file config, currently only config set as func
-                if header in self.config and header != 'file':
-                    print(f"checking column {header}\n{'='*5}")
+                if header in self.config and self.config[header] != None: # `~` in YAML
+                    print(f"checking column {header}\n{'='*3}")
                     if self.config[header][0] == 'function':
                         pass
                     elif self.config[header][0] == 'string':
@@ -45,12 +41,16 @@ class UOAIngest(object):
                         for row in reader:
                             if not re.match(self.config[header][1], row[header]):
                                 print(f"correct value {row[header]}")
+                elif header in self.config and self.config[header] == None:
+                    print(f"no check configured for header {header}\n{'='*3}")
+                elif header not in self.config:
+                    print(f"ERROR: {header} not in list of headers\n{'='*3}")
                 else:
-                    print(f"no check configured for header {header}\n{'='*5}")
+                    print("ERROR - some other unexpected error this is strange\n{'='*3}")
 
 
     def csv_filenames_assets_check(self):
-        print(f"checking metadata filenames against files/ assets\n{'='*5}")
+        print(f"checking metadata filenames against files/ assets\n{'='*3}")
         with open(self.metadata, "r", encoding="utf-8-sig") as csvfile:
             reader = csv.DictReader(csvfile)
             filenames = []
@@ -68,7 +68,7 @@ class UOAIngest(object):
             # would diffs below work just as well with simple len() comparisons?
             diff = list(set(self.assets) - set(filenames))
             if len(diff) > 0:
-                print(f"{len(diff)} files/ assets not in metadata\n{'*'*5}")
+                print(f"{len(diff)} files/ assets not in metadata\n{'*'*3}")
                 for item in diff:
                     print(item)
                 print("\n")
@@ -76,7 +76,7 @@ class UOAIngest(object):
                 print("files/ and metadata filenames match")
             diff = list(set(filenames) - set(self.assets))
             if len(diff) > 0:
-                print(f"{len(diff)} filenames not in files/ assets\n{'*'*5}")
+                print(f"{len(diff)} filenames not in files/ assets\n{'*'*3}")
                 for item in diff:
                     print(item)
                 print("\n")
