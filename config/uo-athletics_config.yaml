@@ -1,10 +1,7 @@
-dmrec:
-  - string
-  - 
-file: 
+file:
   - function
   - id_match_file
-identifier: 
+identifier:
   - regex
   - ^PH395_UP\S*$
 local_collection_name: 
