@@ -4,13 +4,14 @@ class Package(object):
 
     def __init__(self, custom, 
                 filesconf="files_config.yaml",
-                defaultconf="default_config.yaml",
-                customconf="custom_config.yaml"):
+                defaultconf="config/default_config.yaml",
+                customconf="config/custom_config.yaml"):
         self = self
         self.custom = custom
         self.filesconf = filesconf
         self.defaultconf = defaultconf
         self.customconf = customconf
+
 
     # I want to pass the config file in at instantiation and 
     # avoid having to call a method in order to get metadata, assets
@@ -25,6 +26,14 @@ class Package(object):
             paths = yaml.safe_load(yamlfile)
             return [ paths['metadata'], paths['assets'] ]
 
+
+    def get_headers(self, metadata):
+        with open(metadata, "r", encoding="utf-8-sig") as csvmetadata:
+            reader = csv.DictReader(csvmetadata)
+            headers = reader.fieldnames
+        return headers
+
+
     # same as for files_config() -- possible to integrate default_config 
     # into the class better?
     def default_config(self):
@@ -36,7 +45,7 @@ class Package(object):
     # same as for files_config() -- possible to integrate custom_config 
     # into the class better?
     def custom_config(self):
-        if self.custom != 'na':
+        if self.custom != None:
             with open(self.customconf, "r") as yamlfile:
                 config = yaml.safe_load(yamlfile)
             return config
@@ -44,11 +53,17 @@ class Package(object):
             return None
 
 
-    def get_headers(self, metadata):
-        with open(metadata, "r", encoding="utf-8-sig") as csvmetadata:
+    def open_file(self, csvfile):
+        with open(csvfile, "r", encoding="utf-8-sig") as csvmetadata:
             reader = csv.DictReader(csvmetadata)
-            headers = reader.fieldnames
-        return headers
+            csvdata = reader
+            return csvdata
+
+
+    # test
+    def test_csv_data(csvdata, header):
+        for row in csvdata:
+            print(row[header])
 
 
     # (!) needs further testing (!)
