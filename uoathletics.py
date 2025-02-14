@@ -23,6 +23,10 @@ class UOAIngest(object):
     def all_csv_processing(self):
         with open(self.metadata, "r", encoding="utf-8-sig") as csvfile:
             reader = csv.DictReader(csvfile)
-            for row in reader:
-                # pause
-                pass
+            headers = reader.fieldnames
+            for header in headers:
+                if header in self.config:
+                    print(f"config for header '{header}': {self.config[header]}")
+                else:
+                    print(f"no config data for header '{header}'")
+                    
