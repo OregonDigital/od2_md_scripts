@@ -1,0 +1,58 @@
+dmrec:
+  - string
+  - 
+file: 
+  - function
+  - id_match_file
+identifier: 
+  - regex
+  - ^PH395_UP\S*$
+local_collection_name: 
+  - string
+  - http://opaquenamespace.org/ns/localCollectionName/UniversityPhotosPaulHarveyIV
+local_collection_id: 
+  - string
+  - PH395 UP
+photographer:
+  - string
+  - http://opaquenamespace.org/ns/creator/HarveyPaulWIV
+# subject: use regex? see bulkrax CSV doc for IRI structures?
+# location: use regex for geonames IRIs?
+location:
+  - regex
+  - https://sws.geonames.org/\S*
+resource_type:
+  - string
+  - http://purl.org/dc/dcmitype/Image
+format:
+  - string
+  - https://w3id.org/spar/mediatype/image/tiff
+rights_statement: 
+  - string
+  - http://rightsstatements.org/vocab/InC/1.0/
+license:
+  - string
+  - http://creativecommons.org/licenses/by-nd/4.0/
+  # per !Bulkrax CSV Guidance Document URI should start http (not https)
+rights_holder:
+  - string
+  - Harvey, Paul W., IV
+# no 'parents' at this time for ingests - update later
+institution:
+  - string
+  - http://id.loc.gov/authorities/names/n80126183
+model:
+  - string
+  - Image
+has_finding_aid:
+  - string
+  - https://scua.uoregon.edu/repositories/2/resources/9512
+visibility:
+  - string
+  - open
+repository:
+  - string
+  - http://id.loc.gov/authorities/names/no2003116678
+full_size_download_allowed:
+  - integer
+  - 0
