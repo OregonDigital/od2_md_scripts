@@ -1,3 +1,4 @@
 # Add validation code by field which is same for all collections, 
 # or same for all collections except where exceptions will be in coll_config.yaml, 
 # here
+
