@@ -1,0 +1,6 @@
+local_collection_name:
+  - regex
+  - ^http:\/\/opaquenamespace.org\/ns\/localCollectionName\/UniversityPhotosPaulHarveyIV$
+blarf:
+  - regex
+  - ^hello$
