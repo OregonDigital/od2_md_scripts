@@ -6,25 +6,25 @@ identifier:
   - regex
   - ^PH395_UP\S*$
 local_collection_name: 
-  - string
-  - http://opaquenamespace.org/ns/localCollectionName/UniversityPhotosPaulHarveyIV
-local_collection_id: 
+  - regex
+  - ^http:\/\/opaquenamespace.org\/ns\/localCollectionName\/UniversityPhotosPaulHarveyIV$
+local_collection_id:
   - string
   - PH395 UP
 photographer:
-  - string
-  - http://opaquenamespace.org/ns/creator/HarveyPaulWIV
-date: None
+  - regex
+  - ^http:\/\/opaquenamespace.org\/ns\/creator\/HarveyPaulWIV$
+date: ~
 subject: ~ # use regex? see bulkrax CSV doc for IRI constraints
 location:
   - regex
-  - https://sws.geonames.org/\S*
+  - ^https:\/\/sws.geonames.org/\S*$
 resource_type:
-  - string
-  - http://purl.org/dc/dcmitype/Image
+  - regex
+  - ^http:\/\/purl.org\/dc\/dcmitype\/Image$
 format:
-  - string
-  - https://w3id.org/spar/mediatype/image/tiff
+  - regex
+  - ^https:\/\/w3id.org\/spar\/mediatype\/image\/tiff$
 rights_statement: 
   - string
   - http://rightsstatements.org/vocab/InC/1.0/

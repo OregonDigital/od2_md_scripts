@@ -1,4 +1,5 @@
-import yaml, os, csv, re
+import os, csv, re
+import yaml
 
 class UOAIngest(object):
 
@@ -21,35 +22,59 @@ class UOAIngest(object):
             return(config)
 
 
-    def csv_columns_processing(self):
+    def process_columns(self):
         with open(self.metadata, "r", encoding="utf-8-sig") as csvfile:
             reader = csv.DictReader(csvfile)
-            headers = reader.fieldnames
-            for header in headers:
-                # punting on file config, currently only config set as func
-                if header in self.config and self.config[header] != None: # `~` in YAML
-                    print(f"checking column {header}\n{'='*3}")
-                    if self.config[header][0] == 'function':
+            rows = list(reader)
+        
+        for key, value in self.config.items():
+            # test
+            # if value != None:
+            #     print(f"{key} > {value[0]}, {value[1]}")
+            # else:
+            #     print(f"{key} > {value}")
+            header = key
+            print(f"***running checks for column {header}")
+            try:
+                check_type = value[0]
+            except:
+                check_type = None
+                print(f"(!) CHECK COLUMN {header}: no check configured for this column")
+            try:
+                check_data = value[1]
+            except:
+                check_data = None
+                pass
+            # test
+            # print(header, '>', check_type, check_data)
+            for row in rows:
+                if check_type == None:
+                    pass
+                elif check_type == 'function': # oh this'd be better renamed 'method'
+                    pass # punt for now on implementing funcs, 
+                    # this could eliminate need for separate method for files/filenames check
+                elif check_type == 'regex':
+                    p = re.compile(r"{}".format(check_data))
+                    if re.match(p, row[header]):
                         pass
-                    elif self.config[header][0] == 'string':
-                        for row in reader:
-                            if row[header] == self.config[header][1]:
-                                pass
-                            else:
-                                print(f"correct value '{row[header]}'")
-                    elif self.config[header][0] == 'regex':
-                        for row in reader:
-                            if not re.match(self.config[header][1], row[header]):
-                                print(f"correct value {row[header]}")
-                elif header in self.config and self.config[header] == None:
-                    print(f"no check configured for header {header}\n{'='*3}")
-                elif header not in self.config:
-                    print(f"ERROR: {header} not in list of headers\n{'='*3}")
+                    else:
+                        print(f"(!) ERROR column {header}:\n'{row[header]}' does not match pattern {p}")
+                elif check_type == 'string':
+                    if row[header] == check_data:
+                        pass
+                    else:
+                        print(f"(!) ERROR column {header}:\n{check_type} '{row[header]}' != '{check_data}'")
+                elif check_type == 'integer':
+                    check_data = str(check_data) # so I mean should there even be an integer check_type?
+                    if row[header] == check_data:
+                        pass
+                    else:
+                        print(f"(!) ERROR column {header}:\n{check_type} '{row[header]}' != '{check_data}'")
                 else:
-                    print("ERROR - some other unexpected error this is strange\n{'='*3}")
+                    print(f"header: {header} / check_type: {check_type} / check_data: {check_data}")
 
 
-    def csv_filenames_assets_check(self):
+    def check_filenames(self):
         print(f"checking metadata filenames against files/ assets\n{'='*3}")
         with open(self.metadata, "r", encoding="utf-8-sig") as csvfile:
             reader = csv.DictReader(csvfile)
