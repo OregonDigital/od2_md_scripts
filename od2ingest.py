@@ -1,13 +1,13 @@
-import os, csv, re
+import os, json, csv, re
 import yaml
 
-class UOAIngest(object):
+class Ingest(object):
 
 
-    def __init__(self):
+    def __init__(self, config):
         self.metadata = self.filepaths()[0]
         self.assets = os.listdir(self.filepaths()[1])
-        self.config = self.fields_config()
+        self.config = self.fields_config(config)
 
 
     def filepaths(self):
@@ -16,10 +16,15 @@ class UOAIngest(object):
             return [ paths['metadata'], paths['assets'] ]
 
 
-    def fields_config(self):
-        with open("config/uo-athletics_config.yaml", "r") as yamlfile:
+    def fields_config(self, config):
+        with open(f"config/{config}.yaml", "r") as yamlfile:
             config = yaml.safe_load(yamlfile)
             return(config)
+
+
+    def check_config(self):
+        pretty = json.dumps(self.config, indent=4)
+        print(pretty)
 
 
     def process_columns(self):
@@ -34,12 +39,12 @@ class UOAIngest(object):
             # else:
             #     print(f"{key} > {value}")
             header = key
-            print(f"***running checks for column {header}")
+            print(f"***running checks for column '{header}'")
             try:
                 check_type = value[0]
             except:
                 check_type = None
-                print(f"(!) CHECK COLUMN {header}: no check configured for this column")
+                print(f"(!) CHECK column '{header}': no check configured for this column")
             try:
                 check_data = value[1]
             except:
@@ -58,23 +63,23 @@ class UOAIngest(object):
                     if re.match(p, row[header]):
                         pass
                     else:
-                        print(f"(!) ERROR column {header}:\n'{row[header]}' does not match pattern {p}")
+                        print(f"(!) ERROR column '{header}':\n'{row[header]}' does not match pattern {p}")
                 elif check_type == 'string':
                     if row[header] == check_data:
                         pass
                     else:
-                        print(f"(!) ERROR column {header}:\n{check_type} '{row[header]}' != '{check_data}'")
+                        print(f"(!) ERROR column '{header}':\n{check_type} '{row[header]}' != '{check_data}'")
                 elif check_type == 'integer':
                     check_data = str(check_data) # so I mean should there even be an integer check_type?
                     if row[header] == check_data:
                         pass
                     else:
-                        print(f"(!) ERROR column {header}:\n{check_type} '{row[header]}' != '{check_data}'")
+                        print(f"(!) ERROR column '{header}':\n{check_type} '{row[header]}' != '{check_data}'")
                 else:
-                    print(f"header: {header} / check_type: {check_type} / check_data: {check_data}")
+                    print(f"(!) ERROR header '{header}' has unknown check_type '{check_type}', check_data '{check_data}'")
 
 
-    def check_filenames(self):
+    def check_filenames_assets(self):
         print(f"checking metadata filenames against files/ assets\n{'='*3}")
         with open(self.metadata, "r", encoding="utf-8-sig") as csvfile:
             reader = csv.DictReader(csvfile)
