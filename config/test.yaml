@@ -1,0 +1,13 @@
+id: ~
+file:
+  - regex
+  - ^\d{1}\.png
+leading_space:
+  - string
+  -  hello
+trailing_space:
+  - string
+  - goodbye 
+internal_space:
+  - string
+  - hello there you
