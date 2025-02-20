@@ -112,3 +112,22 @@ class Ingest(object):
                 print("\n")
             else:
                 print("metadata filenames and files/ match")
+
+
+    # ingegrate function calls into config? 
+    # this check probably doesn't apply to all colls
+    def id_match_file(self): # uo-athletics
+        print("***checking for id / file value matches")
+        with open(self.metadata, "r", encoding="utf-8-sig") as csvfile:
+            reader = csv.DictReader(csvfile)
+            mismatch = []
+            for row in reader:
+                if row['identifier'] == row['file'].split('.')[0]:
+                    pass
+                else:
+                    mismatch.append(row['identifier'])
+        if len(mismatch) > 0:
+            return mismatch
+        else:
+            return "identifier values = filenames - file extension"
+
