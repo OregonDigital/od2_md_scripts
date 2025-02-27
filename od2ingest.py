@@ -3,29 +3,24 @@ import yaml
 
 class Ingest(object):
 
-
     def __init__(self, config):
         self.metadata = self.filepaths()[0]
         self.assets = os.listdir(self.filepaths()[1])
         self.config = self.fields_config(config)
-
 
     def filepaths(self):
         with open("filepaths.yaml", "r") as yamlfile:
             paths = yaml.safe_load(yamlfile)
             return [ paths['metadata'], paths['assets'] ]
 
-
     def fields_config(self, config):
         with open(f"config/{config}.yaml", "r") as yamlfile:
             config = yaml.safe_load(yamlfile)
             return(config)
 
-
     def check_config(self):
         pretty = json.dumps(self.config, indent=4)
         print(pretty)
-
 
     def process_columns(self):
         with open(self.metadata, "r", encoding="utf-8-sig") as csvfile:
@@ -78,7 +73,6 @@ class Ingest(object):
                 else:
                     print(f"(!) ERROR header '{header}' has unknown check_type '{check_type}', check_data '{check_data}'")
 
-
     def check_filenames_assets(self):
         print(f"checking metadata filenames against files/ assets\n{'='*3}")
         with open(self.metadata, "r", encoding="utf-8-sig") as csvfile:
@@ -112,11 +106,10 @@ class Ingest(object):
                 print("\n")
             else:
                 print("metadata filenames and files/ match")
-
-
-    # ingegrate function calls into config? 
-    # this check probably doesn't apply to all colls
-    def id_match_file(self): # uo-athletics
+ 
+    def id_match_file(self):
+        # uo-athletics
+        # to-do ingegrate function calls into config, so function can be called for row
         print("***checking for id / file value matches")
         with open(self.metadata, "r", encoding="utf-8-sig") as csvfile:
             reader = csv.DictReader(csvfile)
@@ -130,4 +123,3 @@ class Ingest(object):
             return mismatch
         else:
             return "identifier values = filenames - file extension"
-
