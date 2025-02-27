@@ -1,5 +1,5 @@
 # od_md_scripts
-Python scripts to automate processing metadata for Oregon Digital 2
+scripts to automate metadata-processing, ingest steps for Oregon Digital 2
 
 ## archived\*
 *\*available at previous snapshots*  
