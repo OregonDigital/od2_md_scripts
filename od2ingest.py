@@ -22,6 +22,30 @@ class Ingest(object):
         pretty = json.dumps(self.config, indent=4)
         print(pretty)
 
+    def check_columns_config(self):
+        check = True
+        with open(self.metadata, "r", encoding="utf-8-sig") as csvfile:
+            reader = csv.DictReader(csvfile)
+            headers = reader.fieldnames
+            print(f"***checking config fields <> metadata headers")
+            if set(self.config) != set(headers):
+                check = False
+                print("(!) ERROR config fields != metadata headers")
+                diff = list(set(headers) - set(self.config))
+                if len(diff) > 0:
+                    print(f"headers not in config file:")
+                    for item in diff:
+                        print(item)
+                diff = list(set(self.config) - set(headers))
+                if len(diff) > 0:
+                    print(f"config fields not in headers:")
+                    for item in diff:
+                        print(item)
+                print("(!) UPDATE config/metadata and retry")
+            else:
+                print("config fields = headers in metadata")
+        return check
+
     def process_columns(self):
         with open(self.metadata, "r", encoding="utf-8-sig") as csvfile:
             reader = csv.DictReader(csvfile)
@@ -74,7 +98,7 @@ class Ingest(object):
                     print(f"(!) ERROR header '{header}' has unknown check_type '{check_type}', check_data '{check_data}'")
 
     def check_filenames_assets(self):
-        print(f"checking metadata filenames against files/ assets\n{'='*3}")
+        print(f"***checking metadata filenames against files/ assets\n{'='*3}")
         with open(self.metadata, "r", encoding="utf-8-sig") as csvfile:
             reader = csv.DictReader(csvfile)
             filenames = []
@@ -82,7 +106,7 @@ class Ingest(object):
                 filenames.append(row['file'])
             difflen = len(self.assets) - len(filenames)
             if difflen != 0:
-                print("ERROR: # of filenames != # of asset files:")
+                print("(!) ERROR: # of filenames != # of asset files:")
                 print(f"{len(filenames)} filename values in CSV metadata")
                 print(f"{len(self.assets)} files in assets directory")
             else:
@@ -92,18 +116,16 @@ class Ingest(object):
             # would diffs below work just as well with simple len() comparisons?
             diff = list(set(self.assets) - set(filenames))
             if len(diff) > 0:
-                print(f"{len(diff)} files/ assets not in metadata\n{'*'*3}")
+                print(f"*{len(diff)} files/ assets not in metadata:")
                 for item in diff:
                     print(item)
-                print("\n")
             else:
                 print("files/ and metadata filenames match")
             diff = list(set(filenames) - set(self.assets))
             if len(diff) > 0:
-                print(f"{len(diff)} filenames not in files/ assets\n{'*'*3}")
+                print(f"*{len(diff)} filenames not in files/ assets:")
                 for item in diff:
                     print(item)
-                print("\n")
             else:
                 print("metadata filenames and files/ match")
  
