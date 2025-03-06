@@ -26,7 +26,7 @@ format:
   - regex
   - ^https:\/\/w3id.org\/spar\/mediatype\/image\/tiff$
 rights_statement: 
-  - string
+  - string # use regex instead? why am I using regex above but string here?
   - http://rightsstatements.org/vocab/InC/1.0/
 license:
   - string
