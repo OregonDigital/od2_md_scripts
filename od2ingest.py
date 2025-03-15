@@ -64,13 +64,13 @@ class Ingest(object):
             except:
                 check_type = None
                 print(f"(!) CHECK column '{header}': no check configured for this column")
+            # is following unnecessary? 
             try:
                 check_data = value[1]
             except:
                 check_data = None
                 pass
-            # test
-            # print(header, '>', check_type, check_data)
+            # print(header, '>', check_type, check_data) # test
             for row in rows:
                 if check_type == None:
                     pass
