@@ -1,13 +1,11 @@
 id: ~
 file:
   - regex
-  - ^\d{1}\.png
-leading_space:
-  - string
-  -  hello
-trailing_space:
-  - string
-  - goodbye 
-internal_space:
-  - string
-  - hello there you
+  - ^EX_COLL_123\d{1}_(recto|verso)\.png$
+identifier:
+  - regex
+  - ^EX_COLL_123\S*$
+title: ~
+description: ~
+local_collection_name: ~
+local_collection_id: ~
