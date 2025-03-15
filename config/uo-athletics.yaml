@@ -4,7 +4,7 @@ title: ~
 description:
 identifier:
   - regex
-  - ^PH395_UP\S*$
+  - ^PH395_UP\S*$ # any non-whitespace char too lax?
 local_collection_name: 
   - regex
   - ^http:\/\/opaquenamespace.org\/ns\/localCollectionName\/UniversityPhotosPaulHarveyIV$
