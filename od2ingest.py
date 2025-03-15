@@ -103,7 +103,7 @@ class Ingest(object):
             reader = csv.DictReader(csvfile)
             filenames = []
             for row in reader:
-                filenames.append(row['file'])
+                filenames.extend(row['file'].split('|'))
             difflen = len(self.assets) - len(filenames)
             if difflen != 0:
                 print("(!) ERROR: # of filenames != # of asset files:")
@@ -125,12 +125,13 @@ class Ingest(object):
             if len(diff) > 0:
                 print(f"*{len(diff)} filenames not in files/ assets:")
                 for item in diff:
-                    print(item)
+                    print(f"'{item}'")
             else:
                 print("metadata filenames and files/ match")
  
     def id_match_file(self):
         # uo-athletics
+        # (!) DOES NOT account for multiple file names in single cell
         # to-do ingegrate function calls into config, so function can be called for row
         print("***checking for id / file value matches")
         with open(self.metadata, "r", encoding="utf-8-sig") as csvfile:
