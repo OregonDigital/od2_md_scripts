@@ -1,3 +1,4 @@
+# check against req'd cols for Bulkrax
 id: ~
 file:
   - regex
@@ -9,3 +10,15 @@ title: ~
 description: ~
 local_collection_name: ~
 local_collection_id: ~
+date: ~
+subject: ~
+location: ~
+resource_type: ~
+format: ~
+rights_statement: ~
+license: ~
+institution: ~
+model: ~
+visibility: ~
+repository: ~
+full_size_download_allowed: ~
