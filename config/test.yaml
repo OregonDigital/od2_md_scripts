@@ -1,24 +1,23 @@
-# check against req'd cols for Bulkrax
-id: ~
-file:
-  - regex
-  - ^EX_COLL_123\d{1}_(recto|verso)\.png$
-identifier:
+date: ~
+description: null
+dmrec: null
+file: # ^EX_COLL_123\d{1}_(recto|verso)\.png$
+  - method
+  - files_assets
+format: null
+full_size_download_allowed: null
+identifier: 
   - regex
   - ^EX_COLL_123\S*$
-title: ~
-description: ~
-local_collection_name: ~
-local_collection_id: ~
-date: ~
-subject: ~
-location: ~
-resource_type: ~
-format: ~
-rights_statement: ~
-license: ~
-institution: ~
-model: ~
-visibility: ~
-repository: ~
-full_size_download_allowed: ~
+institution: null
+license: null
+local_collection_id: null
+local_collection_name: null
+location: null
+model: null
+repository: null
+resource_type: null
+rights_statement: null
+subject: null
+title: null
+visibility: null
