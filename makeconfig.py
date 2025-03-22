@@ -44,7 +44,7 @@ while filename is None:
         pass
 
 print("(!) your config template file will be created as follows:")
-print(f"***path + file name: od2_md_scripts/config/{filename}")
+print(f"***path + file name: od2_md_scripts/config/{filename}.yaml")
 print(f"***metadata fields (headers) -- {len(config)} total:")
 for header in config:
     print(f"\t{header}")
