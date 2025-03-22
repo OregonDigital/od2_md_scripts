@@ -3,7 +3,7 @@ dmrec:
   - ""
 file: ~
 title: ~
-description:
+description: ~
 identifier:
   - regex
   - ^PH395_UP\S*$ # any non-whitespace char too lax?
@@ -18,7 +18,7 @@ photographer:
   - ^http:\/\/opaquenamespace.org\/ns\/creator\/HarveyPaulWIV$
 date:
   - regex
-  - ^\d{4}-\d{2}-\d{2}$
+  - ^202[2-9]{1}-\d{2}-\d{2}$
 subject: ~ # use regex? see bulkrax CSV doc for IRI constraints
 location:
   - regex
@@ -56,5 +56,5 @@ repository:
   - string
   - http://id.loc.gov/authorities/names/no2003116678
 full_size_download_allowed:
-  - integer
+  - string
   - 0
