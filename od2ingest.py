@@ -45,6 +45,9 @@ class Ingest(object):
             else:
                 print("config fields = headers in metadata")
         return check
+    
+    def report_error(self, header, data, check_type, check_data):
+        print(f"(!) '{header}' ERROR: '{data}' does not match {check_type} {check_data}")
 
     def process_columns(self):
         with open(self.metadata, "r", encoding="utf-8-sig") as csvfile:
@@ -52,50 +55,27 @@ class Ingest(object):
             rows = list(reader)
         
         for key, value in self.config.items():
-            # test
-            # if value != None:
-            #     print(f"{key} > {value[0]}, {value[1]}")
-            # else:
-            #     print(f"{key} > {value}")
             header = key
-            print(f"***running checks for column '{header}'")
-            try:
+            try: # fall back to default config would happen here?
                 check_type = value[0]
-            except:
-                check_type = None
-                print(f"(!) CHECK column '{header}': no check configured for this column")
-            # is following unnecessary? 
-            try:
                 check_data = value[1]
-            except:
-                check_data = None
-                pass
-            # print(header, '>', check_type, check_data) # test
-            for row in rows:
-                if check_type == None:
-                    pass
-                elif check_type == 'function': # oh this'd be better renamed 'method'
-                    pass # punt for now on implementing funcs, 
-                    # this could eliminate need for separate method for files/filenames check
+                print(f"***running {check_type} check for column '{header}'")
+                if check_type == 'method':
+                    print("(*) method checks not yet implemented")
+                    pass 
                 elif check_type == 'regex':
                     p = re.compile(r"{}".format(check_data))
-                    if re.match(p, row[header]):
-                        pass
-                    else:
-                        print(f"(!) ERROR column '{header}':\n'{row[header]}' does not match pattern {p}")
+                    for row in rows:
+                        if not re.match(p, row[header]):
+                            self.report_error(header, row[header], check_type, check_data)
                 elif check_type == 'string':
-                    if row[header] == check_data:
-                        pass
-                    else:
-                        print(f"(!) ERROR column '{header}':\n{check_type} '{row[header]}' != '{check_data}'")
-                elif check_type == 'integer':
-                    check_data = str(check_data) # so I mean should there even be an integer check_type?
-                    if row[header] == check_data:
-                        pass
-                    else:
-                        print(f"(!) ERROR column '{header}':\n{check_type} '{row[header]}' != '{check_data}'")
+                    for row in rows:
+                        if row[header] != str(check_data):
+                            self.report_error(header, row[header], check_type, check_data)
                 else:
-                    print(f"(!) ERROR header '{header}' has unknown check_type '{check_type}', check_data '{check_data}'")
+                    print(f"(*) CHECK column '{header}', or fix broken config '{check_type}', '{check_data}'")
+            except TypeError as e:
+                print(f"(*) CHECK column '{header}': no check configured for this column")
 
     def check_filenames_assets(self):
         print(f"***checking metadata filenames against files/ assets\n{'='*3}")
