@@ -41,7 +41,7 @@ class Ingest(object):
                     print(f"config fields not in headers:")
                     for item in diff:
                         print(item)
-                print("(!) UPDATE config/metadata and retry")
+                print("(!) UPDATE metadata headers or config, and retry")
             else:
                 print("config fields = headers in metadata")
         return check
