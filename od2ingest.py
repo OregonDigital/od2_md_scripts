@@ -47,7 +47,7 @@ class Ingest(object):
         return check
     
     def validation_error(self, header, data, check_type, check_data):
-        print(f"(!) '{header}' ERROR: '{data}' does not match {check_type} {check_data}")
+        print(f"(!) '{header}' ERROR: '{data}' does not match {check_type} '{check_data}'")
     
     def config_error(self, header, check_type, check_data):
         print(f"(*) CHECK column '{header}', or fix broken config '{check_type}', '{check_data}'")
