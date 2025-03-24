@@ -8,9 +8,10 @@ try:
     headers = processing.check_columns_config()
     if headers == True:
         processing.process_columns()
-        files_check = input("check metadata filenames against files/ assets? (y/n)\n>>>")
+        print("(*) UO Athletics")
+        files_check = input("check (filename - extension) = identifier? (y/n)\n>>>")
         if files_check.lower() == 'y':
-            processing.check_filenames_assets()
+            processing.id_match_file()
 except IndexError:
     print(f"(!) MISSING config file name (do not include file extension)")
     print("EXAMPLE command:")

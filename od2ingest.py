@@ -46,8 +46,22 @@ class Ingest(object):
                 print("config fields = headers in metadata")
         return check
     
-    def report_error(self, header, data, check_type, check_data):
+    def validation_error(self, header, data, check_type, check_data):
         print(f"(!) '{header}' ERROR: '{data}' does not match {check_type} {check_data}")
+    
+    def config_error(self, header, check_type, check_data):
+        print(f"(*) CHECK column '{header}', or fix broken config '{check_type}', '{check_data}'")
+
+    def get_method(self, header, check_type, check_data):
+        method_mapping = {
+            "check_filenames_assets": self.check_filenames_assets,
+            "id_match_file": self.id_match_file
+        }
+        method = method_mapping.get(check_data)
+        if method:
+            return method()
+        else:
+            self.config_error(header, check_type, check_data)
 
     def process_columns(self):
         with open(self.metadata, "r", encoding="utf-8-sig") as csvfile:
@@ -56,29 +70,29 @@ class Ingest(object):
         
         for key, value in self.config.items():
             header = key
-            try: # fall back to default config would happen here?
+            try: # fall back to default config would happen around here?
                 check_type = value[0]
                 check_data = value[1]
                 print(f"***running {check_type} check for column '{header}'")
                 if check_type == 'method':
-                    print("(*) method checks not yet implemented")
-                    pass 
+                    self.get_method(header, check_type, check_data) 
                 elif check_type == 'regex':
                     p = re.compile(r"{}".format(check_data))
                     for row in rows:
                         if not re.match(p, row[header]):
-                            self.report_error(header, row[header], check_type, check_data)
+                            self.validation_error(header, row[header], check_type, check_data)
                 elif check_type == 'string':
                     for row in rows:
                         if row[header] != str(check_data):
-                            self.report_error(header, row[header], check_type, check_data)
+                            self.validation_error(header, row[header], check_type, check_data)
                 else:
+                    self.config_error(header, check_type, check_data)
                     print(f"(*) CHECK column '{header}', or fix broken config '{check_type}', '{check_data}'")
             except TypeError as e:
                 print(f"(*) CHECK column '{header}': no check configured for this column")
 
     def check_filenames_assets(self):
-        print(f"***checking metadata filenames against files/ assets\n{'='*3}")
+        print(f">>>method: checking metadata filenames against files/ assets")
         with open(self.metadata, "r", encoding="utf-8-sig") as csvfile:
             reader = csv.DictReader(csvfile)
             filenames = []
@@ -91,9 +105,6 @@ class Ingest(object):
                 print(f"{len(self.assets)} files in assets directory")
             else:
                 print("# of filenames = # of asset files")
-            # this check may still be wonky
-            # (!) need to understand set better -- why am I using set here?
-            # would diffs below work just as well with simple len() comparisons?
             diff = list(set(self.assets) - set(filenames))
             if len(diff) > 0:
                 print(f"*{len(diff)} files/ assets not in metadata:")
@@ -113,16 +124,19 @@ class Ingest(object):
         # uo-athletics
         # (!) DOES NOT account for multiple file names in single cell
         # to-do ingegrate function calls into config, so function can be called for row
-        print("***checking for id / file value matches")
+        print(">>>method: checking for id / file value matches")
         with open(self.metadata, "r", encoding="utf-8-sig") as csvfile:
             reader = csv.DictReader(csvfile)
+            rows = list(reader)
+            # print(rows)
             mismatch = []
-            for row in reader:
-                if row['identifier'] == row['file'].split('.')[0]:
+            for row in rows:
+                if row['file'].split('.')[0] == row["identifier"]:
                     pass
                 else:
-                    mismatch.append(row['identifier'])
+                    mismatch.append(f"file '{row['file']}' != identifier '{row['identifier']}'")
         if len(mismatch) > 0:
-            return mismatch
+            for item in mismatch:
+                print(f"(!) ERROR: {item}")
         else:
             return "identifier values = filenames - file extension"

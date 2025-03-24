@@ -3,7 +3,7 @@ description: null
 dmrec: null
 file: # ^EX_COLL_123\d{1}_(recto|verso)\.png$
   - method
-  - files_assets
+  - check_filenames_assets
 format: null
 full_size_download_allowed: null
 identifier: 

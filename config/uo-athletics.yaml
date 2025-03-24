@@ -1,7 +1,9 @@
 dmrec:
   - string
   - ""
-file: ~
+file: 
+  - method
+  - check_filenames_assets
 title: ~
 description: ~
 identifier:

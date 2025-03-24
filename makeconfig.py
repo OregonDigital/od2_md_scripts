@@ -11,7 +11,10 @@ with open(file, "r") as csvfile:
 
 config = {}
 for entry in headers:
-    config.update({entry: None})
+    if entry == "file":
+        config.update({entry: ["method", "check_filenames_assets"]})
+    else:
+        config.update({entry: None})
 
 # testing
 # print(type(config))
