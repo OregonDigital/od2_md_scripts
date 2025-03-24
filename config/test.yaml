@@ -1,17 +1,23 @@
-date: ~
-description: null
-dmrec: null
+dmrec: 
+  - string
+  - ""
 file: # ^EX_COLL_123\d{1}_(recto|verso)\.png$
   - method
   - check_filenames_assets
-format: null
-full_size_download_allowed: null
 identifier: 
   - regex
   - ^EX_COLL_123\S*$
+date: 
+  - regex
+  - ^202[2-9]{1}-\d{2}-\d{2}$
+description: null
+format: null
+full_size_download_allowed: null
 institution: null
 license: null
-local_collection_id: null
+local_collection_id: 
+  - string
+  - PH395 UP
 local_collection_name: null
 location: null
 model: null
