@@ -122,8 +122,8 @@ class Ingest(object):
  
     def id_match_file(self):
         # uo-athletics
+        # (!) would need to use more args, change below to use for other colls
         # (!) DOES NOT account for multiple file names in single cell
-        # to-do ingegrate function calls into config, so function can be called for row
         print(">>>method: checking for id / file value matches")
         with open(self.metadata, "r", encoding="utf-8-sig") as csvfile:
             reader = csv.DictReader(csvfile)
