@@ -139,4 +139,4 @@ class Ingest(object):
             for item in mismatch:
                 print(f"(!) ERROR: {item}")
         else:
-            return "identifier values = filenames - file extension"
+            print("identifier values = filenames - file extension")
