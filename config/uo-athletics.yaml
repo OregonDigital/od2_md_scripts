@@ -41,13 +41,15 @@ license:
 rights_holder:
   - string
   - Harvey, Paul W., IV
-# no 'parents' at this time for ingests - update later
+parents:
+  - string
+  - uo-athletics
 institution:
   - string
   - http://id.loc.gov/authorities/names/n80126183
 model:
   - string
-  - Image
+  - Image # this could be regex to allow capitalized or no
 has_finding_aid:
   - string
   - https://scua.uoregon.edu/repositories/2/resources/9512
