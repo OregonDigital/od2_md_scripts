@@ -3,15 +3,20 @@ import yaml
 
 class Ingest(object):
 
-    def __init__(self, config):
-        self.metadata = self.filepaths()[0]
-        self.assets = os.listdir(self.filepaths()[1])
+    def __init__(self, config, test=False):
+        self.metadata = self.filepaths(test)[0]
+        self.assets = os.listdir(self.filepaths(test)[1])
         self.config = self.fields_config(config)
 
-    def filepaths(self):
-        with open("filepaths.yaml", "r") as yamlfile:
-            paths = yaml.safe_load(yamlfile)
-            return [ paths['metadata'], paths['assets'] ]
+    def filepaths(self, test):
+        if test == False:
+            with open("filepaths.yaml", "r") as yamlfile:
+                paths = yaml.safe_load(yamlfile)
+                return [ paths['metadata'], paths['assets'] ]
+        else:
+            with open("test_data/test_filepaths.yaml", "r") as yamlfile:
+                paths = yaml.safe_load(yamlfile)
+                return [ paths['metadata'], paths['assets'] ]
 
     def fields_config(self, config):
         with open(f"config/{config}.yaml", "r") as yamlfile:
@@ -92,7 +97,7 @@ class Ingest(object):
                 print(f"(*) CHECK column '{header}': no check configured for this column")
 
     def check_filenames_assets(self):
-        print(f">>>method: checking metadata filenames against files/ assets")
+        print(f">>> method: checking metadata filenames against files/ assets")
         with open(self.metadata, "r", encoding="utf-8-sig") as csvfile:
             reader = csv.DictReader(csvfile)
             filenames = []
@@ -124,7 +129,7 @@ class Ingest(object):
         # uo-athletics
         # (!) would need to use more args, change below to use for other colls
         # (!) DOES NOT account for multiple file names in single cell
-        print(">>>method: checking for id / file value matches")
+        print(">>> method: checking for id / file value matches")
         with open(self.metadata, "r", encoding="utf-8-sig") as csvfile:
             reader = csv.DictReader(csvfile)
             rows = list(reader)
