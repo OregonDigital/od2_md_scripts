@@ -1,13 +1,12 @@
 import sys
 from od2ingest import Ingest
 
-headers = True
-
 try:
     processing = Ingest(sys.argv[1])
-    headers = processing.check_columns_config()
-    if headers == True:
+    headers_match = processing.check_columns_config()
+    if headers_match == True:
         processing.process_columns()
+        # to do: eliminate following processing, process this from config file
         print("(*) UO Athletics")
         files_check = input("check (filename - extension) = identifier? (y/n)\n>>>")
         if files_check.lower() == 'y':
