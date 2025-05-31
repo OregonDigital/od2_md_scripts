@@ -1,64 +1,84 @@
 dmrec:
+  1:
   - string
   - ""
 file: 
+  1:
   - method
   - check_filenames_assets
 title: ~
 description: ~
 identifier:
+  1:
   - regex
   - ^PH395_UP\S*$ # any non-whitespace char too lax?
 local_collection_name: 
+  1:
   - regex
   - ^http:\/\/opaquenamespace.org\/ns\/localCollectionName\/UniversityPhotosPaulHarveyIV$
 local_collection_id:
+  1:
   - string
   - PH395 UP
 photographer:
+  1:
   - regex
   - ^http:\/\/opaquenamespace.org\/ns\/creator\/HarveyPaulWIV$
 date:
+  1:
   - regex
   - ^202[2-9]{1}-\d{2}-\d{2}$
 subject: ~ # use regex? see bulkrax CSV doc for IRI constraints
 location:
+  1:
   - regex
   - ^https:\/\/sws.geonames.org/\S*$
 resource_type:
+  1:
   - regex
   - ^http:\/\/purl.org\/dc\/dcmitype\/Image$
 format:
+  1:
   - regex
   - ^https:\/\/w3id.org\/spar\/mediatype\/image\/tiff$
 rights_statement: 
+  1:
   - string # use regex instead? why am I using regex above but string here?
   - http://rightsstatements.org/vocab/InC/1.0/
 license:
+  1:
   - string
   - http://creativecommons.org/licenses/by-nd/4.0/
   # per !Bulkrax CSV Guidance Document URI should start http (not https)
 rights_holder:
+  1:
   - string
   - Harvey, Paul W., IV
 parents:
+  1:
   - string
   - uo-athletics
 institution:
+  1:
   - string
   - http://id.loc.gov/authorities/names/n80126183
 model:
+  1:
   - string
   - Image # this could be regex to allow capitalized or no
 has_finding_aid:
+  1:
   - string
   - https://scua.uoregon.edu/repositories/2/resources/9512
 visibility:
+  1:
   - string
   - open
 repository:
+  1:
   - string
   - http://id.loc.gov/authorities/names/no2003116678
 full_size_download_allowed:
+  1:
   - string
   - 0
