@@ -26,7 +26,8 @@ class Package(object):
                 return (paths['metadata'], paths['assets'],)
 
     def get_config(self, name):
-        if name == None: # see 🦈
+        if name == None: # see 🦈 -- 
+            # NO - change this ^^^ custom_config must be req'd
             return {}
         else:
             with open(f"config/{name}.yaml", "r") as yf:
@@ -35,6 +36,7 @@ class Package(object):
     def print_config(self):
         if self.custom_config == {}: # see 🦈
             print("(*) no custom config data")
+            # NO - change this ^^^ custom_config must be req'd
         else:
             print("custom config data >>>\n")
             pretty = json.dumps(self.custom_config, indent=4)
@@ -58,12 +60,14 @@ class Package(object):
             with open(self.metadata[0], "r", encoding="utf-8-sig") as csvf:
                 reader = csv.reader(csvf)
                 headers = next(reader) # type should == list
-                pass # see 🦈 question above
+                pass # left off here; see 🦈 question above
         elif self.metadata_file_type() == "Excel":
             if isinstance(self.metadata, list):
                 if len(self.metadata) <= 1:
                     print("filenames.yaml must include sheet name for Excel file")
                 elif len(self.metadata) == 2:
                     md = pd.read_excel(self.metadata[0], sheet_name=self.metadata[1])
+                    # NOTE ACK this changes re structure req'd for filepaths.yaml
+                    # (??) ADD CHECK HERE FOR SECOND LIST ITEM? and if not, use default "Sheet1"??
                     headers = md.columns.to_list() # type should == list
-                    pass # see 🦈 question above
+                    pass # left off here; see 🦈 question above
