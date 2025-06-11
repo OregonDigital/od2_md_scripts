@@ -3,47 +3,47 @@ import pandas as pd
 
 class Package(object):
 
-    def __init__(self, custom_config, test=False):
-        # (!) additional arg may be having unexpected consequences
-        # (!) do I fully understand how instantiating with 0, 1, 2 args works!?
-        # TO DO 🦈: what to do about a custom config file?
-            # if a check of headers is desired, some config file
-            # specific to metadata spreadsheet is needed 🦈
-        self.metadata = self.filepaths(test)[0]
-        self.assets = os.listdir(self.filepaths(test)[1])
-        self.default_config = self.get_config("default")
-        self.custom_config = self.get_config(custom_config)
+    def __init__(self, headers_config, test=False):
+        # * instantiating with 1 vs 2 args ... any issues??
+        # should I make sure that headers_config="test" when testing?
+        self.test = test
+        self.metadata = self.filepaths()[0]
+        self.assets = os.listdir(self.filepaths()[1])
+        self.default_config, self.headers_config = self.get_config(headers_config)
+        # custom config requred, must include at least enumeration of headers
+        # use makeconfig.py
 
-    def filepaths(self, test):
-        if test == False:
+    def filepaths(self):
+        if self.test == False:
             with open("filepaths.yaml", "r") as yf:
                 paths = yaml.safe_load(yf)
                 return (paths['metadata'], paths['assets'],)
-                # (*) IMPORTANT change: metadata is now 1 or 2 item list
+                # * self.metadata is 1 or 2 item list
         else:
-            with open("test/filepaths.yaml", "r") as yf:
+            with open("filepaths_test.yaml", "r") as yf:
                 paths = yaml.safe_load(yf)
                 return (paths['metadata'], paths['assets'],)
 
-    def get_config(self, name):
-        if name == None: # see 🦈 -- 
-            # NO - change this ^^^ custom_config must be req'd
-            return {}
-        else:
-            with open(f"config/{name}.yaml", "r") as yf:
-                return yaml.safe_load(yf)
+    def print_filepaths(self):
+        print(f">>> metadata file path\n{self.metadata[0]}")
+        try:
+            print(f">>> sheet/tab name\n{self.metadata[1]}")
+        except:
+            pass
+        print(f">>> assets file path\n{self.filepaths()[1]}")
+
+    def get_config(self, headers_config):
+        with open("config/default.yaml", "r") as yf:
+            default = yaml.safe_load(yf)
+        with open(f"config/{headers_config}.yaml", "r") as yf:
+            headers = yaml.safe_load(yf)
+        return [default, headers]
 
     def print_config(self):
-        if self.custom_config == {}: # see 🦈
-            print("(*) no custom config data")
-            # NO - change this ^^^ custom_config must be req'd
-        else:
-            print("custom config data >>>\n")
-            pretty = json.dumps(self.custom_config, indent=4)
-            print(pretty)
-        print("default config data >>>\n")
         pretty = json.dumps(self.default_config, indent=4)
-        print(pretty)
+        print(f">>> default_config (JSON)\n{pretty}")
+        pretty = json.dumps(self.headers_config, indent=4)
+        print(f">>> headers_config (JSON)\n{pretty}")
 
     def metadata_file_type(self):
         if self.metadata[0].split('.')[-1] == "xlsx":
@@ -53,21 +53,55 @@ class Package(object):
         else:
             return "(!) unknown metadata file type"
 
+    def get_headers(self):
+        if self.metadata_file_type() == "CSV" and isinstance(self.metadata, list):
+            if len(self.metadata) > 1:
+                print("(!) for CSV, filepaths.yaml > metadata must be one item list")
+                exit()
+            else:
+                with open(self.metadata[0], "r", encoding="utf-8-sig") as csvf:
+                    reader = csv.reader(csvf)
+                    headers = next(reader) # type should == list
+                    return headers
+        elif self.metadata_file_type() == "Excel" and isinstance(self.metadata, list):
+            if len(self.metadata) <= 1:
+                print("(!) filenames.yaml > metadata must be two-item list with filepath, sheet name")
+                exit()
+            elif len(self.metadata) == 2:
+                md = pd.read_excel(self.metadata[0], sheet_name=self.metadata[1])
+                # NOTE ACK this changes re structure req'd for filepaths.yaml
+                # (??) ADD CHECK HERE FOR SECOND LIST ITEM? and if not, use default "Sheet1"??
+                headers = md.columns.to_list() # type should == list
+                return headers
+            else:
+                print("(!) this was most unexpected")
+                exit()
+        else:
+            print("(!) filepaths.yaml > metadata must be one- or two-item list")
+            exit()
+
+    def print_headers(self):
+        print(">>> headers in metadata spreadsheet")
+        for header in self.get_headers():
+            print(header)
+
     def check_headers(self):
-        # WAIT how do you check headers unless you have a custom config file!?!?
         check = True
-        if self.metadata_file_type() == "CSV":
-            with open(self.metadata[0], "r", encoding="utf-8-sig") as csvf:
-                reader = csv.reader(csvf)
-                headers = next(reader) # type should == list
-                pass # left off here; see 🦈 question above
-        elif self.metadata_file_type() == "Excel":
-            if isinstance(self.metadata, list):
-                if len(self.metadata) <= 1:
-                    print("filenames.yaml must include sheet name for Excel file")
-                elif len(self.metadata) == 2:
-                    md = pd.read_excel(self.metadata[0], sheet_name=self.metadata[1])
-                    # NOTE ACK this changes re structure req'd for filepaths.yaml
-                    # (??) ADD CHECK HERE FOR SECOND LIST ITEM? and if not, use default "Sheet1"??
-                    headers = md.columns.to_list() # type should == list
-                    pass # left off here; see 🦈 question above
+        print(">>> checking headers configuration / headers in metadata")
+        if set(self.headers_config) != set(self.get_headers()):
+            check = False
+            print("!!! headers_config != metadata headers")
+            diff = list(set(self.get_headers()) - set(self.headers_config))
+            if len(diff) > 0:
+                print("* metadata headers not in config file:")
+                for item in diff:
+                    print(item)
+            diff = list(set(self.headers_config) - set(self.get_headers()))
+            if len(diff) > 0:
+                print("* headers_config fields not in metadata headers:")
+                for item in diff:
+                    print(item)
+            print("* update metadata headers and/or headers_config and retry")
+        else:
+            print("* headers_config = metadata headers")
+        return check
