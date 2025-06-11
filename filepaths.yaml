@@ -1,2 +1,4 @@
-metadata: 
-assets: 
+metadata:
+- some_filepath.xlsx|csv
+- sheet_or_tab_name_for_xlsx # omit for CSV
+assets: filepath_to_assets
