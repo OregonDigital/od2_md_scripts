@@ -9,17 +9,20 @@ import json, yaml
 # }
 
 # ok yes use this one
-dsb = {
+structure_a = {
     "dmrec": [
         {"string": ""},
         {"regex": "^$"}
+    ],
+    "file": [
+        {"method": ["check_filenames_assets"]} 
+        # list is useless now but allow for passing 
+        # args to methods after method name
     ]
-    # to do how to pass method information here??
 }
 
-examples = {
-    "dsb": dsb
-}
+examples = {"structure_a": structure_a}
+
 for example in examples:
     with open(f"{example}.json", "w") as jf:
         json.dump(examples[example], jf, indent=4)
