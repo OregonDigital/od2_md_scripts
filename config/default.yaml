@@ -1,4 +1,5 @@
 dmrec:
-  1:
-  - string
-  - ""
+- string: ''
+file:
+- method:
+  - check_filenames_assets
