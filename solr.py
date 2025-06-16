@@ -14,7 +14,7 @@ except:
     print("did you run as '$ python3 solr.py [importer #]'?")
     exit()
 
-print(">>> Solr query results:")
+print(f">>> Solr query results for importer {sys.argv[1]}:")
 print(f"{response['response']['numFound']} works found for importer # {sys.argv[1]}")
 
 no_fileset = []
@@ -46,7 +46,8 @@ elif len(no_coll) >= 1:
         print(pid)
 else:
     print("all works are member of collection id(s)") 
-    # add code to show coll ids??
+    # show coll ids??
+    # and/or, check that all works in importer added to same coll??
 # not sure I want this
 # print(">>> query result docs:")
 # print(json.dumps(response['response']['docs'], indent=4))
