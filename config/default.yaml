@@ -1,5 +1,5 @@
 dmrec:
-- string: ''
+- string: '' # this or ^$?
 file:
 - method:
   - check_filenames_assets

@@ -1,6 +1,7 @@
-dmrec,file
-,EX_COLL_123_01_recto.png|EX_COLL_123_01_verso.png
-,EX_COLL_123_02_recto.png|EX_COLL_123_02_verso.png
-,EX_COLL_123_03_recto.png|EX_COLL_123_03_verso.png
-,EX_COLL_123_04.png
-,EX_COLL_123_05.png
+dmrec,file,title,format,resource_type
+,,Complex Object: Some Screenshots,https://w3id.org/spar/mediatype/application/xml,http://purl.org/dc/dcmitype/Collection
+,EX_COLL_123_01_recto.png|EX_COLL_123_01_verso.png,"Complex Object Item: Two-Sided Screenshot Postcard, If You Will, Number One",,http://purl.org/dc/dcmitype/StillImage
+,EX_COLL_123_02_recto.png|EX_COLL_123_02_verso.png,"Complex Object Item: Two-Sided Screenshot Postcard, If You Will, Number Two",,http://purl.org/dc/dcmitype/StillImage
+,EX_COLL_123_03_recto.png|EX_COLL_123_03_verso.png,"Complex Object Item: Two-Sided Screenshot Postcard, If You Will, Number Three",,http://purl.org/dc/dcmitype/StillImage
+,EX_COLL_123_04.png,Complex Object Item: Screenshot Number Four,,http://purl.org/dc/dcmitype/StillImage
+,EX_COLL_123_05.png,Complex Object Item: Screenshot Number Five,,http://purl.org/dc/dcmitype/StillImage
