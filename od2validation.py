@@ -31,6 +31,7 @@ class Package(object):
         except:
             pass
         print(f">>> assets file path\n{self.filepaths()[1]}")
+        print("\n")
 
     def get_config(self, headers_config):
         with open("config/default.yaml", "r") as yf:
@@ -43,7 +44,9 @@ class Package(object):
         pretty = json.dumps(self.default_config, indent=4)
         print(f">>> default_config (JSON)\n{pretty}")
         pretty = json.dumps(self.headers_config, indent=4)
+        print("\n")
         print(f">>> headers_config (JSON)\n{pretty}")
+        print("\n")
 
     def metadata_file_type(self):
         if self.metadata[0].split('.')[-1] == "xlsx":
@@ -89,6 +92,7 @@ class Package(object):
         print(">>> headers in metadata spreadsheet")
         for header in self.get_headers():
             print(header)
+        print("\n")
 
     def check_headers(self):
         check = True
@@ -109,25 +113,84 @@ class Package(object):
             print("* update metadata headers and/or headers_config and retry")
         else:
             print("* headers_config = metadata headers")
+        print("\n")
         return check
 
-    def check_string(self):
+    def validation_error(self):
+        pass 
+        # include index (row #) + header in error reporting
+        # format (!!!) ERROR message
+
+    # do I need func config error?
+
+    def check_string(self, header, source, checkdata, metadata):
+        print(f">>> string check for field {header}, from {source}")
+        if self.test == True:
+            print(f"- string to check against: '{checkdata['string']}'")
+            try:
+                print(f"- check {checkdata['which']}")
+            except:
+                pass
+            print(f"- metadata arg has type {type(metadata)}")
+        print("\n")
         pass
 
-    def check_regex(self):
+    def check_regex(self, header, source, checkdata, metadata):
+        print(f">>> regex check for field {header}, from {source}")
+        if self.test == True:
+            print(f"- regex to check against: '{checkdata['regex']}'")
+            try:
+                print(f"- check {checkdata['which']}")
+            except:
+                pass
+            print(f"- metadata arg has type {type(metadata)}")
+        print("\n")
         pass
 
-    def get_method(self):
+    def get_method(self, header, source, checkdata, metadata):
+        print(f">>> method check for field {header}, from {source}")
+        if self.test == True:
+            print(f"- method to use: {checkdata['method'][0]}")
+            try:
+                print(f"- check {checkdata['which']}")
+            except:
+                pass
+        print("\n")
         pass
 
     def check_dataframe(self):
+        metadata = self.get_dataframe()
         for header in self.headers_config:
-            print(f">>> check(s) for header {header}")
-            # ah... here's where I need to add fallback to default.yaml (below)
-            for check in self.headers_config[header]:
-                if check.get("string"):
-                    print(f"here is the string check data to use:\n{check}")
-                elif check.get("regex"):
-                    print(f"here is the regex check data to use:\n{check}")
-                elif check.get("method"):
-                    print(f"here is the method check to run")
+            if self.headers_config[header] != None:
+                checklist = {
+                "header": header,
+                "source": "headers YAML config file",
+                "checkdata": self.headers_config[header]
+            }
+            elif self.headers_config[header] == None and self.default_config[header] != None:
+                checklist = {
+                    "header": header,
+                    "source": "default YAML config file",
+                    "checkdata": self.default_config[header]
+                }
+            else:
+                checklist = {
+                    "header": header,
+                    "source": None,
+                    "checkdata": None
+                }
+            if checklist["source"] == None and checklist["checkdata"] == None:
+                print(f">>> (*i*) NO CHECK configured for header '{checklist['header']}'")
+            else:
+                for check in checklist["checkdata"]:
+                    if check.get("string"):
+                        self.check_string(checklist["header"], checklist["source"], 
+                                          check, metadata[checklist["header"]])
+                    elif check.get("regex"):
+                        self.check_regex(checklist["header"], checklist["source"], 
+                                         check, metadata[checklist["header"]])
+                    elif check.get("method"):
+                        self.get_method(checklist["header"], checklist["source"], 
+                                        check, metadata[checklist["header"]])
+                    else:
+                        pass
