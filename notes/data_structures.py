@@ -21,7 +21,29 @@ structure_a = {
     ]
 }
 
-examples = {"structure_a": structure_a}
+# OK now expand example as follows:
+# for any check, allow indication of check complex obj, or check item
+structure_aplus = {
+    "dmrec": [
+        {"string": ""},
+        {"regex": "^$"}
+    ],
+    "file": [
+        {"method": ["check_filenames_assets"],
+        # list is useless now but will allow for 
+        # passing args to methods after method name
+        "which": "item"}
+    ],
+    "title": [
+        {"regex": "^Complex Object: .*$",
+         "which": "complex"},
+        {"regex": "^Complex Object Item: .*$",
+         "which": "item"}
+    ]
+}
+
+examples = {"a": structure_a,
+            "aplus": structure_aplus}
 
 for example in examples:
     with open(f"{example}.json", "w") as jf:
