@@ -52,38 +52,38 @@ class Package(object):
             return "CSV"
         else:
             return "(!) unknown metadata file type"
-
-    def get_headers(self):
+        
+    def get_dataframe(self):
         if self.metadata_file_type() == "CSV" and isinstance(self.metadata, list):
             if len(self.metadata) != 1:
                 print("(!) for CSV, filepaths.yaml > metadata for CSV must be one-item list")
                 exit()
             elif len(self.metadata) == 1:
-                with open(self.metadata[0], "r", encoding="utf-8-sig") as csvf:
-                    reader = csv.reader(csvf)
-                    headers = next(reader) # type should == list
-                    return headers
+                dataframe = pd.read_csv(self.metadata[0])
+                return dataframe
             else:
-                print("(!) ERROR getting headers for CSV metadata")
+                print("(!) ERROR get_dataframe for CSV metadata")
         elif self.metadata_file_type() == "Excel" and isinstance(self.metadata, list):
             if len(self.metadata) < 1 or len(self.metadata) > 2:
                 print("(!) filenames.yaml > metadata for Excel must be one- or two-item list...")
                 print("...with filepath, optionally sheet name (if no sheet name first sheet checked)")
                 exit()
             elif len(self.metadata) == 1:
-                md = pd.read_excel(self.metadata[0])
-                headers = md.columns.to_list() # type should == list
-                return headers
+                dataframe = pd.read_excel(self.metadata[0])
+                return dataframe
             elif len(self.metadata) == 2:
-                md = pd.read_excel(self.metadata[0], sheet_name=self.metadata[1])
-                headers = md.columns.to_list() # type should == list
-                return headers
+                dataframe = pd.read_excel(self.metadata[0], sheet_name=self.metadata[1])
+                return dataframe
             else:
-                print("(!) ERROR getting headers for Excel metadata")
+                print("(!) ERROR get_dataframe for Excel metadata")
                 exit()
         else:
-            print("(!) ERROR getting headers for metadata")
+            print("(!) ERROR get_dataframe")
             exit()
+
+    def get_headers(self):
+        headers = self.get_dataframe().columns.to_list()
+        return headers
 
     def print_headers(self):
         print(">>> headers in metadata spreadsheet")
@@ -110,3 +110,24 @@ class Package(object):
         else:
             print("* headers_config = metadata headers")
         return check
+
+    def check_string(self):
+        pass
+
+    def check_regex(self):
+        pass
+
+    def get_method(self):
+        pass
+
+    def check_dataframe(self):
+        for header in self.headers_config:
+            print(f">>> check(s) for header {header}")
+            # ah... here's where I need to add fallback to default.yaml (below)
+            for check in self.headers_config[header]:
+                if check.get("string"):
+                    print(f"here is the string check data to use:\n{check}")
+                elif check.get("regex"):
+                    print(f"here is the regex check data to use:\n{check}")
+                elif check.get("method"):
+                    print(f"here is the method check to run")
