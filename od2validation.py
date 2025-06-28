@@ -27,7 +27,7 @@ class Package(object):
     def print_filepaths(self):
         print(f">>> metadata file path\n{self.metadata[0]}")
         try:
-            print(f">>> sheet/tab name\n{self.metadata[1]}")
+            print(f">>> Excel sheet/tab name\n{self.metadata[1]}")
         except:
             pass
         print(f">>> assets file path\n{self.filepaths()[1]}")
@@ -55,29 +55,34 @@ class Package(object):
 
     def get_headers(self):
         if self.metadata_file_type() == "CSV" and isinstance(self.metadata, list):
-            if len(self.metadata) > 1:
-                print("(!) for CSV, filepaths.yaml > metadata must be one item list")
+            if len(self.metadata) != 1:
+                print("(!) for CSV, filepaths.yaml > metadata for CSV must be one-item list")
                 exit()
-            else:
+            elif len(self.metadata) == 1:
                 with open(self.metadata[0], "r", encoding="utf-8-sig") as csvf:
                     reader = csv.reader(csvf)
                     headers = next(reader) # type should == list
                     return headers
+            else:
+                print("(!) ERROR getting headers for CSV metadata")
         elif self.metadata_file_type() == "Excel" and isinstance(self.metadata, list):
-            if len(self.metadata) <= 1:
-                print("(!) filenames.yaml > metadata must be two-item list with filepath, sheet name")
+            if len(self.metadata) < 1 or len(self.metadata) > 2:
+                print("(!) filenames.yaml > metadata for Excel must be one- or two-item list...")
+                print("...with filepath, optionally sheet name (if no sheet name first sheet checked)")
                 exit()
+            elif len(self.metadata) == 1:
+                md = pd.read_excel(self.metadata[0])
+                headers = md.columns.to_list() # type should == list
+                return headers
             elif len(self.metadata) == 2:
                 md = pd.read_excel(self.metadata[0], sheet_name=self.metadata[1])
-                # NOTE ACK this changes re structure req'd for filepaths.yaml
-                # (??) ADD CHECK HERE FOR SECOND LIST ITEM? and if not, use default "Sheet1"??
                 headers = md.columns.to_list() # type should == list
                 return headers
             else:
-                print("(!) this was most unexpected")
+                print("(!) ERROR getting headers for Excel metadata")
                 exit()
         else:
-            print("(!) filepaths.yaml > metadata must be one- or two-item list")
+            print("(!) ERROR getting headers for metadata")
             exit()
 
     def print_headers(self):
