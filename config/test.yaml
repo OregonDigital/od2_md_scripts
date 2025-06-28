@@ -1,10 +1,5 @@
-dmrec:
-- string: ''
-- regex: ^$ # will use default but testing regex out for empty string
-file:
-- method:
-  - check_filenames_assets
-  which: item
+dmrec: ~
+file: ~
 title:
 - regex: '^Complex Object: .*$'
   which: complex
