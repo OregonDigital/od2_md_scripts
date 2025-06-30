@@ -1,4 +1,4 @@
-import yaml, os, json, csv
+import yaml, os, json, re
 import pandas as pd
 
 class Package(object):
@@ -54,21 +54,21 @@ class Package(object):
         elif self.metadata[0].split('.')[-1] == "csv":
             return "CSV"
         else:
-            return "(!) unknown metadata file type"
+            return "(!!) unknown metadata file type"
         
     def get_dataframe(self):
         if self.metadata_file_type() == "CSV" and isinstance(self.metadata, list):
             if len(self.metadata) != 1:
-                print("(!) for CSV, filepaths.yaml > metadata for CSV must be one-item list")
+                print("(!!) for CSV, filepaths.yaml > metadata for CSV must be one-item list")
                 exit()
             elif len(self.metadata) == 1:
                 dataframe = pd.read_csv(self.metadata[0])
                 return dataframe
             else:
-                print("(!) ERROR get_dataframe for CSV metadata")
+                print("(!!) ERROR get_dataframe for CSV metadata")
         elif self.metadata_file_type() == "Excel" and isinstance(self.metadata, list):
             if len(self.metadata) < 1 or len(self.metadata) > 2:
-                print("(!) filenames.yaml > metadata for Excel must be one- or two-item list...")
+                print("(!!) filenames.yaml > metadata for Excel must be one- or two-item list...")
                 print("...with filepath, optionally sheet name (if no sheet name first sheet checked)")
                 exit()
             elif len(self.metadata) == 1:
@@ -78,10 +78,10 @@ class Package(object):
                 dataframe = pd.read_excel(self.metadata[0], sheet_name=self.metadata[1])
                 return dataframe
             else:
-                print("(!) ERROR get_dataframe for Excel metadata")
+                print("(!!) ERROR get_dataframe for Excel metadata")
                 exit()
         else:
-            print("(!) ERROR get_dataframe")
+            print("(!!) ERROR get_dataframe")
             exit()
 
     def get_headers(self):
@@ -116,33 +116,33 @@ class Package(object):
         print("\n")
         return check
 
-    def report_validation_error(self):
-        pass 
-        # include index (row #) + header in error reporting
-        # format (!!!) ERROR message
-
-    # do I need func config error?
-
-    def no_check_for_header(self, header):
-        print(f"(*i*) NO CHECK CONFIGURED for header {header}")
-
     def perform_string_check(self, validation_data, instance_data, index):
         # print(f"""instance_data: type = {type(instance_data)}, {instance_data}, as string?
         #       {str(instance_data)}""") # check
         # OK I think I'm just going to have to convert pandas nan to '' manually in the check funcs...
+        # duplicative codeblock 20250630C
         if pd.notna(instance_data):
             pass
         else:
             instance_data = ''
-            print(f"after conversion instance data = '{instance_data}'")
+        # duplicative codeblock 20250630C
+        if validation_data == instance_data:
+            pass
+        else:
+            print(f"(!!) ERROR row {index + 2}: '{instance_data}' does not match string '{validation_data}'")
 
     def perform_regex_check(self, validation_data, instance_data, index):
         # see note above re: converting pandas nan
+        # duplicative codeblock 20250630C
         if pd.notna(instance_data):
             pass
         else:
             instance_data = ''
-            print(f"after conversion instance data = '{instance_data}'")
+        # duplicative codeblock 20250630C
+        if self.test == True:
+            pass # I could output extra info on test
+        if not re.match(validation_data, instance_data):
+            print(f"(!!) ERROR row {index + 2}: '{instance_data}' does not match {str(validation_data)}")
 
     def get_method(self):
         print("blarf method checks not implemented yet")
@@ -153,99 +153,117 @@ class Package(object):
     def identifier_file_match(self):
         pass
 
-    def select_data_for_checks(self, header, instruction, checktype):
+    def select_data_for_checks(self, header, which, checktype, validation_data):
         # print(f"check {header} using {instruction}") # check
         df = self.get_dataframe()
-        try:
-            instruction.get('which')
-            # print(f"for header {header}, perform checktype {checktype} on {instruction['which']} rows") # check
-            if instruction['which'] == 'complex':
-                # print(f"checking complex object rows for header {header}:") # check
+        if which == 'all':
+            # duplicative codeblock 20250630B
+            if checktype == 'string':
+                for index, row in df.iterrows():
+                    self.perform_string_check(validation_data, row[header], index)
+            elif checktype == 'regex':
+                p = re.compile(r"{}".format(validation_data))
+                for index, row in df.iterrows():
+                    self.perform_regex_check(p, row[header], index)
+            elif checktype == 'method':
+                pass # to do
+            else:
+                print("(!!) something wrong with the checktype passed to select_data_for_checks")
+            # end duplicative codeblock 20250630B
+        elif which == 'complex':
+            # duplicative codeblock 20250630B
+            if checktype == 'string':
                 for index, row in df.iterrows():
                     if row['format'] == 'https://w3id.org/spar/mediatype/application/xml':
-                        # print(index + 2) # check
-                        # duplicative codeblock 20250630
-                        if checktype == 'string':
-                            self.perform_string_check(instruction['string'], row[header], index)
-                        elif checktype == 'regex':
-                            self.perform_regex_check(instruction['regex'], row[header], index)
-                        elif checktype == 'method':
-                            self.get_method()
-                        else:
-                            print("(!!!) something wrong with the checktype passed to select_data_for_checks")
-                        # end duplicative codeblock 20250630
+                        self.perform_string_check(validation_data, row[header], index)
                     else:
                         pass
-            elif instruction['which'] == 'item':
-                # print(f"checking complex-object item rows for header {header}:") # check
+            elif checktype == 'regex':
+                p = re.compile(r"{}".format(validation_data))
                 for index, row in df.iterrows():
-                    if row['format'] != 'https://w3id.org/spar/mediatype/application/xml':
-                        # print(index + 2) # check
-                        # duplicative codeblock 20250630
-                        if checktype == 'string':
-                            self.perform_string_check(instruction['string'], row[header], index)
-                        elif checktype == 'regex':
-                            self.perform_regex_check(instruction['regex'], row[header], index)
-                        elif checktype == 'method':
-                            self.get_method()
-                        else:
-                            print("(!!!) something wrong with the checktype passed to select_data_for_checks")
-                        # end duplicative codeblock 20250630
+                    if row['format'] == 'https://w3id.org/spar/mediatype/application/xml':
+                        self.perform_regex_check(p, row[header], index)
                     else:
                         pass
+            elif checktype == 'method':
+                pass # to do
             else:
-                print(f"(!!!) ERROR unknown 'which' in instruction {instruction}")
-        except:
-            # print(f"for header {header}, perform checktype {checktype} on all rows") # check
-            # print(f"checking all rows for header {header}:") # check
-            for index, row in df.iterrows():
-                # print(index + 2) # check 
-                # duplicative codeblock 20250630
-                if checktype == 'string':
-                    self.perform_string_check(instruction['string'], row[header], index)
-                elif checktype == 'regex':
-                    self.perform_regex_check(instruction['regex'], row[header], index)
-                elif checktype == 'method':
-                    self.get_method()
-                else:
-                    print("(!!!) something wrong with the checktype passed to select_data_for_checks")
-                # end duplicative codeblock 20250630
+                print("(!!) ERROR arg checktype passed to select_data_for_checks")
+            # duplicative codeblock 20250630B
+        elif which == 'item':
+            # duplicative codeblock 20250630B
+            if checktype == 'string':
+                for index, row in df.iterrows():
+                    if row.get('format') == None or row['format'] != 'https://w3id.org/spar/mediatype/application/xml':
+                        # to do testing needed for this ^^^ logic
+                        self.perform_string_check(validation_data, row[header], index)
+            elif checktype == 'regex':
+                p = re.compile(r"{}".format(validation_data))
+                for index, row in df.iterrows():
+                    if row.get('format') == None or row['format'] != 'https://w3id.org/spar/mediatype/application/xml':
+                        self.perform_regex_check(p, row[header], index)
+            elif checktype == 'method':
+                pass # to do
+            else:
+                print("(!!) ERROR arg checktype passed to select_data_for_checks")
+            # duplicative codeblock 20250630B
+        else:
+            print("(!!) ERROR arg which passed to select_data_for_checks")
 
-    def get_header_instruction(self):
+    def get_headers_instructions(self):
         for header in self.headers_config:
             # print(header) # check
-            if self.headers_config[header] == None:
-                # print(self.default_config[header]) # check
-                try:
-                    self.default_config[header]
-                    if self.default_config[header] != None:
-                        print(f">>> check(s) for header '{header}' from default config:")
-                        for instruction in self.default_config[header]:
-                            if instruction.get('string'):
-                                checktype = 'string'
-                            elif instruction.get('regex'):
-                                checktype = 'regex'
-                            elif instruction.get('method'):
-                                checktype = 'method'
-                            else:
-                                print(f"(!!!) ERROR unknown check type in instruction {instruction}")
-                            # print(instruction) # check
-                            self.select_data_for_checks(header, instruction, checktype)
-                    else:
-                        self.no_check_for_header(header)
-                except:
-                    self.no_check_for_header(header)
-            else:
-                # print(self.headers_config[header]) # check
-                print(f">>> check(s) for header {header} from headers config:")
+            if self.headers_config[header] != None:
+                print(f">>> check(s) for header '{header}' from headers config")
+                # to do -- add enumeration of specific checks
                 for instruction in self.headers_config[header]:
+                    # duplicative codeblock 20250630A
+                    args = None # method check to do
                     if instruction.get('string'):
                         checktype = 'string'
+                        validation_data = instruction['string']
+                        which = instruction['which']
                     elif instruction.get('regex'):
                         checktype = 'regex'
+                        validation_data = instruction['regex']
+                        which = instruction['which']
                     elif instruction.get('method'):
                         checktype = 'method'
+                        validation_data = instruction['method']
+                        args = instruction['args'] # to do
+                        which = instruction['which']
                     else:
-                        print(f"(!!!) ERROR unknown check type in instruction {instruction}")
-                    # print(instruction) # check
-                    self.select_data_for_checks(header, instruction, checktype)
+                        print(f"(!!) ERROR unknown check type in header '{header}' instruction {instruction}")
+                    print(f">>> >>> {checktype} check for header '{header}' ({which})")
+                    self.select_data_for_checks(header, which, checktype, validation_data)
+                    # duplicative codeblock 20250630A
+            elif self.headers_config[header] == None:
+                try:
+                    for instruction in self.default_config[header]:
+                        print(f">>> check(s) for header '{header}' from default config")
+                        # duplicative codeblock 20250630A
+                        args = None # method check to do
+                        if instruction.get('string'):
+                            checktype = 'string'
+                            validation_data = instruction['string']
+                            which = instruction['which']
+                        elif instruction.get('regex'):
+                            checktype = 'regex'
+                            validation_data = instruction['regex']
+                            which = instruction['which']
+                        elif instruction.get('method'):
+                            checktype = 'method'
+                            validation_data = instruction['method']
+                            args = instruction['args'] # method check to do
+                            which = instruction['which']
+                        else:
+                            print(f"(!!) ERROR for instruction\n{instruction}")
+                        if which != None:
+                            for_type = f" ({which})"
+                        else:
+                            for_type = " (all)"
+                        print(f">>> >>> {checktype} check for header '{header}' ({which})")
+                        self.select_data_for_checks(header, which, checktype, validation_data)
+                        # duplicative codeblock 20250630A
+                except:
+                    print(f"ERROR\n{json.dumps(self.default_config[header], indent=4)}")
