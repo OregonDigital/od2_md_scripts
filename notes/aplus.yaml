@@ -1,5 +1,5 @@
 dmrec:
-- string: ''
+- string: '' # seemed that this wasn't parsed to JSON!?!
 - regex: ^$
 file:
 - method:
