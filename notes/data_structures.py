@@ -32,7 +32,7 @@ structure_aplus = {
         {"method": "check_filenames_assets",
         # list is useless now but will allow for 
         # passing args to methods after method name
-        "args": "",
+        "args": [],
         # this ^^^ should be optional
         "which": "item"
         # this ^^^ should be optional 

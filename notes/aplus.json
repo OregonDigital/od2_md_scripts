@@ -10,7 +10,7 @@
     "file": [
         {
             "method": "check_filenames_assets",
-            "args": "",
+            "args": [],
             "which": "item"
         }
     ],

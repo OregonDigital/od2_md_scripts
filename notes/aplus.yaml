@@ -2,7 +2,7 @@ dmrec:
 - string: ''
 - regex: ^$
 file:
-- args: ''
+- args: []
   method: check_filenames_assets
   which: item
 title:
