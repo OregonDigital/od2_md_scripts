@@ -1,10 +1,10 @@
 dmrec: ~
 file: ~
 title:
-- regex: '^Complex Object: .*$'
-  which: complex
-- regex: '^Complex Object Item: .*$'
-  which: item
+  - regex: '^Complex Object: .*$'
+    which: complex
+  - regex: '^Complex Object Item: .*$'
+    which: item
 format:
   - string: https://w3id.org/spar/mediatype/application/xml
     which: complex
