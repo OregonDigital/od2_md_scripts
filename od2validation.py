@@ -38,7 +38,7 @@ class Package(object):
             default = yaml.safe_load(yf)
         with open(f"config/{headers_config}.yaml", "r") as yf:
             headers = yaml.safe_load(yf)
-        return [default, headers]
+        return [default, headers] # any different/better to use tuple here?
 
     def print_config(self):
         pretty = json.dumps(self.default_config, indent=4)
@@ -116,81 +116,136 @@ class Package(object):
         print("\n")
         return check
 
-    def validation_error(self):
+    def report_validation_error(self):
         pass 
         # include index (row #) + header in error reporting
         # format (!!!) ERROR message
 
     # do I need func config error?
 
-    def check_string(self, header, source, checkdata, metadata):
-        print(f">>> string check for field {header}, from {source}")
-        if self.test == True:
-            print(f"- string to check against: '{checkdata['string']}'")
-            try:
-                print(f"- check {checkdata['which']}")
-            except:
-                pass
-            print(f"- metadata arg has type {type(metadata)}")
-        print("\n")
+    def no_check_for_header(self, header):
+        print(f"(*i*) NO CHECK CONFIGURED for header {header}")
+
+    def perform_string_check(self, validation_data, instance_data, index):
+        # print(f"""instance_data: type = {type(instance_data)}, {instance_data}, as string?
+        #       {str(instance_data)}""") # check
+        # OK I think I'm just going to have to convert pandas nan to '' manually in the check funcs...
+        if pd.notna(instance_data):
+            pass
+        else:
+            instance_data = ''
+            print(f"after conversion instance data = '{instance_data}'")
+
+    def perform_regex_check(self, validation_data, instance_data, index):
+        # see note above re: converting pandas nan
+        if pd.notna(instance_data):
+            pass
+        else:
+            instance_data = ''
+            print(f"after conversion instance data = '{instance_data}'")
+
+    def get_method(self):
+        print("blarf method checks not implemented yet")
+
+    def check_filenames_assets(self):
         pass
 
-    def check_regex(self, header, source, checkdata, metadata):
-        print(f">>> regex check for field {header}, from {source}")
-        if self.test == True:
-            print(f"- regex to check against: '{checkdata['regex']}'")
-            try:
-                print(f"- check {checkdata['which']}")
-            except:
-                pass
-            print(f"- metadata arg has type {type(metadata)}")
-        print("\n")
+    def identifier_file_match(self):
         pass
 
-    def get_method(self, header, source, checkdata, metadata):
-        print(f">>> method check for field {header}, from {source}")
-        if self.test == True:
-            print(f"- method to use: {checkdata['method'][0]}")
-            try:
-                print(f"- check {checkdata['which']}")
-            except:
-                pass
-        print("\n")
-        pass
-
-    def check_dataframe(self):
-        metadata = self.get_dataframe()
-        for header in self.headers_config:
-            if self.headers_config[header] != None:
-                checklist = {
-                "header": header,
-                "source": "headers YAML config file",
-                "checkdata": self.headers_config[header]
-            }
-            elif self.headers_config[header] == None and self.default_config[header] != None:
-                checklist = {
-                    "header": header,
-                    "source": "default YAML config file",
-                    "checkdata": self.default_config[header]
-                }
-            else:
-                checklist = {
-                    "header": header,
-                    "source": None,
-                    "checkdata": None
-                }
-            if checklist["source"] == None and checklist["checkdata"] == None:
-                print(f">>> (*i*) NO CHECK configured for header '{checklist['header']}'")
-            else:
-                for check in checklist["checkdata"]:
-                    if check.get("string"):
-                        self.check_string(checklist["header"], checklist["source"], 
-                                          check, metadata[checklist["header"]])
-                    elif check.get("regex"):
-                        self.check_regex(checklist["header"], checklist["source"], 
-                                         check, metadata[checklist["header"]])
-                    elif check.get("method"):
-                        self.get_method(checklist["header"], checklist["source"], 
-                                        check, metadata[checklist["header"]])
+    def select_data_for_checks(self, header, instruction, checktype):
+        # print(f"check {header} using {instruction}") # check
+        df = self.get_dataframe()
+        try:
+            instruction.get('which')
+            # print(f"for header {header}, perform checktype {checktype} on {instruction['which']} rows") # check
+            if instruction['which'] == 'complex':
+                # print(f"checking complex object rows for header {header}:") # check
+                for index, row in df.iterrows():
+                    if row['format'] == 'https://w3id.org/spar/mediatype/application/xml':
+                        # print(index + 2) # check
+                        # duplicative codeblock 20250630
+                        if checktype == 'string':
+                            self.perform_string_check(instruction['string'], row[header], index)
+                        elif checktype == 'regex':
+                            self.perform_regex_check(instruction['regex'], row[header], index)
+                        elif checktype == 'method':
+                            self.get_method()
+                        else:
+                            print("(!!!) something wrong with the checktype passed to select_data_for_checks")
+                        # end duplicative codeblock 20250630
                     else:
                         pass
+            elif instruction['which'] == 'item':
+                # print(f"checking complex-object item rows for header {header}:") # check
+                for index, row in df.iterrows():
+                    if row['format'] != 'https://w3id.org/spar/mediatype/application/xml':
+                        # print(index + 2) # check
+                        # duplicative codeblock 20250630
+                        if checktype == 'string':
+                            self.perform_string_check(instruction['string'], row[header], index)
+                        elif checktype == 'regex':
+                            self.perform_regex_check(instruction['regex'], row[header], index)
+                        elif checktype == 'method':
+                            self.get_method()
+                        else:
+                            print("(!!!) something wrong with the checktype passed to select_data_for_checks")
+                        # end duplicative codeblock 20250630
+                    else:
+                        pass
+            else:
+                print(f"(!!!) ERROR unknown 'which' in instruction {instruction}")
+        except:
+            # print(f"for header {header}, perform checktype {checktype} on all rows") # check
+            # print(f"checking all rows for header {header}:") # check
+            for index, row in df.iterrows():
+                # print(index + 2) # check 
+                # duplicative codeblock 20250630
+                if checktype == 'string':
+                    self.perform_string_check(instruction['string'], row[header], index)
+                elif checktype == 'regex':
+                    self.perform_regex_check(instruction['regex'], row[header], index)
+                elif checktype == 'method':
+                    self.get_method()
+                else:
+                    print("(!!!) something wrong with the checktype passed to select_data_for_checks")
+                # end duplicative codeblock 20250630
+
+    def get_header_instruction(self):
+        for header in self.headers_config:
+            # print(header) # check
+            if self.headers_config[header] == None:
+                # print(self.default_config[header]) # check
+                try:
+                    self.default_config[header]
+                    if self.default_config[header] != None:
+                        print(f">>> check(s) for header '{header}' from default config:")
+                        for instruction in self.default_config[header]:
+                            if instruction.get('string'):
+                                checktype = 'string'
+                            elif instruction.get('regex'):
+                                checktype = 'regex'
+                            elif instruction.get('method'):
+                                checktype = 'method'
+                            else:
+                                print(f"(!!!) ERROR unknown check type in instruction {instruction}")
+                            # print(instruction) # check
+                            self.select_data_for_checks(header, instruction, checktype)
+                    else:
+                        self.no_check_for_header(header)
+                except:
+                    self.no_check_for_header(header)
+            else:
+                # print(self.headers_config[header]) # check
+                print(f">>> check(s) for header {header} from headers config:")
+                for instruction in self.headers_config[header]:
+                    if instruction.get('string'):
+                        checktype = 'string'
+                    elif instruction.get('regex'):
+                        checktype = 'regex'
+                    elif instruction.get('method'):
+                        checktype = 'method'
+                    else:
+                        print(f"(!!!) ERROR unknown check type in instruction {instruction}")
+                    # print(instruction) # check
+                    self.select_data_for_checks(header, instruction, checktype)
