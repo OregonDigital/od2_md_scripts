@@ -1,9 +1,9 @@
 dmrec:
-- string: '' # seemed that this wasn't parsed to JSON!?!
+- string: ''
 - regex: ^$
 file:
-- method:
-  - check_filenames_assets
+- args: ''
+  method: check_filenames_assets
   which: item
 title:
 - regex: '^Complex Object: .*$'

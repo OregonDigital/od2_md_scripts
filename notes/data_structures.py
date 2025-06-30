@@ -29,10 +29,14 @@ structure_aplus = {
         {"regex": "^$"}
     ],
     "file": [
-        {"method": ["check_filenames_assets"],
+        {"method": "check_filenames_assets",
         # list is useless now but will allow for 
         # passing args to methods after method name
-        "which": "item"}
+        "args": "",
+        # this ^^^ should be optional
+        "which": "item"
+        # this ^^^ should be optional 
+        }
     ],
     "title": [
         {"regex": "^Complex Object: .*$",
