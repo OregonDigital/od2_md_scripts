@@ -1,5 +1,5 @@
 dmrec:
 - regex: ^$
 file:
-- method:
-  - check_filenames_assets
+- method: check_filenames_assets
+  args: []
