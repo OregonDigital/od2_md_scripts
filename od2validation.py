@@ -113,8 +113,8 @@ class Package(object):
             print("* update metadata headers and/or headers_config and retry")
         else:
             print("* headers_config = metadata headers")
-        print("\n")
         return check
+        print("\n")
 
     def perform_string_check(self, validation_data, instance_data, index):
         # print(f"""instance_data: type = {type(instance_data)}, {instance_data}, as string?
@@ -129,7 +129,7 @@ class Package(object):
         if validation_data == instance_data:
             pass
         else:
-            print(f"(!!) ERROR row {index + 2}: '{instance_data}' does not match string '{validation_data}'")
+            print(f"(!!) ERROR row {index + 2}: '{instance_data}' != string '{validation_data}'")
 
     def perform_regex_check(self, validation_data, instance_data, index):
         # see note above re: converting pandas nan
@@ -139,30 +139,26 @@ class Package(object):
         else:
             instance_data = ''
         # duplicative codeblock 20250630C
-        if self.test == True:
-            pass # I could output extra info on test
         if not re.match(validation_data, instance_data):
-            print(f"(!!) ERROR row {index + 2}: '{instance_data}' does not match {str(validation_data)}")
+            print(f"(!!) ERROR row {index + 2}: '{instance_data}' != {str(validation_data)}")
 
     def get_method(self, method_name, args):
-        print(f"method name = '{method_name}'") # check
-        print(f"args = {args}")
+        # see methods at bottom
         method_mapping = {
-            'check_filenames_assets': self.check_filenames_assets(),
-            'identifier_file_match': self.identifier_file_match()
+            'check_filenames_assets': self.check_filenames_assets,
+            'identifier_file_match': self.identifier_file_match
         }
-        method = method_mapping.get(method_name)
-        if method:
-            return method(args)
-        else:
-            print("get_method() says blarrrfffff")
-
-    def check_filenames_assets(self, args):
-        print("method check_filenames_assets")
-        print(f"args = {args}")
+        try:
+            method = method_mapping.get(method_name)
+            if method:
+                return method(args)
+            else:
+                print("get_method() says blarrrfffff")
+        except Exception as e:
+            print(f"(!!) ERROR get_method: {e}")
 
     def identifier_file_match(self, args):
-        print("method identifier_file_match")
+        print("using method identifier_file_match")
         print(f"args = {args}")
 
     def select_data_for_checks(self, header, which, checktype, validation_data, args):
@@ -197,8 +193,6 @@ class Package(object):
                         self.perform_regex_check(p, row[header], index)
                     else:
                         pass
-            elif checktype == 'method':
-                self.get_method(validation_data, args)
             else:
                 print("(!!) ERROR arg checktype passed to select_data_for_checks")
             # duplicative codeblock 20250630B
@@ -214,11 +208,11 @@ class Package(object):
                 for index, row in df.iterrows():
                     if row.get('format') == None or row['format'] != 'https://w3id.org/spar/mediatype/application/xml':
                         self.perform_regex_check(p, row[header], index)
-            elif checktype == 'method':
-                self.get_method(validation_data, args)
             else:
                 print("(!!) ERROR arg checktype passed to select_data_for_checks")
             # duplicative codeblock 20250630B
+        elif which == 'na' and checktype == 'method':
+            self.get_method(validation_data, args)
         else:
             print("(!!) ERROR arg which passed to select_data_for_checks")
 
@@ -230,48 +224,69 @@ class Package(object):
                 # to do -- add enumeration of specific checks
                 for instruction in self.headers_config[header]:
                     # duplicative codeblock 20250630A
-                    args = None # method check to do
                     if instruction.get('string'):
-                        which = instruction['which']
-                        checktype = 'string'
-                        validation_data = instruction['string']
+                        print(f">>> >>> string check for header '{header}' ({instruction['which']})")
+                        self.select_data_for_checks(header, instruction['which'], 'string',
+                                                    instruction['string'], None)
                     elif instruction.get('regex'):
-                        which = instruction['which']
-                        checktype = 'regex'
-                        validation_data = instruction['regex']
+                        print(f">>> >>> regex check for header '{header}' ({instruction['which']})")
+                        self.select_data_for_checks(header, instruction['which'], 'regex',
+                                                    instruction['regex'], None)
                     elif instruction.get('method'):
-                        which = instruction['which']
-                        checktype = 'method'
-                        validation_data = instruction['method']
-                        args = instruction['args'] # to do
+                        print(f">>> >>> method check ({instruction['method']}) for header '{header}'")
+                        self.select_data_for_checks(header, 'na', 'method', instruction['method'], 
+                                                    instruction['args'])
                     else:
                         print(f"(!!) ERROR unknown check type in header '{header}' instruction {instruction}")
-                    print(f">>> >>> {checktype} check for header '{header}' ({which})")
-                    self.select_data_for_checks(header, which, checktype, validation_data, args)
                     # duplicative codeblock 20250630A
             elif self.headers_config[header] == None:
                 try:
                     for instruction in self.default_config[header]:
                         print(f">>> check(s) for header '{header}' from default config")
                         # duplicative codeblock 20250630A
-                        args = None # method check to do
                         if instruction.get('string'):
-                            which = instruction['which']
-                            checktype = 'string'
-                            validation_data = instruction['string']
+                            print(f">>> >>> string check for header '{header}' ({instruction['which']})")
+                            self.select_data_for_checks(header, instruction['which'], 'string', 
+                                                        instruction['string'], None)
                         elif instruction.get('regex'):
-                            which = instruction['which']
-                            checktype = 'regex'
-                            validation_data = instruction['regex']
+                            print(f">>> >>> regex check for header '{header}' ({instruction['which']})")
+                            self.select_data_for_checks(header, instruction['which'], 'regex', 
+                                                        instruction['regex'], None)
                         elif instruction.get('method'):
-                            which = instruction['which']
-                            checktype = 'method'
-                            validation_data = instruction['method']
-                            args = instruction['args'] # method check to do
+                            print(f">>> >>> method check ({instruction['method']}) for header '{header}'")
+                            self.select_data_for_checks(header, 'na', 'method', instruction['method'], 
+                                                        instruction['args'])
                         else:
                             print(f"(!!) ERROR for instruction\n{instruction}")
-                        print(f">>> >>> {checktype} check for header '{header}' ({which})")
-                        self.select_data_for_checks(header, which, checktype, validation_data, args)
                         # duplicative codeblock 20250630A
                 except:
                     print(f"ERROR\n{json.dumps(self.default_config[header], indent=4)}")
+
+    # methods for get_method
+    # duplicative code here too in that I create and use dataframe separately for methods
+
+    def check_filenames_assets(self, args):
+        series = self.get_dataframe()[args[0]]
+        filenames = []
+        for value in series:
+            if pd.notna(value):
+                split = value.split('|')
+                filenames.extend(split)
+        # print(filenames) # check
+        if set(filenames) != set(self.assets):
+            print("(!!) ERROR set(filenames) != set(self.assets)")
+            for filename in filenames:
+                if filename not in self.assets:
+                    print(f"(!!) {filename} not in files/ directory")
+            for asset in self.assets:
+                if asset not in filenames:
+                    print(f"(!!) {asset} not in metadata filenames")
+        else:
+            pass
+
+    def identifier_file_match(self, args):
+        # (*i) NOTE this method only works with one filename, one identifier
+        dataframe = self.get_dataframe()
+        for index, row in dataframe.iterrows():
+            if row['file'].replace(args[0], '') != row['identifier']:
+                print(f"(!!) ERROR row {index + 2}: id {row['identifier']} != {row['filename']} - {args[0]}")
