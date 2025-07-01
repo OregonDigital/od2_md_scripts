@@ -3,4 +3,5 @@ dmrec:
     which: all
 file:
   - method: check_filenames_assets
-    args: []
+    args: ['file']
+subject: ~ # to do
