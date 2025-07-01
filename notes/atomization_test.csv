@@ -1,0 +1,4 @@
+words,numbers,URIs
+hello|hi|wowza,1|2|3,http://id.loc.gov/authorities/subjects/sh85092415|http://id.loc.gov/authorities/subjects/sh85124500|http://id.loc.gov/authorities/subjects/sh85081118
+hello | hi| wowza | oh?,1 |2 | 3 |4,http://id.loc.gov/authorities/subjects/sh85092415 | http://id.loc.gov/authorities/subjects/sh85124500| http://id.loc.gov/authorities/subjects/sh85081118 | http://id.loc.gov/authorities/subjects/sh85146930
+hi there|how are you?|isn’t this lovely?,1 2|34 5|6   7,http://id.loc.gov/authorities/subjects/sh2012003393
