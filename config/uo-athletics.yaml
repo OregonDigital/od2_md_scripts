@@ -4,6 +4,7 @@ file:
     args: ['file']
   - method: identifier_file_match
     args: ['.tif']
+    # no which on method!
 title: ~
 description: ~
 identifier:
