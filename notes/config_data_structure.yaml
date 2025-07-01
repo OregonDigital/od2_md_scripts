@@ -1,0 +1,13 @@
+dmrec:
+- string: ''
+  which: all
+- regex: ^$
+  which: all
+file:
+- args: []
+  method: check_filenames_assets
+title:
+- regex: '^Complex Object: .*$'
+  which: complex
+- regex: '^Complex Object Item: .*$'
+  which: item

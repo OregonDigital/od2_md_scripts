@@ -4,4 +4,3 @@ dmrec:
 file:
   - method: check_filenames_assets
     args: []
-    which: all

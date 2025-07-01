@@ -1,6 +1,0 @@
-dmrec:
-- string: ''
-- regex: ^$
-file:
-- method:
-  - check_filenames_assets
