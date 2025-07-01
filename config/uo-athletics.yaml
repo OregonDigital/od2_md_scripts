@@ -1,84 +1,63 @@
-dmrec:
-  1:
-  - string
-  - ""
-file: 
-  1:
-  - method
-  - check_filenames_assets
+dmrec: ~
+file:
+  - method: check_filenames_assets
+    args: ['file']
+  - method: identifier_file_match
+    args: ['.tif']
 title: ~
 description: ~
 identifier:
-  1:
-  - regex
-  - ^PH395_UP\S*$ # any non-whitespace char too lax?
-local_collection_name: 
-  1:
-  - regex
-  - ^http:\/\/opaquenamespace.org\/ns\/localCollectionName\/UniversityPhotosPaulHarveyIV$
+  - regex: ^PH395_UP\S*$ # any non-whitespace char too lax?
+    which: all
+local_collection_name:
+  - string: http://opaquenamespace.org/ns/localCollectionName/UniversityPhotosPaulHarveyIV
+    which: all
 local_collection_id:
-  1:
-  - string
-  - PH395 UP
+  - string: PH395 UP
+    which: all
 photographer:
-  1:
-  - regex
-  - ^http:\/\/opaquenamespace.org\/ns\/creator\/HarveyPaulWIV$
+  - string: http://opaquenamespace.org/ns/creator/HarveyPaulWIV
+    which: all
 date:
-  1:
-  - regex
-  - ^202[2-9]{1}-\d{2}-\d{2}$
-subject: ~ # use regex? see bulkrax CSV doc for IRI constraints
-location:
-  1:
-  - regex
-  - ^https:\/\/sws.geonames.org/\S*$
+  - regex: ^202[2-9]{1}-\d{2}-\d{2}$\
+    which: all
+subject: ~ # to do in default
+location: 
+  - regex: ^https:\/\/sws.geonames.org/\S*$
+    which: all
 resource_type:
-  1:
-  - regex
-  - ^http:\/\/purl.org\/dc\/dcmitype\/Image$
+  - string: http://purl.org/dc/dcmitype/Image
+    which: all
 format:
-  1:
-  - regex
-  - ^https:\/\/w3id.org\/spar\/mediatype\/image\/tiff$
-rights_statement: 
-  1:
-  - string # use regex instead? why am I using regex above but string here?
-  - http://rightsstatements.org/vocab/InC/1.0/
+  - string: https://w3id.org/spar/mediatype/image/tiff
+    which: all
+rights_statement:
+  - string: http://rightsstatements.org/vocab/InC/1.0/
+    which: all
 license:
-  1:
-  - string
-  - http://creativecommons.org/licenses/by-nd/4.0/
-  # per !Bulkrax CSV Guidance Document URI should start http (not https)
+  - string: http://creativecommons.org/licenses/by-nd/4.0/
+    which: all
 rights_holder:
-  1:
-  - string
-  - Harvey, Paul W., IV
+  - string: Harvey, Paul W., IV
+    which: all
 parents:
-  1:
-  - string
-  - uo-athletics
-institution:
-  1:
-  - string
-  - http://id.loc.gov/authorities/names/n80126183
+  - string: uo-athletics
+    which: all
+institution: 
+  - string: http://id.loc.gov/authorities/names/n80126183
+    which: all
 model:
-  1:
-  - string
-  - Image # this could be regex to allow capitalized or no
+  - string: Image
+    which: all
 has_finding_aid:
-  1:
-  - string
-  - https://scua.uoregon.edu/repositories/2/resources/9512
+  - string: https://scua.uoregon.edu/repositories/2/resources/9512
+    which: all
 visibility:
-  1:
-  - string
-  - open
+  - string: open
+    which: all
 repository:
-  1:
-  - string
-  - http://id.loc.gov/authorities/names/no2003116678
+  - string: http://id.loc.gov/authorities/names/no2003116678
+    which: all
 full_size_download_allowed:
-  1:
-  - string
-  - 0
+  - string: 0
+    which: all
