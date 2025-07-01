@@ -144,16 +144,28 @@ class Package(object):
         if not re.match(validation_data, instance_data):
             print(f"(!!) ERROR row {index + 2}: '{instance_data}' does not match {str(validation_data)}")
 
-    def get_method(self):
-        print("blarf method checks not implemented yet")
+    def get_method(self, method_name, args):
+        print(f"method name = '{method_name}'") # check
+        print(f"args = {args}")
+        method_mapping = {
+            'check_filenames_assets': self.check_filenames_assets(),
+            'identifier_file_match': self.identifier_file_match()
+        }
+        method = method_mapping.get(method_name)
+        if method:
+            return method(args)
+        else:
+            print("get_method() says blarrrfffff")
 
-    def check_filenames_assets(self):
-        pass
+    def check_filenames_assets(self, args):
+        print("method check_filenames_assets")
+        print(f"args = {args}")
 
-    def identifier_file_match(self):
-        pass
+    def identifier_file_match(self, args):
+        print("method identifier_file_match")
+        print(f"args = {args}")
 
-    def select_data_for_checks(self, header, which, checktype, validation_data):
+    def select_data_for_checks(self, header, which, checktype, validation_data, args):
         # print(f"check {header} using {instruction}") # check
         df = self.get_dataframe()
         if which == 'all':
@@ -166,7 +178,7 @@ class Package(object):
                 for index, row in df.iterrows():
                     self.perform_regex_check(p, row[header], index)
             elif checktype == 'method':
-                pass # to do
+                self.get_method(validation_data, args)
             else:
                 print("(!!) something wrong with the checktype passed to select_data_for_checks")
             # end duplicative codeblock 20250630B
@@ -186,7 +198,7 @@ class Package(object):
                     else:
                         pass
             elif checktype == 'method':
-                pass # to do
+                self.get_method(validation_data, args)
             else:
                 print("(!!) ERROR arg checktype passed to select_data_for_checks")
             # duplicative codeblock 20250630B
@@ -203,7 +215,7 @@ class Package(object):
                     if row.get('format') == None or row['format'] != 'https://w3id.org/spar/mediatype/application/xml':
                         self.perform_regex_check(p, row[header], index)
             elif checktype == 'method':
-                pass # to do
+                self.get_method(validation_data, args)
             else:
                 print("(!!) ERROR arg checktype passed to select_data_for_checks")
             # duplicative codeblock 20250630B
@@ -220,22 +232,22 @@ class Package(object):
                     # duplicative codeblock 20250630A
                     args = None # method check to do
                     if instruction.get('string'):
+                        which = instruction['which']
                         checktype = 'string'
                         validation_data = instruction['string']
-                        which = instruction['which']
                     elif instruction.get('regex'):
+                        which = instruction['which']
                         checktype = 'regex'
                         validation_data = instruction['regex']
-                        which = instruction['which']
                     elif instruction.get('method'):
+                        which = instruction['which']
                         checktype = 'method'
                         validation_data = instruction['method']
                         args = instruction['args'] # to do
-                        which = instruction['which']
                     else:
                         print(f"(!!) ERROR unknown check type in header '{header}' instruction {instruction}")
                     print(f">>> >>> {checktype} check for header '{header}' ({which})")
-                    self.select_data_for_checks(header, which, checktype, validation_data)
+                    self.select_data_for_checks(header, which, checktype, validation_data, args)
                     # duplicative codeblock 20250630A
             elif self.headers_config[header] == None:
                 try:
@@ -244,26 +256,22 @@ class Package(object):
                         # duplicative codeblock 20250630A
                         args = None # method check to do
                         if instruction.get('string'):
+                            which = instruction['which']
                             checktype = 'string'
                             validation_data = instruction['string']
-                            which = instruction['which']
                         elif instruction.get('regex'):
+                            which = instruction['which']
                             checktype = 'regex'
                             validation_data = instruction['regex']
-                            which = instruction['which']
                         elif instruction.get('method'):
+                            which = instruction['which']
                             checktype = 'method'
                             validation_data = instruction['method']
                             args = instruction['args'] # method check to do
-                            which = instruction['which']
                         else:
                             print(f"(!!) ERROR for instruction\n{instruction}")
-                        if which != None:
-                            for_type = f" ({which})"
-                        else:
-                            for_type = " (all)"
                         print(f">>> >>> {checktype} check for header '{header}' ({which})")
-                        self.select_data_for_checks(header, which, checktype, validation_data)
+                        self.select_data_for_checks(header, which, checktype, validation_data, args)
                         # duplicative codeblock 20250630A
                 except:
                     print(f"ERROR\n{json.dumps(self.default_config[header], indent=4)}")
