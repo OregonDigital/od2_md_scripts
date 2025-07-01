@@ -25,12 +25,12 @@ class Package(object):
                 return (paths['metadata'], paths['assets'],)
 
     def print_filepaths(self):
-        print(f">>> metadata file path\n{self.metadata[0]}")
+        print(f"*** metadata file path\n{self.metadata[0]}")
         try:
-            print(f">>> Excel sheet/tab name\n{self.metadata[1]}")
+            print(f"*** Excel sheet/tab name\n{self.metadata[1]}")
         except:
             pass
-        print(f">>> assets file path\n{self.filepaths()[1]}")
+        print(f"*** assets file path\n{self.filepaths()[1]}")
         print("\n")
 
     def get_config(self, headers_config):
@@ -42,10 +42,10 @@ class Package(object):
 
     def print_config(self):
         pretty = json.dumps(self.default_config, indent=4)
-        print(f">>> default_config (JSON)\n{pretty}")
+        print(f"*** default_config (JSON)\n{pretty}")
         pretty = json.dumps(self.headers_config, indent=4)
         print("\n")
-        print(f">>> headers_config (JSON)\n{pretty}")
+        print(f"*** headers_config (JSON)\n{pretty}")
         print("\n")
 
     def metadata_file_type(self):
@@ -89,14 +89,14 @@ class Package(object):
         return headers
 
     def print_headers(self):
-        print(">>> headers in metadata spreadsheet")
+        print("*** headers in metadata spreadsheet")
         for header in self.get_headers():
             print(header)
         print("\n")
 
     def check_headers(self):
         check = True
-        print(">>> checking headers configuration / headers in metadata")
+        print("*** checking headers configuration / headers in metadata")
         if set(self.headers_config) != set(self.get_headers()):
             check = False
             print("!!! headers_config != metadata headers")
@@ -126,7 +126,7 @@ class Package(object):
         else:
             instance_data = ''
         # duplicative codeblock 20250630C
-        if validation_data == instance_data:
+        if str(validation_data) == str(instance_data):
             pass
         else:
             print(f"(!!) ERROR row {index + 2}: '{instance_data}' != string '{validation_data}'")
@@ -220,47 +220,49 @@ class Package(object):
         for header in self.headers_config:
             # print(header) # check
             if self.headers_config[header] != None:
-                print(f">>> check(s) for header '{header}' from headers config")
-                # to do -- add enumeration of specific checks
+                print(f"*** check(s) for header '{header}' from headers config")
                 for instruction in self.headers_config[header]:
                     # duplicative codeblock 20250630A
                     if instruction.get('string'):
-                        print(f">>> >>> string check for header '{header}' ({instruction['which']})")
+                        print(f"*** *** string check for header '{header}' ({instruction['which']})")
                         self.select_data_for_checks(header, instruction['which'], 'string',
                                                     instruction['string'], None)
                     elif instruction.get('regex'):
-                        print(f">>> >>> regex check for header '{header}' ({instruction['which']})")
+                        print(f"*** *** regex check for header '{header}' ({instruction['which']})")
                         self.select_data_for_checks(header, instruction['which'], 'regex',
                                                     instruction['regex'], None)
                     elif instruction.get('method'):
-                        print(f">>> >>> method check ({instruction['method']}) for header '{header}'")
+                        print(f"*** *** method check ({instruction['method']}) for header '{header}'")
                         self.select_data_for_checks(header, 'na', 'method', instruction['method'], 
                                                     instruction['args'])
                     else:
-                        print(f"(!!) ERROR unknown check type in header '{header}' instruction {instruction}")
+                        print(f"(!!) ERROR unknown check type: headers_config '{header}' instruction {instruction}")
                     # duplicative codeblock 20250630A
             elif self.headers_config[header] == None:
                 try:
-                    for instruction in self.default_config[header]:
-                        print(f">>> check(s) for header '{header}' from default config")
+                    if self.headers_config[header] != None:
+                        for instruction in self.default_config[header]:
+                            print(f"*** check(s) for header '{header}' from default config")
+                            # duplicative codeblock 20250630A
+                            if instruction.get('string'):
+                                print(f"*** *** string check for header '{header}' ({instruction['which']})")
+                                self.select_data_for_checks(header, instruction['which'], 'string', 
+                                                            instruction['string'], None)
+                            elif instruction.get('regex'):
+                                print(f"*** *** regex check for header '{header}' ({instruction['which']})")
+                                self.select_data_for_checks(header, instruction['which'], 'regex', 
+                                                            instruction['regex'], None)
+                            elif instruction.get('method'):
+                                print(f"*** *** method check ({instruction['method']}) for header '{header}'")
+                                self.select_data_for_checks(header, 'na', 'method', instruction['method'], 
+                                                            instruction['args'])
+                            else:
+                                print(f"(!!) ERROR unknown check type: default_config '{header}' instruction {instruction}")
                         # duplicative codeblock 20250630A
-                        if instruction.get('string'):
-                            print(f">>> >>> string check for header '{header}' ({instruction['which']})")
-                            self.select_data_for_checks(header, instruction['which'], 'string', 
-                                                        instruction['string'], None)
-                        elif instruction.get('regex'):
-                            print(f">>> >>> regex check for header '{header}' ({instruction['which']})")
-                            self.select_data_for_checks(header, instruction['which'], 'regex', 
-                                                        instruction['regex'], None)
-                        elif instruction.get('method'):
-                            print(f">>> >>> method check ({instruction['method']}) for header '{header}'")
-                            self.select_data_for_checks(header, 'na', 'method', instruction['method'], 
-                                                        instruction['args'])
-                        else:
-                            print(f"(!!) ERROR for instruction\n{instruction}")
-                        # duplicative codeblock 20250630A
-                except:
-                    print(f"ERROR\n{json.dumps(self.default_config[header], indent=4)}")
+                    else:
+                        print(f"(*i) NO CHECK CONFIGURED for header '{header}' in headers_ or default_config")
+                except KeyError as e:
+                    print(f"(*i) NO CHECK CONFIGURED for header {e} in headers_ or default_config")
 
     # methods for get_method
     # duplicative code here too in that I create and use dataframe separately for methods
