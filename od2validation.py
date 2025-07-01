@@ -1,6 +1,8 @@
 import yaml, os, json, re
 import pandas as pd
 
+# to dos search "to do" + "duplicative codeblock"
+
 class Package(object):
 
     def __init__(self, headers_config, test=False):
@@ -117,28 +119,10 @@ class Package(object):
         print("\n")
 
     def perform_string_check(self, validation_data, instance_data, index):
-        # print(f"""instance_data: type = {type(instance_data)}, {instance_data}, as string?
-        #       {str(instance_data)}""") # check
-        # OK I think I'm just going to have to convert pandas nan to '' manually in the check funcs...
-        # duplicative codeblock 20250630C
-        if pd.notna(instance_data):
-            pass
-        else:
-            instance_data = ''
-        # duplicative codeblock 20250630C
-        if str(validation_data) == str(instance_data):
-            pass
-        else:
+        if str(validation_data) != str(instance_data):
             print(f"(!!) ERROR row {index + 2}: '{instance_data}' != string '{validation_data}'")
 
     def perform_regex_check(self, validation_data, instance_data, index):
-        # see note above re: converting pandas nan
-        # duplicative codeblock 20250630C
-        if pd.notna(instance_data):
-            pass
-        else:
-            instance_data = ''
-        # duplicative codeblock 20250630C
         if not re.match(validation_data, instance_data):
             print(f"(!!) ERROR row {index + 2}: '{instance_data}' != {str(validation_data)}")
 
@@ -147,6 +131,7 @@ class Package(object):
         method_mapping = {
             'check_filenames_assets': self.check_filenames_assets,
             'identifier_file_match': self.identifier_file_match
+            # more methods later?
         }
         try:
             method = method_mapping.get(method_name)
@@ -162,63 +147,72 @@ class Package(object):
         print(f"args = {args}")
 
     def select_data_for_checks(self, header, which, checktype, validation_data, args):
-        # print(f"check {header} using {instruction}") # check
         df = self.get_dataframe()
+        if checktype == 'regex':
+            p = re.compile(r"{}".format(validation_data))
         if which == 'all':
-            # duplicative codeblock 20250630B
-            if checktype == 'string':
-                for index, row in df.iterrows():
-                    self.perform_string_check(validation_data, row[header], index)
-            elif checktype == 'regex':
-                p = re.compile(r"{}".format(validation_data))
-                for index, row in df.iterrows():
-                    self.perform_regex_check(p, row[header], index)
-            elif checktype == 'method':
-                self.get_method(validation_data, args)
-            else:
-                print("(!!) something wrong with the checktype passed to select_data_for_checks")
-            # end duplicative codeblock 20250630B
+            # duplicative codeblock 20250630B >
+            for index, row in df.iterrows():
+                if pd.notna(row[header]):
+                    cell = row[header]
+                else:
+                    cell = ''
+                for value in str(cell).split('|'):
+                    if checktype == 'string':
+                        self.perform_string_check(validation_data, value, index)
+                    elif checktype == 'regex':
+                        self.perform_regex_check(p, value, index)
+                    else:
+                        print("(!!) ERROR checktype arg passed to select_data_for_checks > which = all")
+            # < end duplicative codeblock 20250630B
         elif which == 'complex':
-            # duplicative codeblock 20250630B
-            if checktype == 'string':
-                for index, row in df.iterrows():
+            # duplicative codeblock 20250630B >
+            for index, row in df.iterrows():
+                if pd.notna(row[header]):
+                    cell = row[header]
+                else:
+                    cell = ''
+                try:
                     if row['format'] == 'https://w3id.org/spar/mediatype/application/xml':
-                        self.perform_string_check(validation_data, row[header], index)
-                    else:
-                        pass
-            elif checktype == 'regex':
-                p = re.compile(r"{}".format(validation_data))
-                for index, row in df.iterrows():
-                    if row['format'] == 'https://w3id.org/spar/mediatype/application/xml':
-                        self.perform_regex_check(p, row[header], index)
-                    else:
-                        pass
-            else:
-                print("(!!) ERROR arg checktype passed to select_data_for_checks")
-            # duplicative codeblock 20250630B
+                        # to do confirm / add this logic to documentation
+                        for value in str(cell).split('|'):
+                            if checktype == 'string':
+                                self.perform_string_check(validation_data, value, index)
+                            elif checktype == 'regex':
+                                self.perform_regex_check(p, value, index)
+                            else:
+                                print("(!!) ERROR checktype arg passed to select_data_for_checks > which = complex")
+                except:
+                    print(f"(!!) ERROR metadata specified as complex object but no 'format' values")
+            # < duplicative codeblock 20250630B
         elif which == 'item':
-            # duplicative codeblock 20250630B
-            if checktype == 'string':
-                for index, row in df.iterrows():
+            # duplicative codeblock 20250630B >
+            for index, row in df.iterrows():
+                if pd.notna(row[header]):
+                    cell = row[header]
+                else:
+                    cell = ''
+                try:
                     if row.get('format') == None or row['format'] != 'https://w3id.org/spar/mediatype/application/xml':
                         # to do testing needed for this ^^^ logic
-                        self.perform_string_check(validation_data, row[header], index)
-            elif checktype == 'regex':
-                p = re.compile(r"{}".format(validation_data))
-                for index, row in df.iterrows():
-                    if row.get('format') == None or row['format'] != 'https://w3id.org/spar/mediatype/application/xml':
-                        self.perform_regex_check(p, row[header], index)
-            else:
-                print("(!!) ERROR arg checktype passed to select_data_for_checks")
-            # duplicative codeblock 20250630B
+                        # to do confirm / add this logic to documentation
+                        for value in str(cell).split('|'):
+                            if checktype == 'string':
+                                self.perform_string_check(validation_data, value, index)
+                            elif checktype == 'regex':
+                                self.perform_regex_check(p, value, index)
+                            else:
+                                print("(!!) ERROR checktype arg passed to select_data_for_checks > which = item")
+                except:
+                    print("(!!) ERROR metadata specified as complex-object item but has unexpected 'format' value")
+            # < duplicative codeblock 20250630B
         elif which == 'na' and checktype == 'method':
             self.get_method(validation_data, args)
         else:
-            print("(!!) ERROR arg which passed to select_data_for_checks")
+            print("(!!) ERROR 'blarf' select_data_for_checks")
 
     def get_headers_instructions(self):
         for header in self.headers_config:
-            # print(header) # check
             if self.headers_config[header] != None:
                 print(f"*** check(s) for header '{header}' from headers config")
                 for instruction in self.headers_config[header]:
@@ -274,7 +268,6 @@ class Package(object):
             if pd.notna(value):
                 split = value.split('|')
                 filenames.extend(split)
-        # print(filenames) # check
         if set(filenames) != set(self.assets):
             print("(!!) ERROR set(filenames) != set(self.assets)")
             for filename in filenames:
