@@ -1,0 +1,8 @@
+dmrec:
+  - regex: ^$
+    which: all
+file:
+  - method: check_filenames_assets
+    args: ['file']
+    # no which on method!
+subject: ~ # to do

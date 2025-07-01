@@ -1,2 +1,4 @@
-metadata: C:\Users\briesenb\OneDrive - University Of Oregon\_metadata\OD2-working\uo-athletics-working\20241110_Baylor_WBB.csv
-assets: L:\DigitalProjects\Metadata\uo-athletics\Work\__processing\20241110_Baylor_WBB\files
+metadata:
+- absolute_filepath.xlsx|csv
+- sheet_or_tab_name_for_xlsx # omit for CSV
+assets: absolute/filepath/to_assets

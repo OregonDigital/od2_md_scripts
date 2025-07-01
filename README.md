@@ -1,5 +1,5 @@
 # od_md_scripts
-scripts to automate metadata-processing, ingest steps for Oregon Digital 2
+scripts for metadata validation prior to ingest in Oregon Digital
 
 ## archived\*
 *\*available at previous snapshots*  

@@ -1,6 +1,18 @@
-dmrec: 
-  - string
-  - ""
-file: # ^EX_COLL_123\d{1}_(recto|verso)\.png$
-  - method
-  - check_filenames_assets
+dmrec: ~
+file: ~
+title:
+  - regex: '^Complex Object: .*$'
+    which: complex
+  - regex: '^Complex Object Item: .*$'
+    which: item
+format:
+  - string: https://w3id.org/spar/mediatype/application/xml
+    which: complex
+  - regex: ^$ # testing this regex out for an empty string
+    which: item
+resource_type:
+  - string: http://purl.org/dc/dcmitype/Collection
+    which: complex
+  - string: http://purl.org/dc/dcmitype/StillImage
+    # ... data-modelling... is one work/two file sets a collection too!?
+    which: item
