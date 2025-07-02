@@ -1,4 +1,3 @@
-filepaths.yaml
 filepaths_test.yaml
 *__pycache__*
 *.~lock.*
