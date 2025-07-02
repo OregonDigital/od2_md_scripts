@@ -13,7 +13,7 @@ class Package(object):
         self.assets = os.listdir(self.filepaths()[1])
         self.default_config, self.headers_config = self.get_config(headers_config)
         # custom config requred, must include at least enumeration of headers
-        # use makeconfig.py
+        # use makeconfig.py?
 
     def filepaths(self):
         if self.test == False:
@@ -33,14 +33,13 @@ class Package(object):
         except:
             pass
         print(f"*** assets file path\n{self.filepaths()[1]}")
-        print("\n")
 
     def get_config(self, headers_config):
         with open("config/default.yaml", "r") as yf:
             default = yaml.safe_load(yf)
         with open(f"config/{headers_config}.yaml", "r") as yf:
             headers = yaml.safe_load(yf)
-        return [default, headers] # any different/better to use tuple here?
+        return (default, headers,) # any different/better tuple vs. list here?
 
     def print_config(self):
         pretty = json.dumps(self.default_config, indent=4)
@@ -136,11 +135,12 @@ class Package(object):
         try:
             method = method_mapping.get(method_name)
             if method:
+                print(f"(*i) get_method '{method_name}'successfull")
                 return method(args)
             else:
-                print("get_method() says blarrrfffff")
+                print(f"(!!) ERROR method_name {method_name} not in method_mapping")
         except Exception as e:
-            print(f"(!!) ERROR get_method: {e}")
+            print(f"(!!) get_method > try > except for '{method_name}': {e}")
 
     def identifier_file_match(self, args):
         print("using method identifier_file_match")
@@ -234,7 +234,7 @@ class Package(object):
                     # duplicative codeblock 20250630A
             elif self.headers_config[header] == None:
                 try:
-                    if self.headers_config[header] != None:
+                    if self.default_config[header] != None:
                         for instruction in self.default_config[header]:
                             print(f"*** check(s) for header '{header}' from default config")
                             # duplicative codeblock 20250630A
