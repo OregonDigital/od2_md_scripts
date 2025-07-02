@@ -64,7 +64,7 @@ class Package(object):
                 print("(!!) for CSV, filepaths.yaml > metadata for CSV must be one-item list")
                 exit()
             elif len(self.metadata) == 1:
-                dataframe = pd.read_csv(self.metadata[0])
+                dataframe = pd.read_csv(self.metadata[0], dtype=str)
                 return dataframe
             else:
                 print("(!!) ERROR get_dataframe for CSV metadata")
@@ -74,10 +74,10 @@ class Package(object):
                 print("...with filepath, optionally sheet name (if no sheet name first sheet checked)")
                 exit()
             elif len(self.metadata) == 1:
-                dataframe = pd.read_excel(self.metadata[0])
+                dataframe = pd.read_excel(self.metadata[0], dtype=str)
                 return dataframe
             elif len(self.metadata) == 2:
-                dataframe = pd.read_excel(self.metadata[0], sheet_name=self.metadata[1])
+                dataframe = pd.read_excel(self.metadata[0], sheet_name=self.metadata[1], dtype=str)
                 return dataframe
             else:
                 print("(!!) ERROR get_dataframe for Excel metadata")
@@ -262,12 +262,16 @@ class Package(object):
     # duplicative code here too in that I create and use dataframe separately for methods
 
     def check_filenames_assets(self, args):
-        series = self.get_dataframe()[args[0]]
+        # print(f"args[0] == '{args[0]}'") # check
+        df = pd.read_excel(self.filepaths[0], dtype=str)
+        series = df['file']
+        # for value in series: # check
+        #     print(value) # check
         filenames = []
-        for value in series:
-            if pd.notna(value):
-                split = value.split('|')
-                filenames.extend(split)
+        for cell in series:
+            if pd.notna(cell):
+                for value in str(cell).split('|'):
+                    filenames.append(value)
         if set(filenames) != set(self.assets):
             print("(!!) ERROR set(filenames) != set(self.assets)")
             for filename in filenames:
@@ -285,3 +289,7 @@ class Package(object):
         for index, row in dataframe.iterrows():
             if row['file'].replace(args[0], '') != row['identifier']:
                 print(f"(!!) ERROR row {index + 2}: id {row['identifier']} != {row['filename']} - {args[0]}")
+
+    def save_as_csv(self):
+        filename = self.filepaths[1].split('/')[-1]
+        print(f"does filename == {filename}?")
