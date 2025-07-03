@@ -24,14 +24,7 @@ else:
 
 config = {}
 for entry in headers:
-    if entry == "dmrec":
-        config.update({entry: [{"string": ""}]})
-    elif entry == "file":
-        config.update({entry: [{"method": ["check_filenames_assets"]}]})
-        # ^^^ NEEDS UPDATE -- how to pass method info in config!?
-    else:
-        config.update({entry: None})
-    # TO DO -- REMOVE ABOVE once default config for dmrec and file are in place
+    config.update({entry: None})
 
 # testing
 # print(type(config))
