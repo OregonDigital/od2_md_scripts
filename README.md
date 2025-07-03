@@ -1,7 +1,6 @@
 # od_md_scripts
-scripts for metadata validation prior to ingest in Oregon Digital
+scripts for metadata validation prior to ingest in Oregon Digital  
+now featuring [a wiki](https://github.com/OregonDigital/od2_md_scripts/wiki)
 
-## archived\*
-*\*available at previous snapshots*  
-- 2025-02-14: first draft od2ingest.py [@3de0f15](https://github.com/briesenberg07/od2_md_scripts/blob/3de0f15ee68041b335a85987cf53ef4f2b765402/od2ingest.py)
-- 2025-01-28: recto_verso_pids_aoid/ [@3de0f15](https://github.com/briesenberg07/od2_md_scripts/tree/3de0f15ee68041b335a85987cf53ef4f2b765402/recto_verso_pids_aoid) - handoff for SF, matching verso PID and archival object ID with recto PID
+## 2025-07-03 update
+⚠️ Even though od2validation.py allows you to read in and validate Excel metadata spreadsheets, I'm currently experiencing an MS Excel issue where cell data display varies, and this is affecting validation. See issue #5. ⚠️
