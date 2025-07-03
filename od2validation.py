@@ -119,7 +119,7 @@ class Package(object):
 
     def perform_regex_check(self, validation_data, instance_data, index):
         if not re.match(validation_data, instance_data):
-            print(f"(!!) ERROR row {index + 2}: '{instance_data}' != {str(validation_data)}")
+            print(f"(!!) ERROR row {index + 2}: '{instance_data}' does not match regex for header values")
 
     def get_method(self, method_name, args):
         # see methods at bottom
