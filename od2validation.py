@@ -246,9 +246,9 @@ class Package(object):
                                 print(f"(!!) ERROR unknown check type: default_config '{header}' instruction {instruction}")
                         # duplicative codeblock 20250630A
                     else:
-                        print(f"(*i) NO CHECK CONFIGURED for header '{header}' in headers_ or default_config")
+                        print(f"(*i) NO CHECK CONFIGURED for header '{header}' in headers_config or default_config")
                 except KeyError as e:
-                    print(f"(*i) NO CHECK CONFIGURED for header {e} in headers_ or default_config")
+                    print(f"(*i) NO CHECK CONFIGURED for header {e} in headers_config or default_config")
 
     # methods for get_method
     # duplicative code here too in that I create and use dataframe separately for methods
@@ -267,10 +267,10 @@ class Package(object):
             print("(!!) ERROR set(filenames) != set(self.assets)")
             for filename in filenames:
                 if filename not in self.assets:
-                    print(f"(!!) {filename} not in files/ directory")
+                    print(f"(!!) '{filename}' not in files/ directory")
             for asset in self.assets:
                 if asset not in filenames:
-                    print(f"(!!) {asset} not in metadata filenames")
+                    print(f"(!!) '{asset}' not in metadata filenames")
         else:
             pass
 
