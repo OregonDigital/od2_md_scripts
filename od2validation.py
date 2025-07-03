@@ -27,12 +27,12 @@ class Package(object):
                 return (paths['metadata'], paths['assets'],)
 
     def print_filepaths(self):
-        print(f"*** metadata file path\n{self.metadata[0]}")
+        print(f"(*i) metadata file path\n{self.metadata[0]}")
         try:
-            print(f"*** Excel sheet/tab name\n{self.metadata[1]}")
+            print(f"(*i) Excel sheet/tab name\n{self.metadata[1]}")
         except:
             pass
-        print(f"*** assets file path\n{self.filepaths()[1]}")
+        print(f"(*i) assets file path\n{self.filepaths()[1]}")
 
     def get_config(self, headers_config):
         with open("config/default.yaml", "r") as yf:
@@ -45,9 +45,7 @@ class Package(object):
         pretty = json.dumps(self.default_config, indent=4)
         print(f"*** default_config (JSON)\n{pretty}")
         pretty = json.dumps(self.headers_config, indent=4)
-        print("\n")
         print(f"*** headers_config (JSON)\n{pretty}")
-        print("\n")
 
     def metadata_file_type(self):
         if self.metadata[0].split('.')[-1] == "xlsx":
@@ -93,11 +91,10 @@ class Package(object):
         print("*** headers in metadata spreadsheet")
         for header in self.get_headers():
             print(header)
-        print("\n")
 
     def check_headers(self):
         check = True
-        print("*** checking headers configuration / headers in metadata")
+        print("*** check headers configuration / headers in metadata")
         if set(self.headers_config) != set(self.get_headers()):
             check = False
             print("!!! headers_config != metadata headers")
@@ -113,9 +110,8 @@ class Package(object):
                     print(item)
             print("* update metadata headers and/or headers_config and retry")
         else:
-            print("* headers_config = metadata headers")
+            pass
         return check
-        print("\n")
 
     def perform_string_check(self, validation_data, instance_data, index):
         if str(validation_data) != str(instance_data):
@@ -135,16 +131,12 @@ class Package(object):
         try:
             method = method_mapping.get(method_name)
             if method:
-                print(f"(*i) get_method '{method_name}'successfull")
+                # print(f"method_mapping.get({method_name}) is True") # check
                 return method(args)
             else:
                 print(f"(!!) ERROR method_name {method_name} not in method_mapping")
         except Exception as e:
             print(f"(!!) get_method > try > except for '{method_name}': {e}")
-
-    def identifier_file_match(self, args):
-        print("using method identifier_file_match")
-        print(f"args = {args}")
 
     def select_data_for_checks(self, header, which, checktype, validation_data, args):
         df = self.get_dataframe()
@@ -262,15 +254,14 @@ class Package(object):
     # duplicative code here too in that I create and use dataframe separately for methods
 
     def check_filenames_assets(self, args):
-        # print(f"args[0] == '{args[0]}'") # check
-        df = pd.read_excel(self.filepaths[0], dtype=str)
-        series = df['file']
-        # for value in series: # check
-        #     print(value) # check
+        col = args[0]
+        # print(f"args: {args}, type(args): {type(args)}") # check
+        # print(f"col: {col}, type(col): {type(col)}") # check
         filenames = []
-        for cell in series:
+        for cell in self.get_dataframe()[col]:
             if pd.notna(cell):
                 for value in str(cell).split('|'):
+                    # print(value) # check
                     filenames.append(value)
         if set(filenames) != set(self.assets):
             print("(!!) ERROR set(filenames) != set(self.assets)")
@@ -285,11 +276,18 @@ class Package(object):
 
     def identifier_file_match(self, args):
         # (*i) NOTE this method only works with one filename, one identifier
-        dataframe = self.get_dataframe()
-        for index, row in dataframe.iterrows():
-            if row['file'].replace(args[0], '') != row['identifier']:
-                print(f"(!!) ERROR row {index + 2}: id {row['identifier']} != {row['filename']} - {args[0]}")
+        # print(f"args: {args}, type(args): {type(args)}") # check
+        # print(f"args[0]: {args[0]}, type(args[0]): {type(args[0])}") # check
+        substring = args[0]
+        df_for_method = self.get_dataframe()
+        # print(f"type(df_for_method): {type(df_for_method)}") # check
+        for index, row in df_for_method.iterrows():
+            if str(row['identifier']) == str(row['file']).replace(substring, ''):
+                # print(f"{index + 2} OK") # check
+                pass
+            else:
+                print(f"(!!) ERROR row {index + 2} '{row['identifier']} / '{row['file']}'")
 
     def save_as_csv(self):
-        filename = self.filepaths[1].split('/')[-1]
+        filename = self.filepaths[0].split('/')[-1]
         print(f"does filename == {filename}?")
