@@ -1,53 +1,65 @@
 import sys, requests, json
 
-# to do
-    # add # of works in importer to argv
-    # report more helpful info -- all works there? how many missing? how many with no file sets? etc.
-
 try:
+    importer_no = int(sys.argv[1].strip())
+    in_importer = int(sys.argv[2].strip())
     solrselect = "https://solr-od2.library.oregonstate.edu/solr/prod/select?"
-    q = f"q=bulkrax_identifier_tesim:{int(sys.argv[1].strip())}"
+    q = f"q=bulkrax_identifier_tesim:{importer_no}"
     fl = "&fl=id,member_of_collection_ids_ssim,member_of_collections_ssim,file_set_ids_ssim"
-    rows = "&rows=100"
+    rows = "&rows=1000"
     response = requests.get(f"{solrselect}{q}{fl}{rows}").json()
 except:
-    print("did you run as '$ python3 solr.py [importer #]'?")
+    print("(!!) Run as follows:")
+    print("python3 solr.py [importer #] [# of works in importer package]")
     exit()
 
-print(f">>> Solr query results for importer {sys.argv[1]}:")
-print(f"{response['response']['numFound']} works found for importer # {sys.argv[1]}")
+print(f"*** Solr query results for importer {sys.argv[1]}")
+print(f"""{response['response']['numFound']} / {in_importer}
+      (works in Solr / works in importer # {importer_no})""")
 
-no_fileset = []
-no_coll = []
-coll_ids = [] # I don't currently do anything with this
+no_file_set = []
+coll_ids = []
+no_coll_id = []
+
 for work in response['response']['docs']:
-    # is this the best way to check?
     try:
         work['file_set_ids_ssim']
     except KeyError as e:
-        no_fileset.append(work['id'])
+        no_file_set.append(work['id'])
     try:
-        coll_ids.append(work['member_of_collection_ids_ssim'])
+        coll_id = work['member_of_collection_ids_ssim']
+        if coll_id not in coll_ids:
+            coll_ids.append(coll_id)
     except:
-        no_coll.append(work['id'])
-if len(no_fileset) >= 1:
-    print(f"{len(no_fileset)} work(s) with no file set id in Solr:")
-    for pid in no_fileset:
+        no_coll_id.append(work['id'])
+
+if len(no_file_set) >= 1:
+    print(f"""(!!) {len(no_file_set)} / {response['response']['numFound']} 
+          work(s) in Solr for importer {importer_no} have no file set id""")
+    print("PID(s) for works missing file set id:")
+    for pid in no_file_set:
         print(pid)
 else:
-    print("all works have file set id")
-# is my logic here sound??
-if len(no_coll) == response['response']['numFound']:
-    print("!!! no works added to a collection")
+    print(f"*** All {response['response']['numFound']} works in Solr have file set id")
+
+if len(no_coll_id) == response['response']['numFound']:
+    print(f"(!!) No works in Solr for importer {importer_no} are in collection(s)")
     pass
-elif len(no_coll) >= 1:
-    print("work(s) which are not in any collection:")
-    for pid in no_coll:
+elif len(no_coll_id) >= 1:
+    print(f"""(!!) {len(no_coll_id)} / {response['response']['numFound']} 
+          work(s) in Solr for importer {importer_no} are not in any collection""")
+    print(f"PID(s) for works not in any collection:")
+    for pid in no_coll_id:
         print(pid)
 else:
-    print("all works are member of collection id(s)") 
-    # show coll ids??
-    # and/or, check that all works in importer added to same coll??
-# not sure I want this
-# print(">>> query result docs:")
-# print(json.dumps(response['response']['docs'], indent=4))
+    print(f"""*** All {response['response']['numFound']} works in Solr 
+          for importer {importer_no} are member of collection id(s)""")
+if len(coll_ids) > 0:
+    print("Parent collection id(s):")
+    for id in coll_ids:
+        print(id)
+
+to_print = input("Print query response? y/n\n>>> ")
+if to_print.lower() == "y":
+    print("*** Solr query response >>>")
+    print(json.dumps(response, indent=4))
