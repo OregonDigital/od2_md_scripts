@@ -10,7 +10,7 @@ try:
     response = requests.get(f"{solrselect}{q}{fl}{rows}").json()
 except:
     print("(!!) Run as follows:")
-    print("python3 solr.py [importer #] [# of works in importer package]")
+    print("python3 importer-solr.py [importer #] [# of works in importer package]")
     exit()
 
 print(f"*** Solr query results for importer {sys.argv[1]}")
