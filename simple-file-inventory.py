@@ -5,7 +5,7 @@ from datetime import datetime
 to_inventory = "simple-file-inventory.txt"
 separator = "---"
 
-def read_inventory_list(filename):
+def read_to_do(filename):
     with open(filename, "r") as f:
         return [line.strip() for line in f if line.strip()]
 
@@ -72,7 +72,7 @@ def main():
     if not os.path.exists(to_inventory):
         print(f"Inventory list file '{to_inventory}' not found.")
         sys.exit(1)
-    directories = read_inventory_list(to_inventory)
+    directories = read_to_do(to_inventory)
     today = datetime.now().strftime("%Y%m%d")
     for directory in directories:
         if not os.path.isdir(directory):
