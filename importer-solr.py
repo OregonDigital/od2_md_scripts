@@ -61,5 +61,5 @@ if len(coll_ids) > 0:
 
 to_print = input("Print query response? y/n\n>>> ")
 if to_print.lower() == "y":
-    print("*** Solr query response >>>")
+    print("*** Solr query response")
     print(json.dumps(response, indent=4))
