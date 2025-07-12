@@ -1,19 +1,9 @@
-"""
-GPT 4.1
-I'd like Python code to do the following as efficiently as possible.
-Read in text file "simple-file-inventory.txt" and add each line (minus line ending) to a list. Each line is a directory file path.
-For each directory file path in the list, do the following:
-1. Get list of files in the directory, excluding subdirectories, then do one of the following (a or b):
-a. if there is no .txt file in the directory having file name as [some date as YYYYMMDD]_[directory]_inventory.txt, create a .txt file with file name [date as YYYYMMDD]_[directory]_inventory.txt, including the following: at the top of the file, the date, the full directory file path (from simple-file-inventory.txt) and number of files in the directory. Following this after a separator, each file in the directory (excluding subdirectories) on a new line.
-b. if there is a .txt file in the directory having file name as [some date as YYYYMMDD]_[directory]_inventory.txt, ask the user (y/n) if they would like to compare files currently in the directory against this inventory. If 'y', read in this text file and compare the list of files from step one with the files in the inventory following the separator, as described in a above. If there are any differences (different order is ok) show the user any differences in stdout, and ask (y/n) if they would like to save a new inventory file, with file name [date as YYYYMMDD]_[directory]_inventory.txt. If the sets are identical, indicate this to the user and exit without offering to save a new inventory file.
-"""
-
 import os
 import sys
 from datetime import datetime
 
-INVENTORY_LIST_FILE = "simple-file-inventory.txt"
-SEPARATOR = "---"
+to_inventory = "simple-file-inventory.txt"
+separator = "---"
 
 def read_inventory_list(filename):
     with open(filename, "r") as f:
@@ -43,7 +33,7 @@ def write_inventory_file(directory, files, date):
     dir_name = os.path.basename(os.path.normpath(directory))
     filename = os.path.join(directory, f"{date}_{dir_name}_inventory.txt")
     with open(filename, "w") as f:
-        f.write(f"{date}\n{directory}\n{len(files)}\n{SEPARATOR}\n")
+        f.write(f"{date}\n{directory}\n{len(files)} files\n{separator}\n")
         for file in files:
             f.write(f"{file}\n")
     print(f"Inventory file created: {filename}")
@@ -52,11 +42,11 @@ def read_inventory_file(filepath):
     with open(filepath, "r") as f:
         lines = [line.rstrip('\n') for line in f]
     try:
-        sep_idx = lines.index(SEPARATOR)
+        sep_idx = lines.index(separator)
         files = lines[sep_idx+1:]
         return set(files)
     except ValueError:
-        print(f"Separator not found in {filepath}")
+        print(f"separator not found in {filepath}")
         return set()
 
 def compare_and_report(current_files, inventory_files):
@@ -78,10 +68,10 @@ def compare_and_report(current_files, inventory_files):
     return False
 
 def main():
-    if not os.path.exists(INVENTORY_LIST_FILE):
-        print(f"Inventory list file '{INVENTORY_LIST_FILE}' not found.")
+    if not os.path.exists(to_inventory):
+        print(f"Inventory list file '{to_inventory}' not found.")
         sys.exit(1)
-    directories = read_inventory_list(INVENTORY_LIST_FILE)
+    directories = read_inventory_list(to_inventory)
     today = datetime.now().strftime("%Y%m%d")
     for directory in directories:
         if not os.path.isdir(directory):
@@ -112,4 +102,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
