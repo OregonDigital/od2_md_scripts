@@ -18,6 +18,7 @@ def get_files_in_directory(directory):
         return []
 
 def get_inventory_filename(directory, date=None):
+    # this function isn't used anywhere???
     dir_name = os.path.basename(os.path.normpath(directory))
     if date is None:
         # Find existing inventory files
@@ -89,8 +90,8 @@ def main():
             # No inventory file, create one
             write_inventory_file(directory, files, today)
         else:
-            ans = input(f"Inventory file found for '{directory}'. Compare with current files? (y/n): ").strip().lower()
-            if ans != 'y':
+            ans1 = input(f"Inventory file found for '{directory}'. Compare with current files? (y/n): ").strip().lower()
+            if ans1 != 'y':
                 continue
             inventory_files = read_inventory_file(inventory_file)
             identical = compare_and_report(files, inventory_files)
