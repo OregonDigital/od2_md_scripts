@@ -1,4 +1,5 @@
 filepaths_test.yaml
 filepaths.yaml
+simple-file-inventory.txt
 *__pycache__*
 *.~lock.*
