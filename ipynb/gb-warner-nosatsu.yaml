@@ -1,0 +1,13 @@
+top_level: L:/DigitalProjects/Metadata/gb-warner-nosatsu
+# top_level: ~ # might not need to use parent dir
+dirs:
+  v41tif: 19590923_NE1184_35_N67_V41
+  v41jpgpdf: 19590923_NE1184_35_N67_V41/19590923_NE1184_35_N67_V41_jpgpdf
+  v42tif: 19590923_NE1184_37_N67_V42
+  v42jpgpdf: 19590923_NE1184_37_N67_V42/19590923_NE1184_37_N67_v42_jpgpdf
+  v50tif: 19588069_NE1184_35_N67_V50
+  v50jpgpdf: 19588069_NE1184_35_N67_V50/19588069_NE1184_35_N67_V50_jpgpdf
+  v55tif: 19588069_NE1184_35_N67_V55
+  v55jpgpdf: 19588069_NE1184_35_N67_V55/19588069_NE1184_35_N67_V55_jpgpdf
+  v57tif: noticket_NE1184_35_N67_v57
+  v57jpgpdf: noticket_NE1184_35_N67_v57/noticket_NE1184_35_N67_v57_jpgpdf
