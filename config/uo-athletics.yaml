@@ -38,7 +38,7 @@ rights_statement:
   - string: http://rightsstatements.org/vocab/InC/1.0/
     which: all
 license:
-  - string: https://creativecommons.org/licenses/by-nc-nd/4.0/
+  - string: http://creativecommons.org/licenses/by-nc-nd/4.0/
     which: all
 rights_holder:
   - string: Harvey, Paul W., IV
