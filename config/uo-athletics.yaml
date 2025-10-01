@@ -20,7 +20,7 @@ photographer:
   - string: http://opaquenamespace.org/ns/creator/HarveyPaulWIV
     which: all
 date:
-  - regex: ^202[2-9]{1}-\d{2}-\d{2}$
+  - regex: ^202[0-9]{1}-\d{2}-\d{2}$
     which: all
 subject:
   - regex: (^http:\/\/id\.loc\.gov\/authorities\/subjects\/sh\d{1,15}$|^http:\/\/opaquenamespace\.org\/ns\/people\/\S*$)
