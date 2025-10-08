@@ -15,7 +15,7 @@ except:
 
 print(f"*** Solr query results for importer {sys.argv[1]}")
 print(f"""{response['response']['numFound']} / {in_importer}
-      (works in Solr / works in importer # {importer_no})""")
+        works in Solr / works in importer # {importer_no}""")
 
 no_file_set = []
 coll_ids = []
@@ -35,7 +35,7 @@ for work in response['response']['docs']:
 
 if len(no_file_set) >= 1:
     print(f"""(!!) {len(no_file_set)} / {response['response']['numFound']} 
-          work(s) in Solr for importer {importer_no} have no file set id""")
+            work(s) in Solr for importer {importer_no} have no file set id""")
     print("PID(s) for works missing file set id:")
     for pid in no_file_set:
         print(pid)
@@ -47,13 +47,13 @@ if len(no_coll_id) == response['response']['numFound']:
     pass
 elif len(no_coll_id) >= 1:
     print(f"""(!!) {len(no_coll_id)} / {response['response']['numFound']} 
-          work(s) in Solr for importer {importer_no} are not in any collection""")
+            work(s) in Solr for importer {importer_no} are not in any collection""")
     print(f"PID(s) for works not in any collection:")
     for pid in no_coll_id:
         print(pid)
 else:
     print(f"""*** All {response['response']['numFound']} works in Solr 
-          for importer {importer_no} are member of collection id(s)""")
+            for importer {importer_no} are member of collection id(s)""")
 if len(coll_ids) > 0:
     print("Parent collection id(s):")
     for id in coll_ids:
