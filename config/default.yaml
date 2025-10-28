@@ -6,4 +6,6 @@ file:
     args: ['file']
     # no which on method!
 subject: ~ # to do
+genus: ~
+species: ~
 # many more: # to do
