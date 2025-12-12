@@ -1,5 +1,14 @@
 from od2validation import Package
 import sys
+import logging
+
+# Configure logging (replaces print statements throughout codebase, including
+# in od2validation.py lines that are called from this script)
+# For more detailed debug information, change logging.INFO to logging.DEBUG
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(levelname)s: %(message)s'
+)
 
 try:
     processing = Package(sys.argv[1])

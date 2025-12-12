@@ -1,5 +1,10 @@
 import yaml, os, json, re
 import pandas as pd
+import logging
+
+# Logger replaces print statements for debugging/usage
+# (It basically controls the level of info to print)
+logger = logging.getLogger(__name__)
 
 # to dos search "to do" + "duplicative codeblock"
 
@@ -27,12 +32,12 @@ class Package(object):
                 return (paths['metadata'], paths['assets'],)
 
     def print_filepaths(self):
-        print(f"(*i) metadata file path\n{self.metadata[0]}")
+        logger.info(f"metadata file path\n{self.metadata[0]}")
         try:
-            print(f"(*i) Excel sheet/tab name\n{self.metadata[1]}")
+            logger.info(f"Excel sheet/tab name\n{self.metadata[1]}")
         except:
             pass
-        print(f"(*i) assets file path\n{self.filepaths()[1]}")
+        logger.info(f"assets file path\n{self.filepaths()[1]}")
 
     def get_config(self, headers_config):
         with open("config/default.yaml", "r") as yf:
@@ -43,9 +48,9 @@ class Package(object):
 
     def print_config(self):
         pretty = json.dumps(self.default_config, indent=4)
-        print(f"*** default_config (JSON)\n{pretty}")
+        logger.info(f"default_config (JSON)\n{pretty}")
         pretty = json.dumps(self.headers_config, indent=4)
-        print(f"*** headers_config (JSON)\n{pretty}")
+        logger.info(f"headers_config (JSON)\n{pretty}")
 
     def metadata_file_type(self):
         if self.metadata[0].split('.')[-1] == "xlsx":
@@ -53,22 +58,23 @@ class Package(object):
         elif self.metadata[0].split('.')[-1] == "csv":
             return "CSV"
         else:
-            return "(!!) unknown metadata file type"
+            logger.error("unknown metadata file type")
+            return "unknown metadata file type"
         
     def get_dataframe(self):
         if self.metadata_file_type() == "CSV" and isinstance(self.metadata, list):
             if len(self.metadata) != 1:
-                print("(!!) for CSV, filepaths.yaml > metadata for CSV must be one-item list")
+                logger.error("for CSV, filepaths.yaml > metadata for CSV must be one-item list")
                 exit()
             elif len(self.metadata) == 1:
                 dataframe = pd.read_csv(self.metadata[0], dtype=str)
                 return dataframe
             else:
-                print("(!!) ERROR get_dataframe for CSV metadata")
+                logger.error("get_dataframe for CSV metadata")
         elif self.metadata_file_type() == "Excel" and isinstance(self.metadata, list):
             if len(self.metadata) < 1 or len(self.metadata) > 2:
-                print("(!!) filenames.yaml > metadata for Excel must be one- or two-item list...")
-                print("...with filepath, optionally sheet name (if no sheet name first sheet checked)")
+                logger.error("filenames.yaml > metadata for Excel must be one- or two-item list...")
+                logger.error("...with filepath, optionally sheet name (if no sheet name first sheet checked)")
                 exit()
             elif len(self.metadata) == 1:
                 dataframe = pd.read_excel(self.metadata[0], dtype=str)
@@ -77,10 +83,10 @@ class Package(object):
                 dataframe = pd.read_excel(self.metadata[0], sheet_name=self.metadata[1], dtype=str)
                 return dataframe
             else:
-                print("(!!) ERROR get_dataframe for Excel metadata")
+                logger.error("get_dataframe for Excel metadata")
                 exit()
         else:
-            print("(!!) ERROR get_dataframe")
+            logger.error("get_dataframe")
             exit()
 
     def get_headers(self):
@@ -88,38 +94,38 @@ class Package(object):
         return headers
 
     def print_headers(self):
-        print("*** headers in metadata spreadsheet")
+        logger.info("headers in metadata spreadsheet")
         for header in self.get_headers():
-            print(header)
+            logger.info(header)
 
     def check_headers(self):
         check = True
-        print("*** check headers configuration / headers in metadata")
+        logger.info("check headers configuration / headers in metadata")
         if set(self.headers_config) != set(self.get_headers()):
             check = False
-            print("!!! headers_config != metadata headers")
+            logger.error("headers_config != metadata headers")
             diff = list(set(self.get_headers()) - set(self.headers_config))
             if len(diff) > 0:
-                print("* metadata headers not in config file:")
+                logger.info("metadata headers not in config file:")
                 for item in diff:
-                    print(item)
+                    logger.error("  %s", item)
             diff = list(set(self.headers_config) - set(self.get_headers()))
             if len(diff) > 0:
-                print("* headers_config fields not in metadata headers:")
+                logger.error("headers_config fields not in metadata headers:")
                 for item in diff:
-                    print(item)
-            print("* update metadata headers and/or headers_config and retry")
+                    logger.error("  %s", item)
+            logger.error("update metadata headers and/or headers_config and retry")
         else:
             pass
         return check
 
     def perform_string_check(self, validation_data, instance_data, index):
         if str(validation_data) != str(instance_data):
-            print(f"(!!) ERROR row {index + 2}: '{instance_data}' != string '{validation_data}'")
-
+            logger.error(f"row {index + 2}: '{instance_data}' != string '{validation_data}'")
+    
     def perform_regex_check(self, validation_data, instance_data, index):
         if not re.match(validation_data, instance_data):
-            print(f"(!!) ERROR row {index + 2}: '{instance_data}' does not match regex for header values")
+            logger.error(f"row {index + 2}: '{instance_data}' does not match regex for header values")
 
     def get_method(self, method_name, args):
         # see methods at bottom
@@ -134,9 +140,9 @@ class Package(object):
                 # print(f"method_mapping.get({method_name}) is True") # check
                 return method(args)
             else:
-                print(f"(!!) ERROR method_name {method_name} not in method_mapping")
+                logger.error(f"method_name {method_name} not in method_mapping")
         except Exception as e:
-            print(f"(!!) get_method > try > except for '{method_name}': {e}")
+            logger.error(f"get_method > try > except for '{method_name}': {e}")
 
     def select_data_for_checks(self, header, which, checktype, validation_data, args):
         df = self.get_dataframe()
@@ -155,7 +161,7 @@ class Package(object):
                     elif checktype == 'regex':
                         self.perform_regex_check(p, value, index)
                     else:
-                        print("(!!) ERROR checktype arg passed to select_data_for_checks > which = all")
+                        logger.error("checktype arg passed to select_data_for_checks > which = all")
             # < end duplicative codeblock 20250630B
         elif which == 'complex':
             # duplicative codeblock 20250630B >
@@ -173,9 +179,9 @@ class Package(object):
                             elif checktype == 'regex':
                                 self.perform_regex_check(p, value, index)
                             else:
-                                print("(!!) ERROR checktype arg passed to select_data_for_checks > which = complex")
+                                logger.error("checktype arg passed to select_data_for_checks > which = complex")
                 except:
-                    print(f"(!!) ERROR metadata specified as complex object but no 'format' values")
+                    logger.error(f"metadata specified as complex object but no 'format' values")
             # < duplicative codeblock 20250630B
         elif which == 'item':
             # duplicative codeblock 20250630B >
@@ -194,61 +200,61 @@ class Package(object):
                             elif checktype == 'regex':
                                 self.perform_regex_check(p, value, index)
                             else:
-                                print("(!!) ERROR checktype arg passed to select_data_for_checks > which = item")
+                                logger.error("checktype arg passed to select_data_for_checks > which = item")
                 except:
-                    print("(!!) ERROR metadata specified as complex-object item but has unexpected 'format' value")
+                    logger.error("metadata specified as complex-object item but has unexpected 'format' value")
             # < duplicative codeblock 20250630B
         elif which == 'na' and checktype == 'method':
             self.get_method(validation_data, args)
         else:
-            print("(!!) ERROR 'blarf' select_data_for_checks")
+            logger.error("'blarf' select_data_for_checks")
 
     def get_headers_instructions(self):
         for header in self.headers_config:
             if self.headers_config[header] != None:
-                print(f"*** check(s) for header '{header}' from headers config")
+                logger.info(f"check(s) for header '{header}' from headers config")
                 for instruction in self.headers_config[header]:
                     # duplicative codeblock 20250630A
                     if instruction.get('string'):
-                        print(f"*** *** string check for header '{header}' ({instruction['which']})")
+                        logger.info(f"string check for header '{header}' ({instruction['which']})")
                         self.select_data_for_checks(header, instruction['which'], 'string',
                                                     instruction['string'], None)
                     elif instruction.get('regex'):
-                        print(f"*** *** regex check for header '{header}' ({instruction['which']})")
+                        logger.info(f"regex check for header '{header}' ({instruction['which']})")
                         self.select_data_for_checks(header, instruction['which'], 'regex',
                                                     instruction['regex'], None)
                     elif instruction.get('method'):
-                        print(f"*** *** method check ({instruction['method']}) for header '{header}'")
+                        logger.info(f"method check ({instruction['method']}) for header '{header}'")
                         self.select_data_for_checks(header, 'na', 'method', instruction['method'], 
                                                     instruction['args'])
                     else:
-                        print(f"(!!) ERROR unknown check type: headers_config '{header}' instruction {instruction}")
+                        logger.error(f"unknown check type: headers_config '{header}' instruction {instruction}")
                     # duplicative codeblock 20250630A
             elif self.headers_config[header] == None:
                 try:
                     if self.default_config[header] != None:
                         for instruction in self.default_config[header]:
-                            print(f"*** check(s) for header '{header}' from default config")
+                            logger.info(f"check(s) for header '{header}' from default config")
                             # duplicative codeblock 20250630A
                             if instruction.get('string'):
-                                print(f"*** *** string check for header '{header}' ({instruction['which']})")
+                                logger.info(f"string check for header '{header}' ({instruction['which']})")
                                 self.select_data_for_checks(header, instruction['which'], 'string', 
                                                             instruction['string'], None)
                             elif instruction.get('regex'):
-                                print(f"*** *** regex check for header '{header}' ({instruction['which']})")
+                                logger.info(f"regex check for header '{header}' ({instruction['which']})")
                                 self.select_data_for_checks(header, instruction['which'], 'regex', 
                                                             instruction['regex'], None)
                             elif instruction.get('method'):
-                                print(f"*** *** method check ({instruction['method']}) for header '{header}'")
+                                logger.info(f"method check ({instruction['method']}) for header '{header}'")
                                 self.select_data_for_checks(header, 'na', 'method', instruction['method'], 
                                                             instruction['args'])
                             else:
-                                print(f"(!!) ERROR unknown check type: default_config '{header}' instruction {instruction}")
+                                logger.error(f"unknown check type: default_config '{header}' instruction {instruction}")
                         # duplicative codeblock 20250630A
                     else:
-                        print(f"(*i) NO CHECK CONFIGURED for header '{header}' in headers_config or default_config")
+                        logger.info(f"NO CHECK CONFIGURED for header '{header}' in headers_config or default_config")
                 except KeyError as e:
-                    print(f"(*i) NO CHECK CONFIGURED for header {e} in headers_config or default_config")
+                    logger.info(f"NO CHECK CONFIGURED for header {e} in headers_config or default_config")
 
     # methods for get_method
     # duplicative code here too in that I create and use dataframe separately for methods
@@ -264,13 +270,13 @@ class Package(object):
                     # print(value) # check
                     filenames.append(value)
         if set(filenames) != set(self.assets):
-            print("(!!) ERROR set(filenames) != set(self.assets)")
+            logger.error("set(filenames) != set(self.assets)")
             for filename in filenames:
                 if filename not in self.assets:
-                    print(f"(!!) '{filename}' not in files/ directory")
+                    logger.error(f"'{filename}' not in files/ directory")
             for asset in self.assets:
                 if asset not in filenames:
-                    print(f"(!!) '{asset}' not in metadata filenames")
+                    logger.error(f"'{asset}' not in metadata filenames")
         else:
             pass
 
@@ -286,8 +292,8 @@ class Package(object):
                 # print(f"{index + 2} OK") # check
                 pass
             else:
-                print(f"(!!) ERROR row {index + 2} '{row['identifier']} / '{row['file']}'")
+                logger.error(f"row {index + 2} '{row['identifier']} / '{row['file']}'")
 
     def save_as_csv(self):
         filename = self.filepaths[0].split('/')[-1]
-        print(f"does filename == {filename}?")
+        logger.debug(f"does filename == {filename}?")
