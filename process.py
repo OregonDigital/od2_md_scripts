@@ -37,11 +37,10 @@ logger = logging.getLogger(__name__)
 
 try:
     processing = Package(sys.argv[1])
-    # print(type(processing)) # check
     processing.print_filepaths()
     processing.check_headers()
     processing.get_headers_instructions()
     logger.info("✓ Validation complete")
 except IndexError:
-    print("(!!) command missing config file name (do not include file extension)")
-    print("EXAMPLE:\n> python3 process.py uo-athletics")
+    logger.error("Missing config file name (do not include file extension)")
+    logger.error("EXAMPLE: python3 process.py uo-athletics")
