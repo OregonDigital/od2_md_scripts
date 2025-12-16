@@ -212,19 +212,19 @@ class Package(object):
     def get_headers_instructions(self):
         for header in self.headers_config:
             if self.headers_config[header] != None:
-                logger.info(f"check(s) for header '{header}' from headers config")
+                logger.info(f"Validating '{header}' from config...")
                 for instruction in self.headers_config[header]:
                     # duplicative codeblock 20250630A
                     if instruction.get('string'):
-                        logger.info(f"string check for header '{header}' ({instruction['which']})")
+                        logger.debug(f"string check for header '{header}' ({instruction['which']})")
                         self.select_data_for_checks(header, instruction['which'], 'string',
                                                     instruction['string'], None)
                     elif instruction.get('regex'):
-                        logger.info(f"regex check for header '{header}' ({instruction['which']})")
+                        logger.debug(f"regex check for header '{header}' ({instruction['which']})")
                         self.select_data_for_checks(header, instruction['which'], 'regex',
                                                     instruction['regex'], None)
                     elif instruction.get('method'):
-                        logger.info(f"method check ({instruction['method']}) for header '{header}'")
+                        logger.debug(f"method check ({instruction['method']}) for header '{header}'")
                         self.select_data_for_checks(header, 'na', 'method', instruction['method'], 
                                                     instruction['args'])
                     else:
@@ -233,28 +233,28 @@ class Package(object):
             elif self.headers_config[header] == None:
                 try:
                     if self.default_config[header] != None:
+                        logger.info(f"Validating '{header}' from default config...")
                         for instruction in self.default_config[header]:
-                            logger.info(f"check(s) for header '{header}' from default config")
                             # duplicative codeblock 20250630A
                             if instruction.get('string'):
-                                logger.info(f"string check for header '{header}' ({instruction['which']})")
+                                logger.debug(f"string check for header '{header}' ({instruction['which']})")
                                 self.select_data_for_checks(header, instruction['which'], 'string', 
                                                             instruction['string'], None)
                             elif instruction.get('regex'):
-                                logger.info(f"regex check for header '{header}' ({instruction['which']})")
+                                logger.debug(f"regex check for header '{header}' ({instruction['which']})")
                                 self.select_data_for_checks(header, instruction['which'], 'regex', 
                                                             instruction['regex'], None)
                             elif instruction.get('method'):
-                                logger.info(f"method check ({instruction['method']}) for header '{header}'")
+                                logger.debug(f"method check ({instruction['method']}) for header '{header}'")
                                 self.select_data_for_checks(header, 'na', 'method', instruction['method'], 
                                                             instruction['args'])
                             else:
                                 logger.error(f"unknown check type: default_config '{header}' instruction {instruction}")
                         # duplicative codeblock 20250630A
                     else:
-                        logger.info(f"NO CHECK CONFIGURED for header '{header}' in headers_config or default_config")
+                        logger.debug(f"NO CHECK CONFIGURED for header '{header}' in headers_config or default_config")
                 except KeyError as e:
-                    logger.info(f"NO CHECK CONFIGURED for header {e} in headers_config or default_config")
+                    logger.debug(f"NO CHECK CONFIGURED for header {e} in headers_config or default_config")
 
     # methods for get_method
     # duplicative code here too in that I create and use dataframe separately for methods
