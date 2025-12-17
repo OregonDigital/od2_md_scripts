@@ -1,6 +1,7 @@
 import yaml, os, json, re
 import pandas as pd
 import logging
+from typing import Tuple, List, Dict, Any, Optional, Union, Pattern
 
 # Logger replaces print statements for debugging/usage
 # (It basically controls the level of info to print)
@@ -10,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class Package(object):
 
-    def __init__(self, headers_config, test=False):
+    def __init__(self, headers_config: str, test: bool = False) -> None:
         # * instantiating with 1 vs 2 args ... any issues??
         # should I make sure that headers_config="test" when testing?
         self.test = test
@@ -20,7 +21,7 @@ class Package(object):
         # custom config requred, must include at least enumeration of headers
         # use makeconfig.py?
 
-    def filepaths(self):
+    def filepaths(self) -> Tuple[List[str], str]:
         if self.test == False:
             with open("filepaths.yaml", "r") as yf:
                 paths = yaml.safe_load(yf)
@@ -31,7 +32,7 @@ class Package(object):
                 paths = yaml.safe_load(yf)
                 return (paths['metadata'], paths['assets'],)
 
-    def print_filepaths(self):
+    def print_filepaths(self) -> None:
         logger.info(f"metadata file path\n{self.metadata[0]}")
         try:
             logger.info(f"Excel sheet/tab name\n{self.metadata[1]}")
@@ -39,20 +40,20 @@ class Package(object):
             pass
         logger.info(f"assets file path\n{self.filepaths()[1]}")
 
-    def get_config(self, headers_config):
+    def get_config(self, headers_config: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         with open("config/default.yaml", "r") as yf:
             default = yaml.safe_load(yf)
         with open(f"config/{headers_config}.yaml", "r") as yf:
             headers = yaml.safe_load(yf)
         return (default, headers,) # any different/better tuple vs. list here?
 
-    def print_config(self):
+    def print_config(self) -> None:
         pretty = json.dumps(self.default_config, indent=4)
         logger.info(f"default_config (JSON)\n{pretty}")
         pretty = json.dumps(self.headers_config, indent=4)
         logger.info(f"headers_config (JSON)\n{pretty}")
 
-    def metadata_file_type(self):
+    def metadata_file_type(self) -> str:
         if self.metadata[0].split('.')[-1] == "xlsx":
             return "Excel"
         elif self.metadata[0].split('.')[-1] == "csv":
@@ -61,7 +62,7 @@ class Package(object):
             logger.error("unknown metadata file type")
             return "unknown metadata file type"
         
-    def get_dataframe(self):
+    def get_dataframe(self) -> pd.DataFrame:
         if self.metadata_file_type() == "CSV" and isinstance(self.metadata, list):
             if len(self.metadata) != 1:
                 logger.error("for CSV, filepaths.yaml > metadata for CSV must be one-item list")
@@ -89,16 +90,16 @@ class Package(object):
             logger.error("get_dataframe")
             exit()
 
-    def get_headers(self):
+    def get_headers(self) -> List[str]:
         headers = self.get_dataframe().columns.to_list()
         return headers
 
-    def print_headers(self):
+    def print_headers(self) -> None:
         logger.info("headers in metadata spreadsheet")
         for header in self.get_headers():
             logger.info(header)
 
-    def check_headers(self):
+    def check_headers(self) -> bool:
         check = True
         logger.info("check headers configuration / headers in metadata")
         if set(self.headers_config) != set(self.get_headers()):
@@ -119,15 +120,15 @@ class Package(object):
             pass
         return check
 
-    def perform_string_check(self, validation_data, instance_data, index):
+    def perform_string_check(self, validation_data: Any, instance_data: Any, index: int) -> None:
         if str(validation_data) != str(instance_data):
             logger.error(f"row {index + 2}: '{instance_data}' != string '{validation_data}'")
     
-    def perform_regex_check(self, validation_data, instance_data, index):
+    def perform_regex_check(self, validation_data: Pattern[str], instance_data: str, index: int) -> None:
         if not re.match(validation_data, instance_data):
             logger.error(f"row {index + 2}: '{instance_data}' does not match regex for header values")
 
-    def get_method(self, method_name, args):
+    def get_method(self, method_name: str, args: Optional[List[Any]]) -> Optional[Any]:
         # see methods at bottom
         method_mapping = {
             'check_filenames_assets': self.check_filenames_assets,
@@ -144,7 +145,7 @@ class Package(object):
         except Exception as e:
             logger.error(f"get_method > try > except for '{method_name}': {e}")
 
-    def select_data_for_checks(self, header, which, checktype, validation_data, args):
+    def select_data_for_checks(self, header: str, which: str, checktype: str, validation_data: Any, args: Optional[List[Any]]) -> None:
         df = self.get_dataframe()
         if checktype == 'regex':
             p = re.compile(r"{}".format(validation_data))
@@ -209,7 +210,7 @@ class Package(object):
         else:
             logger.error("'blarf' select_data_for_checks")
 
-    def get_headers_instructions(self):
+    def get_headers_instructions(self) -> None:
         for header in self.headers_config:
             if self.headers_config[header] != None:
                 logger.info(f"Validating '{header}' from config...")
@@ -259,7 +260,7 @@ class Package(object):
     # methods for get_method
     # duplicative code here too in that I create and use dataframe separately for methods
 
-    def check_filenames_assets(self, args):
+    def check_filenames_assets(self, args: List[Any]) -> None:
         col = args[0]
         # print(f"args: {args}, type(args): {type(args)}") # check
         # print(f"col: {col}, type(col): {type(col)}") # check
@@ -280,7 +281,7 @@ class Package(object):
         else:
             pass
 
-    def identifier_file_match(self, args):
+    def identifier_file_match(self, args: List[str]) -> None:
         # (*i) NOTE this method only works with one filename, one identifier
         # print(f"args: {args}, type(args): {type(args)}") # check
         # print(f"args[0]: {args[0]}, type(args[0]): {type(args[0])}") # check
@@ -294,6 +295,6 @@ class Package(object):
             else:
                 logger.error(f"row {index + 2} '{row['identifier']} / '{row['file']}'")
 
-    def save_as_csv(self):
+    def save_as_csv(self) -> None:
         filename = self.filepaths[0].split('/')[-1]
         logger.debug(f"does filename == {filename}?")

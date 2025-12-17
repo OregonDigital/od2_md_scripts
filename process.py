@@ -2,13 +2,14 @@ from od2validation import Package
 import sys
 import logging
 from colorama import Fore, Style, init
+from typing import Dict
 
 # Initialize colorama for cross-platform color support
 init(autoreset=True)
 
 # Custom formatter with colors
 class ColoredFormatter(logging.Formatter):
-    COLORS = {
+    COLORS: Dict[str, str] = {
         'DEBUG': Fore.CYAN,
         'INFO': Fore.GREEN,
         'WARNING': Fore.YELLOW,
@@ -16,7 +17,7 @@ class ColoredFormatter(logging.Formatter):
         'CRITICAL': Fore.RED + Style.BRIGHT,
     }
     
-    def format(self, record):
+    def format(self, record: logging.LogRecord) -> str:
         log_color = self.COLORS.get(record.levelname, '')
         record.levelname = f"{log_color}{record.levelname}{Style.RESET_ALL}"
         record.msg = f"{log_color}{record.msg}{Style.RESET_ALL}"

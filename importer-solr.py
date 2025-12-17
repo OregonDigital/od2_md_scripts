@@ -1,4 +1,5 @@
 import sys, requests, json
+from typing import List, Any
 
 try:
     importer_no = int(sys.argv[1].strip())
@@ -17,9 +18,9 @@ print(f"*** Solr query results for importer {sys.argv[1]}")
 print(f"""{response['response']['numFound']} / {in_importer}
         works in Solr / works in importer # {importer_no}""")
 
-no_file_set = []
-coll_ids = []
-no_coll_id = []
+no_file_set: List[str] = []
+coll_ids: List[Any] = []
+no_coll_id: List[str] = []
 
 for work in response['response']['docs']:
     try:
