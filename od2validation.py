@@ -253,9 +253,9 @@ class Package(object):
                                 logger.error(f"unknown check type: default_config '{header}' instruction {instruction}")
                         # duplicative codeblock 20250630A
                     else:
-                        logger.debug(f"NO CHECK CONFIGURED for header '{header}' in headers_config or default_config")
+                        logger.info(f"NO CHECK CONFIGURED for header '{header}' in headers_config or default_config")
                 except KeyError as e:
-                    logger.debug(f"NO CHECK CONFIGURED for header {e} in headers_config or default_config")
+                    logger.info(f"NO CHECK CONFIGURED for header {e} in headers_config or default_config")
 
     # methods for get_method
     # duplicative code here too in that I create and use dataframe separately for methods
