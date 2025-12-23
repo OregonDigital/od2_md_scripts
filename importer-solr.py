@@ -1,5 +1,9 @@
 import sys, requests, json
+import logging
 from typing import List, Any
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
 try:
     importer_no = int(sys.argv[1].strip())
@@ -9,14 +13,14 @@ try:
     fl = "&fl=id,member_of_collection_ids_ssim,member_of_collections_ssim,file_set_ids_ssim"
     rows = "&rows=1000"
     response = requests.get(f"{solrselect}{q}{fl}{rows}").json()
-except:
-    print("(!!) Run as follows:")
-    print("python3 importer-solr.py [importer #] [# of works in importer package]")
+except Exception as e:
+    logger.error(f"Error: {e}")
+    logger.error("Run as follows:")
+    logger.error("python3 importer-solr.py [importer #] [# of works in importer package]")
     exit()
 
-print(f"*** Solr query results for importer {sys.argv[1]}")
-print(f"""{response['response']['numFound']} / {in_importer}
-        works in Solr / works in importer # {importer_no}""")
+logger.info(f"Solr query results for importer {sys.argv[1]}")
+logger.info(f"""{response['response']['numFound']} / {in_importer} works in Solr / works in importer # {importer_no}""")
 
 no_file_set: List[str] = []
 coll_ids: List[Any] = []
@@ -35,32 +39,29 @@ for work in response['response']['docs']:
         no_coll_id.append(work['id'])
 
 if len(no_file_set) >= 1:
-    print(f"""(!!) {len(no_file_set)} / {response['response']['numFound']} 
-            work(s) in Solr for importer {importer_no} have no file set id""")
-    print("PID(s) for works missing file set id:")
+    logger.error(f"""{len(no_file_set)} / {response['response']['numFound']} work(s) in Solr for importer {importer_no} have no file set id""")
+    logger.error("PID(s) for works missing file set id:")
     for pid in no_file_set:
-        print(pid)
+        logger.error(f"  {pid}")
 else:
-    print(f"*** All {response['response']['numFound']} works in Solr have file set id")
+    logger.info(f"All {response['response']['numFound']} works in Solr have file set id")
 
 if len(no_coll_id) == response['response']['numFound']:
-    print(f"(!!) No works in Solr for importer {importer_no} are in collection(s)")
+    logger.error(f"No works in Solr for importer {importer_no} are in collection(s)")
     pass
 elif len(no_coll_id) >= 1:
-    print(f"""(!!) {len(no_coll_id)} / {response['response']['numFound']} 
-            work(s) in Solr for importer {importer_no} are not in any collection""")
-    print(f"PID(s) for works not in any collection:")
+    logger.error(f"""{len(no_coll_id)} / {response['response']['numFound']} work(s) in Solr for importer {importer_no} are not in any collection""")
+    logger.error(f"PID(s) for works not in any collection:")
     for pid in no_coll_id:
-        print(pid)
+        logger.error(f"  {pid}")
 else:
-    print(f"""*** All {response['response']['numFound']} works in Solr 
-            for importer {importer_no} are member of collection id(s)""")
+    logger.info(f"""All {response['response']['numFound']} works in Solr for importer {importer_no} are member of collection id(s)""")
 if len(coll_ids) > 0:
-    print("Parent collection id(s):")
+    logger.info("Parent collection id(s):")
     for id in coll_ids:
-        print(id)
+        logger.info(f"  {id}")
 
 to_print = input("Print query response? y/n\n>>> ")
 if to_print.lower() == "y":
-    print("*** Solr query response")
+    logger.info("Solr query response")
     print(json.dumps(response, indent=4))
