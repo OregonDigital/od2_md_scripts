@@ -1,9 +1,31 @@
 import sys, requests, json
 import logging
-from typing import List, Any
+from typing import List, Any, Dict
+from colorama import Fore, Style, init
+
+# Initialize colorama for cross-platform color support
+init(autoreset=True)
+
+# Custom formatter with colors
+class ColoredFormatter(logging.Formatter):
+    COLORS: Dict[str, str] = {
+        'DEBUG': Fore.CYAN,
+        'INFO': Fore.GREEN,
+        'WARNING': Fore.YELLOW,
+        'ERROR': Fore.RED,
+        'CRITICAL': Fore.RED + Style.BRIGHT,
+    }
+    
+    def format(self, record: logging.LogRecord) -> str:
+        log_color = self.COLORS.get(record.levelname, '')
+        record.levelname = f"{log_color}{record.levelname}{Style.RESET_ALL}"
+        record.msg = f"{log_color}{record.msg}{Style.RESET_ALL}"
+        return super().format(record)
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+handler = logging.StreamHandler()
+handler.setFormatter(ColoredFormatter('%(levelname)s: %(message)s'))
+logging.basicConfig(level=logging.INFO, handlers=[handler])
 
 try:
     importer_no = int(sys.argv[1].strip())
