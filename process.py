@@ -36,12 +36,56 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+# Track validation errors by header
+error_count = 0
+current_header = None
+headers_with_errors = set()
+validated_headers = []
+
+class ErrorTrackingHandler(logging.Handler):
+    """Handler to track which headers have errors"""
+    def emit(self, record):
+        global error_count, current_header
+        
+        # Detect when we're validating a new header
+        if record.levelno == logging.INFO and "Validating" in record.msg:
+            # Extract header name from message like "Validating 'title' from config..."
+            import re
+            match = re.search(r"Validating '([^']+)'", record.msg)
+            if match:
+                current_header = match.group(1)
+                if current_header not in validated_headers:
+                    validated_headers.append(current_header)
+        
+        # Track errors for current header
+        if record.levelno >= logging.ERROR and current_header:
+            error_count += 1
+            headers_with_errors.add(current_header)
+
+# Add error tracking handler
+error_handler = ErrorTrackingHandler()
+logging.getLogger().addHandler(error_handler)
+
 try:
-    processing = Package(sys.argv[1])
+    collection_name = sys.argv[1]
+    processing = Package(collection_name)
     processing.print_filepaths()
     processing.check_headers()
     processing.get_headers_instructions()
+    
     logger.info("✓ Validation complete")
+    if error_count == 0:
+        logger.info ("No errors found")
+    # Show fixcsv.py suggestion if errors were found
+    else:
+        logger.warning("\n" + "="*60)
+        logger.warning(f"Validation found {error_count} error(s) in {len(headers_with_errors)}/{len(validated_headers)} headers")
+        logger.warning(f"Headers with errors: {', '.join(sorted(headers_with_errors))}")
+        logger.warning("")
+        logger.warning("To automatically fix common issues:")
+        logger.warning(f"  python3 fixcsv.py {collection_name}")
+        logger.warning("="*60)
+    
 except IndexError:
     logger.error("Missing config file name (do not include file extension)")
     logger.error("EXAMPLE: python3 process.py uo-athletics")
