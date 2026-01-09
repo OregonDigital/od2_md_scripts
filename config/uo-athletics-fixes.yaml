@@ -1,0 +1,8 @@
+# No need to specify the string when enforcing - will read from uo-athletics.yaml
+fixes:
+  - type: strip
+    column: institution
+    
+  - type: enforce_string
+    column: license
+    
