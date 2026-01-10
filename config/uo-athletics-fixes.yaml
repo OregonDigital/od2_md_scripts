@@ -1,4 +1,5 @@
-# No need to specify the string when enforcing - will read from uo-athletics.yaml
+# No need to specify the string when using enforce - it will read the correct value from uo-athletics.yaml, since it 
+# expects only one specific, unchanging value
 fixes:
   # fix extra space at the end of institution
   - type: strip
