@@ -1,8 +1,15 @@
 # No need to specify the string when enforcing - will read from uo-athletics.yaml
 fixes:
+  # fix extra space at the end of institution
   - type: strip
     column: institution
-    
+  
+  # fix license being wrong type (usually nc instead of nc-nd)
   - type: enforce_string
     column: license
-    
+  
+  # fix location using http over https
+  - type: regex_replace
+    column: location
+    pattern: '^http://(sws\.geonames\.org/)'
+    replacement: 'https://\1'
