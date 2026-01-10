@@ -13,6 +13,9 @@ from pathlib import Path
 import shutil
 import sys
 import re
+from colorama import Fore, Style, init
+
+init(autoreset=True)
 
 # Configure logging
 logging.basicConfig(
@@ -72,7 +75,7 @@ def backup_original(filepath):
     """Create backup of original file"""
     backup_path = filepath + '.backup'
     shutil.copy(filepath, backup_path)
-    logger.info(f"Backup created: {backup_path}")
+    logger.info(f"{Fore.CYAN}Backup created: {backup_path}{Style.RESET_ALL}")
     return backup_path
 
 
@@ -224,7 +227,7 @@ def main():
     logger.info(f"Loaded validation config for {collection}")
     
     # Apply fixes
-    logger.info("\nApplying fixes...")
+    logger.info(f"{Fore.YELLOW}\nApplying fixes...{Style.RESET_ALL}")
     df, total_changes = apply_collection_fixes(df, fix_config)
     
     # Enforce validation rules
@@ -238,10 +241,10 @@ def main():
     if total_changes > 0:
         logger.info("")
         save_dataframe(df, metadata_path)
-        logger.info(f"\n✓ Applied {total_changes} fixes")
+        logger.info(f"\n{Fore.GREEN}✓ Applied {total_changes} fixes{Style.RESET_ALL}")
         logger.info(f"Run 'python3 process.py {collection}' to validate")
     else:
-        logger.info("\n✓ No issues found - file is clean")
+        logger.info(f"\n{Fore.GREEN}✓ No issues found - file is clean{Style.RESET_ALL}")
     
     logger.info("="*60)
 
