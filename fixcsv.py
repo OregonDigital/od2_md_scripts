@@ -13,6 +13,7 @@ from pathlib import Path
 import shutil
 import sys
 import re
+from typing import Any, Tuple
 from colorama import Fore, Style, init
 
 init(autoreset=True)
@@ -25,14 +26,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def load_filepaths():
+def load_filepaths() -> list[str]:
     """Load metadata file path from filepaths.yaml"""
     with open("filepaths.yaml", "r") as yf:
         paths = yaml.safe_load(yf)
     return paths['metadata']
 
 
-def load_dataframe(metadata_path):
+def load_dataframe(metadata_path: list[str]) -> pd.DataFrame:
     """Load CSV into DataFrame (assumes CSV format)"""
     if len(metadata_path) != 1:
         logger.error("For CSV, filepaths.yaml > metadata must be one-item list")
@@ -46,7 +47,7 @@ def load_dataframe(metadata_path):
     return pd.read_csv(filepath, dtype=str)
 
 
-def load_fix_config(collection_name):
+def load_fix_config(collection_name: str) -> dict[str, Any]:
     """Load collection-specific fix config if it exists"""
     fix_config_path = f"config/{collection_name}-fixes.yaml"
     
@@ -65,13 +66,13 @@ def load_fix_config(collection_name):
     return config
 
 
-def load_validation_config(collection_name):
+def load_validation_config(collection_name: str) -> dict[str, Any]:
     """Load the validation config to get expected values"""
     with open(f"config/{collection_name}.yaml", "r") as yf:
         return yaml.safe_load(yf)
 
 
-def backup_original(filepath):
+def backup_original(filepath: str) -> str:
     """Create backup of original file"""
     backup_path = filepath + '.backup'
     shutil.copy(filepath, backup_path)
@@ -79,7 +80,7 @@ def backup_original(filepath):
     return backup_path
 
 
-def fix_strip_column(df, column):
+def fix_strip_column(df: pd.DataFrame, column: str) -> Tuple[pd.DataFrame, int]:
     """Strip leading/trailing whitespace from all values in a column"""
     if column not in df.columns:
         logger.warning(f"Column '{column}' not found in CSV, skipping")
@@ -98,7 +99,7 @@ def fix_strip_column(df, column):
     return df, changes
 
 
-def fix_regex_replace(df, column, pattern, replacement):
+def fix_regex_replace(df: pd.DataFrame, column: str, pattern: str, replacement: str) -> Tuple[pd.DataFrame, int]:
     """Apply regex replacement to all values in a column"""
     if column not in df.columns:
         logger.warning(f"Column '{column}' not found in CSV, skipping")
@@ -119,7 +120,7 @@ def fix_regex_replace(df, column, pattern, replacement):
     return df, changes
 
 
-def fix_enforce_string(df, column, validation_config):
+def fix_enforce_string(df: pd.DataFrame, column: str, validation_config: dict[str, Any]) -> Tuple[pd.DataFrame, int]:
     """Enforce the string value defined in validation config"""
     # Look up what the string should be
     if column not in validation_config or not validation_config[column]:
@@ -149,7 +150,7 @@ def fix_enforce_string(df, column, validation_config):
     return df, changes
 
 
-def apply_collection_fixes(df, fix_config):
+def apply_collection_fixes(df: pd.DataFrame, fix_config: dict[str, Any]) -> Tuple[pd.DataFrame, int]:
     """Apply collection-specific fixes from config"""
     total_changes = 0
     
@@ -185,14 +186,14 @@ def apply_collection_fixes(df, fix_config):
     return df, total_changes
 
 
-def save_dataframe(df, metadata_path):
+def save_dataframe(df: pd.DataFrame, metadata_path: list[str]) -> None:
     """Save fixed DataFrame back to CSV"""
     filepath = metadata_path[0]
     df.to_csv(filepath, index=False)
     logger.info(f"Saved to: {filepath}")
 
 
-def main():
+def main() -> None:
     """Main execution"""
     logger.info("="*60)
     logger.info("CSV Auto-Fix Tool")
