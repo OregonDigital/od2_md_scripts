@@ -12,5 +12,7 @@ fixes:
   # fix location using http over https
   - type: regex_replace
     column: location
+    # the () encloses a specific group (automatically labeled 1,2,3... as they are made)
     pattern: '^http://(sws\.geonames\.org/)'
+    # this is replacing the http:// with https:// and then inserting group 1 (the rest of the url above)
     replacement: 'https://\1'
