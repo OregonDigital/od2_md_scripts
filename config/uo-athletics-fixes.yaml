@@ -1,7 +1,7 @@
 # No need to specify the string when using enforce - it will read the correct value from uo-athletics.yaml, since it 
 # expects only one specific, unchanging value
 fixes:
-  # fix extra space at the end of institution
+  # fix institution having extra space at the end
   - type: strip
     column: institution
   
@@ -17,6 +17,7 @@ fixes:
     # this is replacing the http:// with https:// and then inserting group 1 (the rest of the url above)
     replacement: 'https://\1'
 
+    # fix file column missing file extension (just having ID)
   - type: regex_replace
     column: file
     pattern: '^(.*)$'
