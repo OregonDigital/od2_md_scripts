@@ -3,3 +3,4 @@ filepaths.yaml
 *__pycache__*
 *.~lock.*
 .venv
+.coverage
