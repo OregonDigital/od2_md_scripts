@@ -1,4 +1,4 @@
-import sys, requests, json
+import sys, requests, json, argparse
 import logging
 from typing import List, Any, Dict
 from colorama import Fore, Style, init
@@ -22,26 +22,35 @@ class ColoredFormatter(logging.Formatter):
         record.msg = f"{log_color}{record.msg}{Style.RESET_ALL}"
         return super().format(record)
 
+# Set up logging colors and handler
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler()
 handler.setFormatter(ColoredFormatter('%(levelname)s: %(message)s'))
 logging.basicConfig(level=logging.INFO, handlers=[handler])
 
+# Parse the input (this gets )
+parser = argparse.ArgumentParser(description='Query Solr for importer information')
+parser.add_argument('importer_no', type=int, help='Importer number')
+parser.add_argument('in_importer', type=int, help='Number of works in importer package')
+parser.add_argument('--print-response', '-p', action='store_true', 
+                    help='Print the full Solr query response')
+args = parser.parse_args()
+
+importer_no = args.importer_no
+in_importer = args.in_importer
+
+solrselect = "https://solr-od2.library.oregonstate.edu/solr/prod/select?"
+q = f"q=bulkrax_identifier_tesim:{importer_no}"
+fl = "&fl=id,member_of_collection_ids_ssim,member_of_collections_ssim,file_set_ids_ssim"
+rows = "&rows=1000"
+
 try:
-    importer_no = int(sys.argv[1].strip())
-    in_importer = int(sys.argv[2].strip())
-    solrselect = "https://solr-od2.library.oregonstate.edu/solr/prod/select?"
-    q = f"q=bulkrax_identifier_tesim:{importer_no}"
-    fl = "&fl=id,member_of_collection_ids_ssim,member_of_collections_ssim,file_set_ids_ssim"
-    rows = "&rows=1000"
     response = requests.get(f"{solrselect}{q}{fl}{rows}").json()
 except Exception as e:
-    logger.error(f"Error: {e}")
-    logger.error("Run as follows:")
-    logger.error("python3 importer-solr.py [importer #] [# of works in importer package]")
-    exit()
+    logger.error(f"Error making Solr request: {e}")
+    exit(1)
 
-logger.info(f"Solr query results for importer {sys.argv[1]}")
+logger.info(f"Solr query results for importer {importer_no}")
 logger.info(f"""{response['response']['numFound']} / {in_importer} works in Solr / works in importer # {importer_no}""")
 
 no_file_set: List[str] = []
@@ -83,7 +92,6 @@ if len(coll_ids) > 0:
     for id in coll_ids:
         logger.info(f"  {id}")
 
-to_print = input("Print query response? y/n\n>>> ")
-if to_print.lower() == "y":
+if args.print_response:
     logger.info("Solr query response")
     print(json.dumps(response, indent=4))
