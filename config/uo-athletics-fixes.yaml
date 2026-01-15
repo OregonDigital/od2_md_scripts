@@ -20,5 +20,5 @@ fixes:
     # fix file column missing file extension (append .tif to the end of the ID, which is what's almost always there instead)
   - type: regex_replace
     column: file
-    pattern: '^(.*)$'
+    pattern: '^(.*?)(?<!\.tif)$'
     replacement: '\1.tif'

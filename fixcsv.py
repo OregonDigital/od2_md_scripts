@@ -1,6 +1,6 @@
 """
 Automated fixes for common CSV metadata issues.
-Reads file path from filepaths.yaml and applies fixes from collection-specific config.
+Reads file path from filepaths.yaml and applies fixes from collection-specific config. 
 
 Usage: python3 fixcsv.py <collection-name>
 Example: python3 fixcsv.py uo-athletics
@@ -108,6 +108,8 @@ def fix_regex_replace(df: pd.DataFrame, column: str, pattern: str, replacement: 
     changes = 0
     compiled_pattern = re.compile(pattern)
     
+    # Apply the replacement to every value -- if it's different than the original, it must have been changed (and an error before)
+    # If it's the same, then it was good before
     for idx in df.index:
         if pd.notna(df.at[idx, column]):
             original = str(df.at[idx, column])
@@ -227,6 +229,12 @@ def main() -> None:
     validation_config = load_validation_config(collection)
     logger.info(f"Loaded validation config for {collection}")
     
+    # You might expect to see process.py run here or some method to determine what to fix. There isn't any, 
+    # because every fix is running every time. For some, redundancy doesn't matter (like strip) and for others (regex_replace),
+    # it's being checked against a pattern. That pattern should already exclude valid entries in the case of using regex_replace to append to the end,
+    # and moves on when it detects them. (This is how it checks the number of values changed -- add up any
+    # changed values that don't match the unchanged value). 
+
     # Apply fixes
     logger.info(f"{Fore.YELLOW}\nApplying fixes...{Style.RESET_ALL}")
     df, total_changes = apply_collection_fixes(df, fix_config)
