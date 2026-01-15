@@ -28,7 +28,9 @@ handler = logging.StreamHandler()
 handler.setFormatter(ColoredFormatter('%(levelname)s: %(message)s'))
 logging.basicConfig(level=logging.INFO, handlers=[handler])
 
-# Parse the input (this gets )
+# Parse the input (this gets each argument and checks that it matches the 
+# expected order and type. It checks for the print flag, which lets a simple
+# if statement at the bottom call print if true)
 parser = argparse.ArgumentParser(description='Query Solr for importer information')
 parser.add_argument('importer_no', type=int, help='Importer number')
 parser.add_argument('in_importer', type=int, help='Number of works in importer package')
