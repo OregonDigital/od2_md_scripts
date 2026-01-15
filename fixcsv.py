@@ -110,6 +110,7 @@ def fix_regex_replace(df: pd.DataFrame, column: str, pattern: str, replacement: 
     
     # Apply the replacement to every value -- if it's different than the original, it must have been changed (and an error before)
     # If it's the same, then it was good before
+    # This doesn't repeat things like .tif extensions because the fix yaml already specifies to exclude things ending in .tif.
     for idx in df.index:
         if pd.notna(df.at[idx, column]):
             original = str(df.at[idx, column])
