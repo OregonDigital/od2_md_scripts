@@ -5,6 +5,7 @@ file:
   - method: identifier_file_match
     args: ['.tif']
     # no which on method!
+    # can add regex check like for identifier to see if .tif addition is correct fix. 
 title: ~
 description: ~
 identifier:

@@ -7,13 +7,13 @@ from pathlib import Path
 # Add parent directory to path so we can import fixcsv
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+# Import relevant functions from fixcsv
 from fixcsv import (
     fix_strip_column,
     fix_regex_replace,
     fix_enforce_string,
     apply_collection_fixes
 )
-
 
 class TestFixStripColumn:
     """Tests for fix_strip_column function."""
