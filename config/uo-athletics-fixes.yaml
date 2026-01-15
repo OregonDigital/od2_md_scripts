@@ -17,7 +17,7 @@ fixes:
     # this is replacing the http:// with https:// and then inserting group 1 (the rest of the url above)
     replacement: 'https://\1'
 
-    # fix file column missing file extension (just having ID)
+    # fix file column missing file extension (append .tif to the end of the ID, which is what's almost always there instead)
   - type: regex_replace
     column: file
     pattern: '^(.*)$'
