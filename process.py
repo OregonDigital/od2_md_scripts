@@ -7,7 +7,9 @@ from typing import Dict
 # Initialize colorama for cross-platform color support
 init(autoreset=True)
 
-# Custom formatter with colors
+# Custom formatter with colors (this is basically just extending the 
+# regular logging formatter by presetting a bunch of values, so we
+# don't have to later)
 class ColoredFormatter(logging.Formatter):
     COLORS: Dict[str, str] = {
         'DEBUG': Fore.CYAN,
@@ -16,7 +18,7 @@ class ColoredFormatter(logging.Formatter):
         'ERROR': Fore.RED,
         'CRITICAL': Fore.RED + Style.BRIGHT,
     }
-    
+    # Using built-in logging formatter (which gets its colors from colorama)
     def format(self, record: logging.LogRecord) -> str:
         log_color = self.COLORS.get(record.levelname, '')
         record.levelname = f"{log_color}{record.levelname}{Style.RESET_ALL}"
@@ -27,6 +29,9 @@ class ColoredFormatter(logging.Formatter):
 # in od2validation.py lines that are called from this script)
 # For more detailed debug information, change logging.INFO to logging.DEBUG
 handler = logging.StreamHandler()
+# ColoredFormatter takes argument that's passed to logging.Formatter. This uses 
+# Python's %-style formatting, so %(levelname)s is replaced with log level (DEBUG, INFO, etc.)
+# %(message)s is replaced with the actual log message
 handler.setFormatter(ColoredFormatter('%(levelname)s: %(message)s'))
 
 logging.basicConfig(
@@ -44,6 +49,7 @@ validated_headers = []
 
 class ErrorTrackingHandler(logging.Handler):
     """Handler to track which headers have errors"""
+    # emit() is called automatically by logger for every log
     def emit(self, record):
         global error_count, current_header
         

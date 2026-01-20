@@ -1,7 +1,7 @@
 import yaml, os, json, re
 import pandas as pd
 import logging
-from typing import Tuple, List, Dict, Any, Optional, Union, Pattern
+from typing import Tuple, List, Dict, Any, Optional, Pattern
 
 # Logger replaces print statements for debugging/usage
 # (It basically controls the level of info to print)
