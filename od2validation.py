@@ -155,6 +155,8 @@ class Package(object):
                 if pd.notna(row[header]):
                     cell = row[header]
                 else:
+                    # Set value specifically to empty string if there's no value (not panda default empty)
+                    # This ensures proper validation
                     cell = ''
                 for value in str(cell).split('|'):
                     if checktype == 'string':
