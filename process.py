@@ -1,45 +1,20 @@
 from od2validation import Package
 import sys
 import logging
-from colorama import Fore, Style, init
 from typing import Dict
+import re
 
-# Initialize colorama for cross-platform color support
-init(autoreset=True)
-
-# Custom formatter with colors (this is basically just extending the 
-# regular logging formatter by presetting a bunch of values, so we
-# don't have to later)
-class ColoredFormatter(logging.Formatter):
-    COLORS: Dict[str, str] = {
-        'DEBUG': Fore.CYAN,
-        'INFO': Fore.GREEN,
-        'WARNING': Fore.YELLOW,
-        'ERROR': Fore.RED,
-        'CRITICAL': Fore.RED + Style.BRIGHT,
-    }
-    # Using built-in logging formatter (which gets its colors from colorama)
-    def format(self, record: logging.LogRecord) -> str:
-        log_color = self.COLORS.get(record.levelname, '')
-        record.levelname = f"{log_color}{record.levelname}{Style.RESET_ALL}"
-        record.msg = f"{log_color}{record.msg}{Style.RESET_ALL}"
-        return super().format(record)
-
-# Configure logging (replaces print statements throughout codebase, including
-# in od2validation.py lines that are called from this script)
-# For more detailed debug information, change logging.INFO to logging.DEBUG
-handler = logging.StreamHandler()
-# ColoredFormatter takes argument that's passed to logging.Formatter. This uses 
-# Python's %-style formatting, so %(levelname)s is replaced with log level (DEBUG, INFO, etc.)
-# %(message)s is replaced with the actual log message
-handler.setFormatter(ColoredFormatter('%(levelname)s: %(message)s'))
-
+# Set up logging (level is set to INFO, format tells log how to display messages)
+# format uses a weird syntax because logging uses older string format style
 logging.basicConfig(
     level=logging.INFO,
-    handlers=[handler]
+    # Display the level of the log name (like INFO or DEBUG) and then the log message after whitespace
+    format='%(levelname)s:     %(message)s'
 )
 
-logger = logging.getLogger(__name__)
+# There can be multiple loggers -- this sets the name of this one to the module (__main__ if it's run directly)
+# so it's clear where logs come from. If another module imported process, it would show as process rather than __main__
+logger = logging.getLogger()
 
 # Track validation errors by header
 error_count = 0
@@ -56,7 +31,6 @@ class ErrorTrackingHandler(logging.Handler):
         # Detect when we're validating a new header
         if record.levelno == logging.INFO and "Validating" in record.msg:
             # Extract header name from message like "Validating 'title' from config..."
-            import re
             match = re.search(r"Validating '([^']+)'", record.msg)
             if match:
                 current_header = match.group(1)
@@ -69,8 +43,7 @@ class ErrorTrackingHandler(logging.Handler):
             headers_with_errors.add(current_header)
 
 # Add error tracking handler
-error_handler = ErrorTrackingHandler()
-logging.getLogger().addHandler(error_handler)
+logging.getLogger().addHandler(ErrorTrackingHandler())
 
 try:
     collection_name = sys.argv[1]
@@ -79,7 +52,7 @@ try:
     processing.check_headers()
     processing.get_headers_instructions()
     
-    logger.info("✓ Validation complete")
+    logger.info("-- Validation complete --")
     if error_count == 0:
         logger.info ("No errors found")
     # Show fixcsv.py suggestion if errors were found
