@@ -22,22 +22,32 @@ current_header = None
 headers_with_errors = set()
 validated_headers = []
 
+# Custom logging handler here tracks which headers have errors. This is complex, but the alternative is to
+# return error data directly in od2validation, which would tightly couple the modules (this is bad) and complicate that
+# module even further. So instead we check the logs with regex here
+# Be careful -- if od2validation log messages change, the regex here could break
+
+# Unlike regular handlers, this doesn't output anything -- it just tracks errors
 class ErrorTrackingHandler(logging.Handler):
     """Handler to track which headers have errors"""
     # emit() is called automatically by logger for every log
     def emit(self, record):
         global error_count, current_header
         
-        # Detect when we're validating a new header
+        # Detect when we're validating a new header for INFO level logs
         if record.levelno == logging.INFO and "Validating" in record.msg:
-            # Extract header name from message like "Validating 'title' from config..."
+            # Extract header name from message like "Validating 'subject' from config..."
+            # This is where the regex search through logs happens
             match = re.search(r"Validating '([^']+)'", record.msg)
+            # If the header matches the regex, set it to current header and add it to the validated list (this is how we know total headers later)
             if match:
                 current_header = match.group(1)
                 if current_header not in validated_headers:
                     validated_headers.append(current_header)
         
         # Track errors for current header
+        # Log levels are equivalent to numbers: DEBUG = 10, INFO = 20, WARNING = 30, ERROR = 40, CRITICAL = 50
+        # So we're checking if the level is ERROR (40) or higher and then adding the current header to the error set
         if record.levelno >= logging.ERROR and current_header:
             error_count += 1
             headers_with_errors.add(current_header)
