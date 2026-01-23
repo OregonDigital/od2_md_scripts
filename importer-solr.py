@@ -3,30 +3,19 @@ import logging
 from typing import List, Any, Dict
 from colorama import Fore, Style, init
 
-# Initialize colorama for cross-platform color support
-init(autoreset=True)
 
-# Custom formatter with colors
-class ColoredFormatter(logging.Formatter):
-    COLORS: Dict[str, str] = {
-        'DEBUG': Fore.CYAN,
-        'INFO': Fore.GREEN,
-        'WARNING': Fore.YELLOW,
-        'ERROR': Fore.RED,
-        'CRITICAL': Fore.RED + Style.BRIGHT,
-    }
-    
-    def format(self, record: logging.LogRecord) -> str:
-        log_color = self.COLORS.get(record.levelname, '')
-        record.levelname = f"{log_color}{record.levelname}{Style.RESET_ALL}"
-        record.msg = f"{log_color}{record.msg}{Style.RESET_ALL}"
-        return super().format(record)
 
-# Set up logging colors and handler
-logger = logging.getLogger(__name__)
-handler = logging.StreamHandler()
-handler.setFormatter(ColoredFormatter('%(levelname)s: %(message)s'))
-logging.basicConfig(level=logging.INFO, handlers=[handler])
+# Set up logging (level is set to INFO, format tells log how to display messages)
+# format uses a weird syntax because logging uses older string format style
+logging.basicConfig(
+    level=logging.INFO,
+    # Display the level of the log name (like INFO or DEBUG) and then the log message after whitespace
+    format='%(levelname)s:     %(message)s'
+)
+
+# There can be multiple loggers -- this sets the name of this one to the module (__main__ if it's run directly)
+# so it's clear where logs come from. If another module imported process, it would show as process rather than __main__
+logger = logging.getLogger()
 
 # Parse the input (this gets each argument and checks that it matches the 
 # expected order and type. It checks for the print flag, which lets a simple
