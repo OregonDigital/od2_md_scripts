@@ -14,9 +14,7 @@ import shutil
 import sys
 import re
 from typing import Any, Tuple
-from colorama import Fore, Style, init
 
-init(autoreset=True)
 
 # Configure logging
 logging.basicConfig(
@@ -76,7 +74,7 @@ def backup_original(filepath: str) -> str:
     """Create backup of original file"""
     backup_path = filepath + '.backup'
     shutil.copy(filepath, backup_path)
-    logger.info(f"{Fore.CYAN}Backup created: {backup_path}{Style.RESET_ALL}")
+    logger.info(f"Backup created: {backup_path}")
     return backup_path
 
 
@@ -237,7 +235,7 @@ def main() -> None:
     # changed values that don't match the unchanged value). 
 
     # Apply fixes
-    logger.info(f"{Fore.YELLOW}\nApplying fixes...{Style.RESET_ALL}")
+    logger.info(f"\nApplying fixes...")
     df, total_changes = apply_collection_fixes(df, fix_config)
     
     # Enforce validation rules
@@ -251,10 +249,10 @@ def main() -> None:
     if total_changes > 0:
         logger.info("")
         save_dataframe(df, metadata_path)
-        logger.info(f"\n{Fore.GREEN}✓ Applied {total_changes} fixes{Style.RESET_ALL}")
+        logger.info(f"\n✓ Applied {total_changes} fixes")
         logger.info(f"Run 'python3 process.py {collection}' to validate")
     else:
-        logger.info(f"\n{Fore.GREEN}✓ No issues found - file is clean{Style.RESET_ALL}")
+        logger.info(f"\n✓ No issues found - file is clean")
     
     logger.info("="*60)
 
