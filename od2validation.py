@@ -145,72 +145,66 @@ class Package(object):
         except Exception as e:
             logger.error(f"get_method > try > except for '{method_name}': {e}")
 
+    def _validate_cell_values(self, df: pd.DataFrame, header: str, validation_data: Any, 
+                              checktype: str, p: Optional[Pattern[str]] = None) -> None:
+        """
+        Validates cell values in a dataframe column.
+        Works by:
+
+        1. Iterates through each row in dataframe
+        2. Gets cell value or empty string if missing
+        3. Splits multi-value cells on '|'
+        4. Validates each value using string or regex check
+        """
+        for index, row in df.iterrows():
+            # Get cell value and convert missing values to empty string
+            if pd.notna(row[header]):
+                cell = row[header]
+            else:
+                cell = ''
+
+            # Split on '|' for multi-value cells and validate each value
+            for value in str(cell).split('|'):
+                if checktype == 'string':
+                    self.perform_string_check(validation_data, value, index)
+                elif checktype == 'regex' and p is not None:
+                    self.perform_regex_check(p, value, index)
+                else:
+                    logger.error(f"Unkown checktype '{checktype}' in  _validate_cell_values")
+
     def select_data_for_checks(self, header: str, which: str, checktype: str, validation_data: Any, args: Optional[List[Any]]) -> None:
         df = self.get_dataframe()
-        if checktype == 'regex':
-            p = re.compile(r"{}".format(validation_data))
+        
+        # Compile regex pattern
+        p = re.compile(r"{}".format(validation_data))
+
         if which == 'all':
-            # duplicative codeblock 20250630B >
-            for index, row in df.iterrows():
-                if pd.notna(row[header]):
-                    cell = row[header]
-                else:
-                    # Set value specifically to empty string if there's no value (not panda default empty)
-                    # This ensures proper validation
-                    cell = ''
-                for value in str(cell).split('|'):
-                    if checktype == 'string':
-                        self.perform_string_check(validation_data, value, index)
-                    elif checktype == 'regex':
-                        self.perform_regex_check(p, value, index)
-                    else:
-                        logger.error("checktype arg passed to select_data_for_checks > which = all")
-            # < end duplicative codeblock 20250630B
+            # Validate all rows without filtering
+            self._validate_cell_values(df, header, validation_data, checktype, p)
+
         elif which == 'complex':
-            # duplicative codeblock 20250630B >
-            for index, row in df.iterrows():
-                if pd.notna(row[header]):
-                    cell = row[header]
-                else:
-                    cell = ''
-                try:
-                    if row['format'] == 'https://w3id.org/spar/mediatype/application/xml':
-                        # to do confirm / add this logic to documentation
-                        for value in str(cell).split('|'):
-                            if checktype == 'string':
-                                self.perform_string_check(validation_data, value, index)
-                            elif checktype == 'regex':
-                                self.perform_regex_check(p, value, index)
-                            else:
-                                logger.error("checktype arg passed to select_data_for_checks > which = complex")
-                except:
-                    logger.error(f"metadata specified as complex object but no 'format' values")
-            # < duplicative codeblock 20250630B
+            # Only validate rows with format column that has XML (complex object)
+            try:
+                compex_df = df[df['format'] == 'https://w3id.org/spar/mediatype/application/xml']
+                self._validate_cell_values(compex_df, header, validation_data, checktype, p)
+            except KeyError:
+                logger.error(f"metadata specified as complex object but no 'format' column exists")
+
         elif which == 'item':
-            # duplicative codeblock 20250630B >
-            for index, row in df.iterrows():
-                if pd.notna(row[header]):
-                    cell = row[header]
-                else:
-                    cell = ''
+                # Only validate rows where format is missing or not XML (simple item)
                 try:
-                    if row.get('format') == None or row['format'] != 'https://w3id.org/spar/mediatype/application/xml':
-                        # to do testing needed for this ^^^ logic
-                        # to do confirm / add this logic to documentation
-                        for value in str(cell).split('|'):
-                            if checktype == 'string':
-                                self.perform_string_check(validation_data, value, index)
-                            elif checktype == 'regex':
-                                self.perform_regex_check(p, value, index)
-                            else:
-                                logger.error("checktype arg passed to select_data_for_checks > which = item")
-                except:
+                    # Filter to rows where format is NaN or not XML
+                    item_df = df[(df['format'].isna()) | 
+                                 (df['format'] != 'https://w3id.org/spar/mediatype/application/xml')]
+                    self._validate_cell_values(item_df, header, validation_data, checktype, p)
+                except KeyError:
                     logger.error("metadata specified as complex-object item but has unexpected 'format' value")
-            # < duplicative codeblock 20250630B
+
         elif which == 'na' and checktype == 'method':
+            # Run custom method, not standard validation
             self.get_method(validation_data, args)
         else:
-            logger.error("'blarf' select_data_for_checks")
+            logger.error(f"Invalid 'which' parameter: {which}. Expected 'all', 'complex', 'item', or 'na'.")
 
     def get_headers_instructions(self) -> None:
         for header in self.headers_config:
