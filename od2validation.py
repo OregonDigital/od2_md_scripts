@@ -24,12 +24,12 @@ class Package(object):
     def filepaths(self) -> Tuple[List[str], str]:
         if self.test == False:
             with open("filepaths.yaml", "r") as yf:
-                paths = yaml.safe_load(yf)
+                paths: Dict[str, Any] = yaml.safe_load(yf)
                 return (paths['metadata'], paths['assets'],)
                 # * self.metadata is 1 or 2 item list
         else:
             with open("filepaths_test.yaml", "r") as yf:
-                paths = yaml.safe_load(yf)
+                paths: Dict[str, Any] = yaml.safe_load(yf)
                 return (paths['metadata'], paths['assets'],)
 
     def print_filepaths(self) -> None:
@@ -42,13 +42,13 @@ class Package(object):
 
     def get_config(self, headers_config: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         with open("config/default.yaml", "r") as yf:
-            default = yaml.safe_load(yf)
+            default: Dict[str, Any] = yaml.safe_load(yf)
         with open(f"config/{headers_config}.yaml", "r") as yf:
-            headers = yaml.safe_load(yf)
+            headers: Dict[str, Any] = yaml.safe_load(yf)
         return (default, headers,) # any different/better tuple vs. list here?
 
     def print_config(self) -> None:
-        pretty = json.dumps(self.default_config, indent=4)
+        pretty: str = json.dumps(self.default_config, indent=4)
         logger.info(f"default_config (JSON)\n{pretty}")
         pretty = json.dumps(self.headers_config, indent=4)
         logger.info(f"headers_config (JSON)\n{pretty}")
@@ -68,7 +68,7 @@ class Package(object):
                 logger.error("for CSV, filepaths.yaml > metadata for CSV must be one-item list")
                 exit()
             elif len(self.metadata) == 1:
-                dataframe = pd.read_csv(self.metadata[0], dtype=str)
+                dataframe: pd.DataFrame = pd.read_csv(self.metadata[0], dtype=str)
                 return dataframe
             else:
                 logger.error("get_dataframe for CSV metadata")
@@ -78,10 +78,10 @@ class Package(object):
                 logger.error("...with filepath, optionally sheet name (if no sheet name first sheet checked)")
                 exit()
             elif len(self.metadata) == 1:
-                dataframe = pd.read_excel(self.metadata[0], dtype=str)
+                dataframe: pd.DataFrame = pd.read_excel(self.metadata[0], dtype=str)
                 return dataframe
             elif len(self.metadata) == 2:
-                dataframe = pd.read_excel(self.metadata[0], sheet_name=self.metadata[1], dtype=str)
+                dataframe: pd.DataFrame = pd.read_excel(self.metadata[0], sheet_name=self.metadata[1], dtype=str)
                 return dataframe
             else:
                 logger.error("get_dataframe for Excel metadata")
@@ -91,7 +91,7 @@ class Package(object):
             exit()
 
     def get_headers(self) -> List[str]:
-        headers = self.get_dataframe().columns.to_list()
+        headers: List[str] = self.get_dataframe().columns.to_list()
         return headers
 
     def print_headers(self) -> None:
@@ -100,17 +100,17 @@ class Package(object):
             logger.info(header)
 
     def check_headers(self) -> bool:
-        check = True
+        check: bool = True
         logger.info("check headers configuration / headers in metadata")
         if set(self.headers_config) != set(self.get_headers()):
             check = False
             logger.error("headers_config != metadata headers")
-            diff = list(set(self.get_headers()) - set(self.headers_config))
+            diff: List[str] = list(set(self.get_headers()) - set(self.headers_config))
             if len(diff) > 0:
                 logger.info("metadata headers not in config file:")
                 for item in diff:
                     logger.error("  %s", item)
-            diff = list(set(self.headers_config) - set(self.get_headers()))
+            diff: List[str] = list(set(self.headers_config) - set(self.get_headers()))
             if len(diff) > 0:
                 logger.error("headers_config fields not in metadata headers:")
                 for item in diff:
@@ -136,7 +136,7 @@ class Package(object):
             # more methods later?
         }
         try:
-            method = method_mapping.get(method_name)
+            method: Optional[Any] = method_mapping.get(method_name)
             if method:
                 # print(f"method_mapping.get({method_name}) is True") # check
                 return method(args)
@@ -173,9 +173,10 @@ class Package(object):
                     logger.error(f"Unkown checktype '{checktype}' in  _validate_cell_values")
 
     def select_data_for_checks(self, header: str, which: str, checktype: str, validation_data: Any, args: Optional[List[Any]]) -> None:
-        df = self.get_dataframe()
+        df: pd.DataFrame = self.get_dataframe()
         
         # Compile regex pattern
+        # TODO: verify pattern is actually the right thing to use here (p: Pattern[str]) for type hint
         p = re.compile(r"{}".format(validation_data))
 
         if which == 'all':
@@ -185,8 +186,8 @@ class Package(object):
         elif which == 'complex':
             # Only validate rows with format column that has XML (complex object)
             try:
-                compex_df = df[df['format'] == 'https://w3id.org/spar/mediatype/application/xml']
-                self._validate_cell_values(compex_df, header, validation_data, checktype, p)
+                complex_df: pd.DataFrame = df[df['format'] == 'https://w3id.org/spar/mediatype/application/xml']
+                self._validate_cell_values(complex_df, header, validation_data, checktype, p)
             except KeyError:
                 logger.error(f"metadata specified as complex object but no 'format' column exists")
 
@@ -194,7 +195,7 @@ class Package(object):
                 # Only validate rows where format is missing or not XML (simple item)
                 try:
                     # Filter to rows where format is NaN or not XML
-                    item_df = df[(df['format'].isna()) | 
+                    item_df: pd.DataFrame = df[(df['format'].isna()) | 
                                  (df['format'] != 'https://w3id.org/spar/mediatype/application/xml')]
                     self._validate_cell_values(item_df, header, validation_data, checktype, p)
                 except KeyError:
@@ -257,10 +258,10 @@ class Package(object):
     # duplicative code here too in that I create and use dataframe separately for methods
 
     def check_filenames_assets(self, args: List[Any]) -> None:
-        col = args[0]
+        col: str = args[0]
         # print(f"args: {args}, type(args): {type(args)}") # check
         # print(f"col: {col}, type(col): {type(col)}") # check
-        filenames = []
+        filenames: List[str] = []
         for cell in self.get_dataframe()[col]:
             if pd.notna(cell):
                 for value in str(cell).split('|'):
@@ -281,8 +282,8 @@ class Package(object):
         # (*i) NOTE this method only works with one filename, one identifier
         # print(f"args: {args}, type(args): {type(args)}") # check
         # print(f"args[0]: {args[0]}, type(args[0]): {type(args[0])}") # check
-        substring = args[0]
-        df_for_method = self.get_dataframe()
+        substring: str = args[0]
+        df_for_method: pd.DataFrame = self.get_dataframe()
         # print(f"type(df_for_method): {type(df_for_method)}") # check
         for index, row in df_for_method.iterrows():
             if str(row['identifier']) == str(row['file']).replace(substring, ''):
@@ -292,5 +293,5 @@ class Package(object):
                 logger.error(f"row {index + 2} '{row['identifier']} / '{row['file']}'")
 
     def save_as_csv(self) -> None:
-        filename = self.filepaths[0].split('/')[-1]
+        filename: str = self.filepaths[0].split('/')[-1]
         logger.debug(f"does filename == {filename}?")
