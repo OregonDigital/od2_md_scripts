@@ -1,0 +1,24 @@
+# No need to specify the string when using enforce - it will read the correct value from uo-athletics.yaml, since it 
+# expects only one specific, unchanging value
+fixes:
+  # fix institution having extra space at the end
+  - type: strip
+    column: institution
+  
+  # fix license being wrong type (usually nc instead of nc-nd)
+  - type: enforce_string
+    column: license
+  
+  # fix location using http over https
+  - type: regex_replace
+    column: location
+    # the () encloses a specific group (automatically labeled 1,2,3... as they are made)
+    pattern: '^http://(sws\.geonames\.org/)'
+    # this is replacing the http:// with https:// and then inserting group 1 (the rest of the url above)
+    replacement: 'https://\1'
+
+    # fix file column missing file extension (append .tif to the end of the ID, which is what's almost always there instead)
+  - type: regex_replace
+    column: file
+    pattern: '^(.*?)(?<!\.tif)$'
+    replacement: '\1.tif'

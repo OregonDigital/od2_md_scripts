@@ -5,6 +5,7 @@ file:
   - method: identifier_file_match
     args: ['.tif']
     # no which on method!
+    # can add regex check like for identifier to see if .tif addition is correct fix. 
 title: ~
 description: ~
 identifier:
@@ -26,7 +27,7 @@ subject:
   - regex: (^http:\/\/id\.loc\.gov\/authorities\/subjects\/sh\d{1,15}$|^http:\/\/opaquenamespace\.org\/ns\/people\/\S*$)
     which: all
 location: 
-  - regex: ^https:\/\/sws.geonames.org/\S*$
+  - regex: ^https:\/\/sws.geonames.org/\S*\/$
     which: all
 resource_type:
   - string: http://purl.org/dc/dcmitype/Image

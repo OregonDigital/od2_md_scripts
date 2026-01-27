@@ -1,0 +1,6 @@
+# Copy this file and rename it 'filepaths.yaml'
+# The below is an example of a filepath, it may be different on Windows vs Mac, and you will have to replace the specific path
+# with the one you want to run process on
+metadata:
+- /Volumes/DigitalProjects/Metadata/uo-athletics/Work/__processing/20250503_Michigan_State_SB/20250503_Michigan_State_SB.csv
+assets: /Volumes/DigitalProjects/Metadata/uo-athletics/Work/__processing/20250503_Michigan_State_SB/files

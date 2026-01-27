@@ -1,5 +1,6 @@
 import csv, json, yaml, os
 import pandas as pd
+from typing import Optional
 
 print("enter either (1) or (2)")
 print("(1) absolute filepath to .csv metadata file, as:")
@@ -37,11 +38,11 @@ print("enter a name for your config file, excluding file extension, for example:
 print(">>> archival-materials")
 print("enter 'n' to exit")
 
-def get_input():
+def get_input() -> str:
     user_input = input(">>> ")
     return user_input
 
-filename = None
+filename: Optional[str] = None
 
 while filename is None:
     filename = get_input()
