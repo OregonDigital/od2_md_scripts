@@ -48,6 +48,7 @@ class Package(object):
         return (default, headers,) # any different/better tuple vs. list here?
 
     def print_config(self) -> None:
+        # TODO: rename pretty
         pretty: str = json.dumps(self.default_config, indent=4)
         logger.info(f"default_config (JSON)\n{pretty}")
         pretty = json.dumps(self.headers_config, indent=4)
@@ -208,6 +209,7 @@ class Package(object):
             logger.error(f"Invalid 'which' parameter: {which}. Expected 'all', 'complex', 'item', or 'na'.")
 
     def get_headers_instructions(self) -> None:
+        # TODO: refactor to reduce duplicative codeblock
         for header in self.headers_config:
             if self.headers_config[header] != None:
                 logger.info(f"Validating '{header}' from config...")
@@ -256,7 +258,8 @@ class Package(object):
 
     # methods for get_method
     # duplicative code here too in that I create and use dataframe separately for methods
-
+    # TODO: condense dataframe usage, one declaration possible in init?
+    
     def check_filenames_assets(self, args: List[Any]) -> None:
         col: str = args[0]
         filenames: List[str] = []
