@@ -259,13 +259,10 @@ class Package(object):
 
     def check_filenames_assets(self, args: List[Any]) -> None:
         col: str = args[0]
-        # print(f"args: {args}, type(args): {type(args)}") # check
-        # print(f"col: {col}, type(col): {type(col)}") # check
         filenames: List[str] = []
         for cell in self.get_dataframe()[col]:
             if pd.notna(cell):
                 for value in str(cell).split('|'):
-                    # print(value) # check
                     filenames.append(value)
         if set(filenames) != set(self.assets):
             logger.error("set(filenames) != set(self.assets)")
@@ -279,15 +276,10 @@ class Package(object):
             pass
 
     def identifier_file_match(self, args: List[str]) -> None:
-        # (*i) NOTE this method only works with one filename, one identifier
-        # print(f"args: {args}, type(args): {type(args)}") # check
-        # print(f"args[0]: {args[0]}, type(args[0]): {type(args[0])}") # check
         substring: str = args[0]
         df_for_method: pd.DataFrame = self.get_dataframe()
-        # print(f"type(df_for_method): {type(df_for_method)}") # check
         for index, row in df_for_method.iterrows():
             if str(row['identifier']) == str(row['file']).replace(substring, ''):
-                # print(f"{index + 2} OK") # check
                 pass
             else:
                 logger.error(f"row {index + 2} '{row['identifier']} / '{row['file']}'")
