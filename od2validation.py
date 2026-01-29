@@ -208,49 +208,33 @@ class Package(object):
         else:
             logger.error(f"Invalid 'which' parameter: {which}. Expected 'all', 'complex', 'item', or 'na'.")
 
+    def _process_instructions(self, header: str, instructions: List, config_source: str) -> None:
+        for instruction in instructions:
+            if instruction.get('string'):
+                logger.debug(f"string check for header '{header}' ({instruction['which']})")
+                self.select_data_for_checks(header, instruction['which'], 'string',
+                                            instruction['string'], None)
+            elif instruction.get('regex'):
+                logger.debug(f"regex check for header '{header}' ({instruction['which']})")
+                self.select_data_for_checks(header, instruction['which'], 'regex',
+                                            instruction['regex'], None)
+            elif instruction.get('method'):
+                logger.debug(f"method check ({instruction['method']}) for header '{header}'")
+                self.select_data_for_checks(header, 'na', 'method', instruction['method'], 
+                                            instruction['args'])
+            else:
+                logger.error(f"unknown check type: {config_source} '{header}' instruction {instruction}")
+
     def get_headers_instructions(self) -> None:
-        # TODO: refactor to reduce duplicative codeblock
         for header in self.headers_config:
             if self.headers_config[header] != None:
                 logger.info(f"Validating '{header}' from config...")
-                for instruction in self.headers_config[header]:
-                    # duplicative codeblock 20250630A
-                    if instruction.get('string'):
-                        logger.debug(f"string check for header '{header}' ({instruction['which']})")
-                        self.select_data_for_checks(header, instruction['which'], 'string',
-                                                    instruction['string'], None)
-                    elif instruction.get('regex'):
-                        logger.debug(f"regex check for header '{header}' ({instruction['which']})")
-                        self.select_data_for_checks(header, instruction['which'], 'regex',
-                                                    instruction['regex'], None)
-                    elif instruction.get('method'):
-                        logger.debug(f"method check ({instruction['method']}) for header '{header}'")
-                        self.select_data_for_checks(header, 'na', 'method', instruction['method'], 
-                                                    instruction['args'])
-                    else:
-                        logger.error(f"unknown check type: headers_config '{header}' instruction {instruction}")
-                    # duplicative codeblock 20250630A
+                self._process_instructions(header, self.headers_config[header], 'headers_config')
             elif self.headers_config[header] == None:
                 try:
                     if self.default_config[header] != None:
                         logger.info(f"Validating '{header}' from default config...")
-                        for instruction in self.default_config[header]:
-                            # duplicative codeblock 20250630A
-                            if instruction.get('string'):
-                                logger.debug(f"string check for header '{header}' ({instruction['which']})")
-                                self.select_data_for_checks(header, instruction['which'], 'string', 
-                                                            instruction['string'], None)
-                            elif instruction.get('regex'):
-                                logger.debug(f"regex check for header '{header}' ({instruction['which']})")
-                                self.select_data_for_checks(header, instruction['which'], 'regex', 
-                                                            instruction['regex'], None)
-                            elif instruction.get('method'):
-                                logger.debug(f"method check ({instruction['method']}) for header '{header}'")
-                                self.select_data_for_checks(header, 'na', 'method', instruction['method'], 
-                                                            instruction['args'])
-                            else:
-                                logger.error(f"unknown check type: default_config '{header}' instruction {instruction}")
-                        # duplicative codeblock 20250630A
+                        self._process_instructions(header, self.default_config[header], 'default_config')
                     else:
                         logger.info(f"NO CHECK CONFIGURED for header '{header}' in headers_config or default_config")
                 except KeyError as e:
