@@ -208,6 +208,16 @@ class Package(object):
             logger.error(f"Invalid 'which' parameter: {which}. Expected 'all', 'complex', 'item', or 'na'.")
 
     def _process_instructions(self, header: str, instructions: List, config_source: str) -> None:
+        """
+        Process validation instructions for a specific header
+
+        Iterates through list of validation instructions and executes check (string, regex, or method) for each instruction
+
+        Args:
+            header: Column name being validated
+            instructions: List of instruction dicts (which hold validation type and parameters)
+            config_source: Name of config file for error logging
+        """
         for instruction in instructions:
             if instruction.get('string'):
                 logger.debug(f"string check for header '{header}' ({instruction['which']})")
@@ -226,13 +236,19 @@ class Package(object):
 
     def get_headers_instructions(self) -> None:
         """
-        Find the correct process checks from either the specified or default config file.
+        Decide validation instructions for config files headers
+
+        For each header in headers_config:
+        1. If header has validation rules in headers_config, use those
+        2. If header is None in headers_config, use default_config
+        3. If header isn't in either config, log no check configured
         """
         for header in self.headers_config:
-            # Check if the config file exists for a header, either using the specific or default file to pass data for checks
+            # Use project-specific config if possible
             if self.headers_config[header] != None:
                 logger.info(f"Validating '{header}' from config...")
                 self._process_instructions(header, self.headers_config[header], 'headers_config')
+            # Use default config
             elif self.headers_config[header] == None:
                 try:
                     if self.default_config[header] != None:
