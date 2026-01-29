@@ -48,11 +48,10 @@ class Package(object):
         return (default, headers,) # any different/better tuple vs. list here?
 
     def print_config(self) -> None:
-        # TODO: rename pretty
-        pretty: str = json.dumps(self.default_config, indent=4)
-        logger.info(f"default_config (JSON)\n{pretty}")
-        pretty = json.dumps(self.headers_config, indent=4)
-        logger.info(f"headers_config (JSON)\n{pretty}")
+        formatted_default: str = json.dumps(self.default_config, indent=4)
+        logger.info(f"default_config (JSON)\n{formatted_default}")
+        formatted_headers = json.dumps(self.headers_config, indent=4)
+        logger.info(f"headers_config (JSON)\n{formatted_headers}")
 
     def metadata_file_type(self) -> str:
         if self.metadata[0].split('.')[-1] == "xlsx":
