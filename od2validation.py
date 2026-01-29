@@ -226,7 +226,11 @@ class Package(object):
                 logger.error(f"unknown check type: {config_source} '{header}' instruction {instruction}")
 
     def get_headers_instructions(self) -> None:
+        """
+        Find the correct process checks from either the specified or default config file.
+        """
         for header in self.headers_config:
+            # Check if the config file exists for a header, either using the specific or default file to pass data for checks
             if self.headers_config[header] != None:
                 logger.info(f"Validating '{header}' from config...")
                 self._process_instructions(header, self.headers_config[header], 'headers_config')
