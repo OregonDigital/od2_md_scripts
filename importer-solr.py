@@ -24,15 +24,29 @@ parser.add_argument('importer_no', type=int, help='Importer number')
 parser.add_argument('in_importer', type=int, help='Number of works in importer package')
 parser.add_argument('--print-response', '-p', action='store_true', 
                     help='Print the full Solr query response')
-args = parser.parse_args()
 
-importer_no = args.importer_no
-in_importer = args.in_importer
 
-solrselect = "https://solr-od2.library.oregonstate.edu/solr/prod/select?"
-q = f"q=bulkrax_identifier_tesim:{importer_no}"
-fl = "&fl=id,member_of_collection_ids_ssim,member_of_collections_ssim,file_set_ids_ssim"
-rows = "&rows=1000"
+def build_solr_query_url(importer_no: int) -> str:
+    """
+    Docstring for build_solr_query_url
+    
+    :param importer_no: Description
+    :type importer_no: int
+    :return: Description
+    :rtype: str
+    """
+    base_url = "https://solr-od2.library.oregonstate.edu/solr/prod/select?"
+    params = {
+        'q': f'bulkrax_identifier_tesim:{importer_no}',
+        'fl': '&fl=id,member_of_collection_ids_ssim,member_of_collections_ssim,file_set_ids_ssim',
+        'rows': '1000'
+    }
+    return base_url, params
+
+# solrselect = "https://solr-od2.library.oregonstate.edu/solr/prod/select?"
+# q = f"q=bulkrax_identifier_tesim:{importer_no}"
+# fl = "&fl=id,member_of_collection_ids_ssim,member_of_collections_ssim,file_set_ids_ssim"
+# rows = "&rows=1000"
 
 try:
     response = requests.get(f"{solrselect}{q}{fl}{rows}").json()
@@ -85,3 +99,15 @@ if len(coll_ids) > 0:
 if args.print_response:
     logger.info("Solr query response")
     print(json.dumps(response, indent=4))
+
+def main():
+    """Run file"""
+    args = parser.parse_args()
+
+    logger.info(f"Querying Solr for importer {args.imoprter_no}")
+
+    # Query Solr
+    base_url, params = build_solr_query_url(args.importer_no)
+
+if __name__ == "__main__":
+    main()
