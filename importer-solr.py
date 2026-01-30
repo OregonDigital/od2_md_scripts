@@ -1,7 +1,6 @@
 import sys, requests, json, argparse
 import logging
 from typing import List, Any, Dict
-from colorama import Fore, Style, init
 
 
 
