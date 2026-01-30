@@ -26,15 +26,8 @@ parser.add_argument('--print-response', '-p', action='store_true',
                     help='Print the full Solr query response')
 
 
-def build_solr_query_url(importer_no: int) -> str:
-    """
-    Docstring for build_solr_query_url
-    
-    :param importer_no: Description
-    :type importer_no: int
-    :return: Description
-    :rtype: str
-    """
+def build_solr_query_url(importer_no: int) -> tuple[str, Dict[str, str]]:
+    """Create Solr query URL for a given importer"""
     base_url = "https://solr-od2.library.oregonstate.edu/solr/prod/select?"
     params = {
         'q': f'bulkrax_identifier_tesim:{importer_no}',
@@ -59,14 +52,7 @@ def build_solr_query_url(importer_no: int) -> str:
 
 
 def analyze_works(docs: List[Dict]) -> tuple[List[str], List[Any], List[str]]:
-    """
-    Docstring for analyze_works
-    
-    :param docs: Description
-    :type docs: List[Dict]
-    :return: Description
-    :rtype: tuple[List[str], List[Any], List[str]]
-    """
+    """Check if works have missing file sets or collection membership"""
     no_file_set = []
     coll_ids = []
     no_coll_id =[]
@@ -105,9 +91,9 @@ def log_file_set_status(no_file_set: List[str], total_works: int) -> None:
     """Log status of file sets in works"""
     if no_file_set:
         logger.error(f"{len(no_file_set)} / {total_works} work(s) have no file set id")
-        logger.error("PID(s) for works missing in file set id:")
+        logger.error("PID(s) for works missing file set id:")
         for pid in no_file_set:
-            logger.error(f"   {pid}")
+            logger.error(f"  {pid}")
     else:
         logger.info(f"All {total_works} works have file set id")
 
@@ -116,17 +102,17 @@ def log_collection_status(no_coll_id: List[str], coll_ids: List[Any], total_work
     if len(no_coll_id) == total_works:
         logger.error(f"No works in importer {importer_no} are in collection(s)")
     elif no_coll_id:
-        logger.error(f"{len(no_coll_id)} / {importer_no} are in collection(s)")
+        logger.error(f"{len(no_coll_id)} / {total_works} are NOT in collection(s)")
         logger.error("PID(s) for works are not in any collection:")
         for pid in no_coll_id:
-            logger.error(f"   {pid}")
+            logger.error(f"  {pid}")
     else:
         logger.info(f"All {total_works} works are members of collection(s)")
     
     if coll_ids:
         logger.info("Parent collection id(s):")
         for coll_id in coll_ids:
-            logger.info(f"   {coll_id}")
+            logger.info(f"  {coll_id}")
 
 # if len(no_file_set) >= 1:
 #     logger.error(f"""{len(no_file_set)} / {response['response']['numFound']} work(s) in Solr for importer {importer_no} have no file set id""")
