@@ -48,10 +48,10 @@ class Package(object):
         return (default, headers,) # any different/better tuple vs. list here?
 
     def print_config(self) -> None:
-        pretty: str = json.dumps(self.default_config, indent=4)
-        logger.info(f"default_config (JSON)\n{pretty}")
-        pretty = json.dumps(self.headers_config, indent=4)
-        logger.info(f"headers_config (JSON)\n{pretty}")
+        formatted_default: str = json.dumps(self.default_config, indent=4)
+        logger.info(f"default_config (JSON)\n{formatted_default}")
+        formatted_headers = json.dumps(self.headers_config, indent=4)
+        logger.info(f"headers_config (JSON)\n{formatted_headers}")
 
     def metadata_file_type(self) -> str:
         if self.metadata[0].split('.')[-1] == "xlsx":
@@ -207,48 +207,53 @@ class Package(object):
         else:
             logger.error(f"Invalid 'which' parameter: {which}. Expected 'all', 'complex', 'item', or 'na'.")
 
+    def _process_instructions(self, header: str, instructions: List, config_source: str) -> None:
+        """
+        Process validation instructions for a specific header
+
+        Iterates through list of validation instructions and executes check (string, regex, or method) for each instruction
+
+        Args:
+            header: Column name being validated
+            instructions: List of instruction dicts (which hold validation type and parameters)
+            config_source: Name of config file for error logging
+        """
+        for instruction in instructions:
+            if instruction.get('string'):
+                logger.debug(f"string check for header '{header}' ({instruction['which']})")
+                self.select_data_for_checks(header, instruction['which'], 'string',
+                                            instruction['string'], None)
+            elif instruction.get('regex'):
+                logger.debug(f"regex check for header '{header}' ({instruction['which']})")
+                self.select_data_for_checks(header, instruction['which'], 'regex',
+                                            instruction['regex'], None)
+            elif instruction.get('method'):
+                logger.debug(f"method check ({instruction['method']}) for header '{header}'")
+                self.select_data_for_checks(header, 'na', 'method', instruction['method'], 
+                                            instruction['args'])
+            else:
+                logger.error(f"unknown check type: {config_source} '{header}' instruction {instruction}")
+
     def get_headers_instructions(self) -> None:
+        """
+        Decide validation instructions for config files headers
+
+        For each header in headers_config:
+        1. If header has validation rules in headers_config, use those
+        2. If header is None in headers_config, use default_config
+        3. If header isn't in either config, log no check configured
+        """
         for header in self.headers_config:
+            # Use project-specific config if possible
             if self.headers_config[header] != None:
                 logger.info(f"Validating '{header}' from config...")
-                for instruction in self.headers_config[header]:
-                    # duplicative codeblock 20250630A
-                    if instruction.get('string'):
-                        logger.debug(f"string check for header '{header}' ({instruction['which']})")
-                        self.select_data_for_checks(header, instruction['which'], 'string',
-                                                    instruction['string'], None)
-                    elif instruction.get('regex'):
-                        logger.debug(f"regex check for header '{header}' ({instruction['which']})")
-                        self.select_data_for_checks(header, instruction['which'], 'regex',
-                                                    instruction['regex'], None)
-                    elif instruction.get('method'):
-                        logger.debug(f"method check ({instruction['method']}) for header '{header}'")
-                        self.select_data_for_checks(header, 'na', 'method', instruction['method'], 
-                                                    instruction['args'])
-                    else:
-                        logger.error(f"unknown check type: headers_config '{header}' instruction {instruction}")
-                    # duplicative codeblock 20250630A
+                self._process_instructions(header, self.headers_config[header], 'headers_config')
+            # Use default config
             elif self.headers_config[header] == None:
                 try:
                     if self.default_config[header] != None:
                         logger.info(f"Validating '{header}' from default config...")
-                        for instruction in self.default_config[header]:
-                            # duplicative codeblock 20250630A
-                            if instruction.get('string'):
-                                logger.debug(f"string check for header '{header}' ({instruction['which']})")
-                                self.select_data_for_checks(header, instruction['which'], 'string', 
-                                                            instruction['string'], None)
-                            elif instruction.get('regex'):
-                                logger.debug(f"regex check for header '{header}' ({instruction['which']})")
-                                self.select_data_for_checks(header, instruction['which'], 'regex', 
-                                                            instruction['regex'], None)
-                            elif instruction.get('method'):
-                                logger.debug(f"method check ({instruction['method']}) for header '{header}'")
-                                self.select_data_for_checks(header, 'na', 'method', instruction['method'], 
-                                                            instruction['args'])
-                            else:
-                                logger.error(f"unknown check type: default_config '{header}' instruction {instruction}")
-                        # duplicative codeblock 20250630A
+                        self._process_instructions(header, self.default_config[header], 'default_config')
                     else:
                         logger.info(f"NO CHECK CONFIGURED for header '{header}' in headers_config or default_config")
                 except KeyError as e:
@@ -256,7 +261,8 @@ class Package(object):
 
     # methods for get_method
     # duplicative code here too in that I create and use dataframe separately for methods
-
+    # TODO: condense dataframe usage, one declaration possible in init?
+    
     def check_filenames_assets(self, args: List[Any]) -> None:
         col: str = args[0]
         filenames: List[str] = []
