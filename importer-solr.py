@@ -50,7 +50,7 @@ def build_solr_query_url(importer_no: int) -> tuple[str, Dict[str, str]]:
 # logger.info(f"Solr query results for importer {importer_no}")
 # logger.info(f"""{response['response']['numFound']} / {in_importer} works in Solr / works in importer # {importer_no}""")
 
-
+# TODO: Ask BMR what docs meant here, what actually is response['response']['docs']?
 def analyze_works(docs: List[Dict]) -> tuple[List[str], List[Any], List[str]]:
     """Check if works have missing file sets or collection membership"""
     no_file_set = []
