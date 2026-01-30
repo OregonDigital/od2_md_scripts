@@ -38,7 +38,7 @@ def build_solr_query_url(importer_no: int) -> str:
     base_url = "https://solr-od2.library.oregonstate.edu/solr/prod/select?"
     params = {
         'q': f'bulkrax_identifier_tesim:{importer_no}',
-        'fl': '&fl=id,member_of_collection_ids_ssim,member_of_collections_ssim,file_set_ids_ssim',
+        'fl': 'id,member_of_collection_ids_ssim,member_of_collections_ssim,file_set_ids_ssim',
         'rows': '1000'
     }
     return base_url, params
@@ -48,66 +48,145 @@ def build_solr_query_url(importer_no: int) -> str:
 # fl = "&fl=id,member_of_collection_ids_ssim,member_of_collections_ssim,file_set_ids_ssim"
 # rows = "&rows=1000"
 
-try:
-    response = requests.get(f"{solrselect}{q}{fl}{rows}").json()
-except Exception as e:
-    logger.error(f"Error making Solr request: {e}")
-    exit(1)
+# try:
+#     response = requests.get(f"{solrselect}{q}{fl}{rows}").json()
+# except Exception as e:
+#     logger.error(f"Error making Solr request: {e}")
+#     exit(1)
 
-logger.info(f"Solr query results for importer {importer_no}")
-logger.info(f"""{response['response']['numFound']} / {in_importer} works in Solr / works in importer # {importer_no}""")
+# logger.info(f"Solr query results for importer {importer_no}")
+# logger.info(f"""{response['response']['numFound']} / {in_importer} works in Solr / works in importer # {importer_no}""")
 
-no_file_set: List[str] = []
-coll_ids: List[Any] = []
-no_coll_id: List[str] = []
 
-for work in response['response']['docs']:
-    try:
-        work['file_set_ids_ssim']
-    except KeyError as e:
-        no_file_set.append(work['id'])
-    try:
-        coll_id = work['member_of_collection_ids_ssim']
-        if coll_id not in coll_ids:
-            coll_ids.append(coll_id)
-    except:
-        no_coll_id.append(work['id'])
+def analyze_works(docs: List[Dict]) -> tuple[List[str], List[Any], List[str]]:
+    """
+    Docstring for analyze_works
+    
+    :param docs: Description
+    :type docs: List[Dict]
+    :return: Description
+    :rtype: tuple[List[str], List[Any], List[str]]
+    """
+    no_file_set = []
+    coll_ids = []
+    no_coll_id =[]
 
-if len(no_file_set) >= 1:
-    logger.error(f"""{len(no_file_set)} / {response['response']['numFound']} work(s) in Solr for importer {importer_no} have no file set id""")
-    logger.error("PID(s) for works missing file set id:")
-    for pid in no_file_set:
-        logger.error(f"  {pid}")
-else:
-    logger.info(f"All {response['response']['numFound']} works in Solr have file set id")
+    for work in docs:
+        # Check for file set value
+        if 'file_set_ids_ssim' not in work:
+            no_file_set.append(work['id'])
+        # Check for collection value
+        if 'member_of_collection_ids_ssim' in work:
+            coll_id = work['member_of_collection_ids_ssim']
+            if coll_id not in coll_ids:
+                coll_ids.append(coll_id)
+        else:
+            no_coll_id.append(work['id'])
+    return no_file_set, coll_ids, no_coll_id
 
-if len(no_coll_id) == response['response']['numFound']:
-    logger.error(f"No works in Solr for importer {importer_no} are in collection(s)")
-    pass
-elif len(no_coll_id) >= 1:
-    logger.error(f"""{len(no_coll_id)} / {response['response']['numFound']} work(s) in Solr for importer {importer_no} are not in any collection""")
-    logger.error(f"PID(s) for works not in any collection:")
-    for pid in no_coll_id:
-        logger.error(f"  {pid}")
-else:
-    logger.info(f"""All {response['response']['numFound']} works in Solr for importer {importer_no} are member of collection id(s)""")
-if len(coll_ids) > 0:
-    logger.info("Parent collection id(s):")
-    for id in coll_ids:
-        logger.info(f"  {id}")
 
-if args.print_response:
-    logger.info("Solr query response")
-    print(json.dumps(response, indent=4))
+# no_file_set: List[str] = []
+# coll_ids: List[Any] = []
+# no_coll_id: List[str] = []
+
+# for work in response['response']['docs']:
+#     try:
+#         work['file_set_ids_ssim']
+#     except KeyError as e:
+#         no_file_set.append(work['id'])
+#     try:
+#         coll_id = work['member_of_collection_ids_ssim']
+#         if coll_id not in coll_ids:
+#             coll_ids.append(coll_id)
+#     except:
+#         no_coll_id.append(work['id'])
+
+def log_file_set_status(no_file_set: List[str], total_works: int) -> None:
+    """Log status of file sets in works"""
+    if no_file_set:
+        logger.error(f"{len(no_file_set)} / {total_works} work(s) have no file set id")
+        logger.error("PID(s) for works missing in file set id:")
+        for pid in no_file_set:
+            logger.error(f"   {pid}")
+    else:
+        logger.info(f"All {total_works} works have file set id")
+
+def log_collection_status(no_coll_id: List[str], coll_ids: List[Any], total_works: int, importer_no: int) -> None:
+    """Log status of collection membership"""
+    if len(no_coll_id) == total_works:
+        logger.error(f"No works in importer {importer_no} are in collection(s)")
+    elif no_coll_id:
+        logger.error(f"{len(no_coll_id)} / {importer_no} are in collection(s)")
+        logger.error("PID(s) for works are not in any collection:")
+        for pid in no_coll_id:
+            logger.error(f"   {pid}")
+    else:
+        logger.info(f"All {total_works} works are members of collection(s)")
+    
+    if coll_ids:
+        logger.info("Parent collection id(s):")
+        for coll_id in coll_ids:
+            logger.info(f"   {coll_id}")
+
+# if len(no_file_set) >= 1:
+#     logger.error(f"""{len(no_file_set)} / {response['response']['numFound']} work(s) in Solr for importer {importer_no} have no file set id""")
+#     logger.error("PID(s) for works missing file set id:")
+#     for pid in no_file_set:
+#         logger.error(f"  {pid}")
+# else:
+#     logger.info(f"All {response['response']['numFound']} works in Solr have file set id")
+
+# if len(no_coll_id) == response['response']['numFound']:
+#     logger.error(f"No works in Solr for importer {importer_no} are in collection(s)")
+#     pass
+# elif len(no_coll_id) >= 1:
+#     logger.error(f"""{len(no_coll_id)} / {response['response']['numFound']} work(s) in Solr for importer {importer_no} are not in any collection""")
+#     logger.error(f"PID(s) for works not in any collection:")
+#     for pid in no_coll_id:
+#         logger.error(f"  {pid}")
+# else:
+#     logger.info(f"""All {response['response']['numFound']} works in Solr for importer {importer_no} are member of collection id(s)""")
+# if len(coll_ids) > 0:
+#     logger.info("Parent collection id(s):")
+#     for id in coll_ids:
+#         logger.info(f"  {id}")
+
+# if args.print_response:
+#     logger.info("Solr query response")
+#     print(json.dumps(response, indent=4))
 
 def main():
     """Run file"""
     args = parser.parse_args()
 
-    logger.info(f"Querying Solr for importer {args.imoprter_no}")
+    logger.info(f"Querying Solr for importer {args.importer_no}")
 
     # Query Solr
     base_url, params = build_solr_query_url(args.importer_no)
+    try:
+        response = requests.get(base_url, params=params, timeout=10).json()
+    except requests.RequestException as e:
+        logger.error(f"Error making Solr request: {e}")
+        sys.exit(1)
+
+    # Extract results
+    num_found = response['response']['numFound']
+    docs = response['response']['docs']
+
+    logger.info(f"{num_found} / {args.in_importer} works in Solr / works in importer # {args.importer_no}")
+
+    # Analyze works
+    no_file_set, coll_ids, no_coll_id = analyze_works(docs)
+
+    # Report results
+    log_file_set_status(no_file_set, num_found)
+    log_collection_status(no_coll_id, coll_ids, num_found, args.importer_no)
+
+    # Print response if requested
+    if args.print_response:
+        logger.info("Full Solr query response:")
+        print(json.dumps(response, indent=4))
+
 
 if __name__ == "__main__":
     main()
