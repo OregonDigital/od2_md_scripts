@@ -21,6 +21,7 @@ error_count = 0
 current_header = None
 headers_with_errors = set()
 validated_headers = []
+header_config_errors = 0
 
 # Custom logging handler here tracks which headers have errors. This is complex, but the alternative is to
 # return error data directly in od2validation, which would tightly couple the modules (this is bad) and complicate that
@@ -32,7 +33,13 @@ class ErrorTrackingHandler(logging.Handler):
     """Handler to track which headers have errors"""
     # emit() is called automatically by logger for every log
     def emit(self, record):
-        global error_count, current_header
+        global error_count, current_header, header_config_errors
+        
+        # Detect header configuration errors (before validation starts)
+        if record.levelno >= logging.ERROR and "headers_config" in record.msg:
+            header_config_errors += 1
+            error_count += 1
+            return  # Don't process further for config errors
         
         # Detect when we're validating a new header for INFO level logs
         if record.levelno == logging.INFO and "Validating" in record.msg:
@@ -68,8 +75,14 @@ try:
     # Show fixcsv.py suggestion if errors were found
     else:
         logger.warning("\n" + "="*60)
-        logger.warning(f"Validation found {error_count} error(s) in {len(headers_with_errors)}/{len(validated_headers)} headers")
-        logger.warning(f"Headers with errors: {', '.join(sorted(headers_with_errors))}")
+        # Include header config errors in summary
+        if header_config_errors > 0:
+            logger.warning(f"Found {header_config_errors} header configuration error(s)")
+        if len(headers_with_errors) > 0:
+            logger.warning(f"Validation found {error_count - header_config_errors} error(s) in {len(headers_with_errors)}/{len(validated_headers)} headers")
+            logger.warning(f"Headers with errors: {', '.join(sorted(headers_with_errors))}")
+        else:
+            logger.warning(f"Total errors: {error_count}")
         logger.warning("")
         logger.warning("To automatically fix common issues:")
         logger.warning(f"  python3 fixcsv.py {collection_name}")
