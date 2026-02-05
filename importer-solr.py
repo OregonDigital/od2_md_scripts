@@ -108,7 +108,7 @@ def log_collection_status(no_coll_id: List[str], coll_ids: List[Any], total_work
     elif no_coll_id:
         logger.error(f"{len(no_coll_id)} / {total_works} are NOT in collection(s)")
         logger.error("PID(s) for works are not in any collection:")
-        for pid in no_coll_id:
+        for pid in sorted(no_coll_id):
             logger.error(f"  {pid}")
     else:
         logger.info(f"All {total_works} works are members of collection(s)")
