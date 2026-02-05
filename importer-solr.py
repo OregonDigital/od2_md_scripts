@@ -52,7 +52,11 @@ def build_solr_query_url(importer_no: int) -> tuple[str, Dict[str, str]]:
 
 # TODO: Ask BMR what docs meant here, what actually is response['response']['docs']?
 def analyze_works(docs: List[Dict]) -> tuple[List[str], List[Any], List[str]]:
-    """Check if works have missing file sets or collection membership"""
+    """Check if works have missing file sets or collection membership
+    
+    Returns:
+        Tuple of (works without file sets, collection IDS, works without collections)
+    """
     no_file_set = []
     coll_ids = []
     no_coll_id =[]
@@ -111,7 +115,7 @@ def log_collection_status(no_coll_id: List[str], coll_ids: List[Any], total_work
     
     if coll_ids:
         logger.info("Parent collection id(s):")
-        for coll_id in coll_ids:
+        for coll_id in sorted(coll_ids):
             logger.info(f"  {coll_id}")
 
 # if len(no_file_set) >= 1:
