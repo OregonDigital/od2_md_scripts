@@ -60,19 +60,50 @@ def analyze_works(docs: List[Dict]) -> tuple[List[str], List[Any], List[str]]:
     no_file_set = []
     coll_ids = []
     no_coll_id =[]
+    bad_thumbnail = []
+    suppressed_works = []
+    bad_workflow = []
+    bad_visibility = []
 
     for work in docs:
+        work_id = work['id']
+
         # Check for file set value
         if 'file_set_ids_ssim' not in work:
-            no_file_set.append(work['id'])
+            no_file_set.append(work_id)
+
         # Check for collection value
         if 'member_of_collection_ids_ssim' in work:
             coll_id = work['member_of_collection_ids_ssim']
             if coll_id not in coll_ids:
                 coll_ids.append(coll_id)
         else:
-            no_coll_id.append(work['id'])
-    return no_file_set, coll_ids, no_coll_id
+            no_coll_id.append(work_id)
+        
+        # Check thumbnail path format
+        if 'thumbnail_path_ss' in work:
+            thumbnail = work['thumbnail_path_ss']
+            if not (thumbnail.startswith('/downloads/') and '?file=thumbnail' in thumbnail):
+                bad_thumbnail.append(f"{work_id} (thumbnail: {thumbnail})")
+        else:
+            bad_thumbnail.append(f"{work_id} (no thumbnail)")
+        
+        # Check suppressed status
+        if work.get('suppressed_bsi') == True:
+            suppressed_works.append(work_id)
+        
+        # Check workflow state
+        workflow_state = work.get('workflow_state_name_ssim', [])
+        if not workflow_state:
+            bad_workflow.append(f"{work_id} (empty)")
+        elif workflow_state[0] not in ['deposited', 'pending_review']:
+            bad_workflow.append(f"{work_id} ({workflow_state[0]})")
+        
+        # Check visibility
+        visibility = work.get('visibility_ssi', '')
+        if visibility == 'private':
+            bad_visibility.append(f"{work_id} (private)")
+    return no_file_set, coll_ids, no_coll_id, bad_thumbnail, suppressed_works, bad_workflow, bad_visibility
 
 
 # no_file_set: List[str] = []
@@ -117,6 +148,46 @@ def log_collection_status(no_coll_id: List[str], coll_ids: List[Any], total_work
         logger.info("Parent collection id(s):")
         for coll_id in sorted(coll_ids):
             logger.info(f"  {coll_id}")
+
+def log_thumbnail_status(bad_thumbnail: List[str], total_works: int) -> None:
+    """Log status of thumbnail paths"""
+    if bad_thumbnail:
+        logger.error(f"{len(bad_thumbnail)} / {total_works} work(s) have missing or bad thumbnail paths")
+        logger.error("Works with thumbnail issues:")
+        for item in bad_thumbnail:
+            logger.error(f"  {item}")
+    else:
+        logger.info(f"All {total_works} works have valid thumbnail paths")
+
+def log_suppression_status(suppressed_works: List[str], total_works: int) -> None:
+    """Log status of suppressed works"""
+    if suppressed_works:
+        logger.warning(f"{len(suppressed_works)} / {total_works} work(s) are suppressed (haven't been reviewed)")
+        logger.warning("Suppressed PIDs:")
+        for pid in suppressed_works:
+            logger.warning(f"  {pid}")
+    else:
+        logger.info("No works are suppressed")
+
+def log_workflow_status(bad_workflow: List[str], total_works: int) -> None:
+    """Log status of workflow states"""
+    if bad_workflow:
+        logger.error(f"{len(bad_workflow)} / {total_works} work(s) have unexpected workflow states")
+        logger.error("Works with workflow issues:")
+        for item in bad_workflow:
+            logger.error(f"  {item}")
+    else:
+        logger.info(f"All {total_works} works have valid workflow states")
+
+def log_visibility_status(bad_visibility: List[str], total_works: int) -> None:
+    """Log status of visibility settings"""
+    if bad_visibility:
+        logger.error(f"{len(bad_visibility)} / {total_works} work(s) have private visibility")
+        logger.error("Works with visibility issues:")
+        for item in bad_visibility:
+            logger.error(f"  {item}")
+    else:
+        logger.info(f"All {total_works} works have correct visibility")
 
 # if len(no_file_set) >= 1:
 #     logger.error(f"""{len(no_file_set)} / {response['response']['numFound']} work(s) in Solr for importer {importer_no} have no file set id""")
@@ -166,11 +237,15 @@ def main():
     logger.info(f"{num_found} / {args.in_importer} works in Solr / works in importer # {args.importer_no}")
 
     # Analyze works
-    no_file_set, coll_ids, no_coll_id = analyze_works(docs)
+    no_file_set, coll_ids, no_coll_id, bad_thumbnail, suppressed_works, bad_workflow, bad_visibility = analyze_works(docs)
 
     # Report results
     log_file_set_status(no_file_set, num_found)
     log_collection_status(no_coll_id, coll_ids, num_found, args.importer_no)
+    log_thumbnail_status(bad_thumbnail, num_found)
+    log_suppression_status(suppressed_works, num_found)
+    log_workflow_status(bad_workflow, num_found)
+    log_visibility_status(bad_visibility, num_found)
 
     # Print response if requested
     if args.print_response:
