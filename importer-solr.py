@@ -154,7 +154,7 @@ def log_thumbnail_status(bad_thumbnail: List[str], total_works: int) -> None:
     if bad_thumbnail:
         logger.error(f"{len(bad_thumbnail)} / {total_works} work(s) have missing or bad thumbnail paths")
         logger.error("Works with thumbnail issues:")
-        for item in bad_thumbnail:
+        for item in sorted(bad_thumbnail):
             logger.error(f"  {item}")
     else:
         logger.info(f"All {total_works} works have valid thumbnail paths")
@@ -164,7 +164,7 @@ def log_suppression_status(suppressed_works: List[str], total_works: int) -> Non
     if suppressed_works:
         logger.warning(f"{len(suppressed_works)} / {total_works} work(s) are suppressed (haven't been reviewed)")
         logger.warning("Suppressed PIDs:")
-        for pid in suppressed_works:
+        for pid in sorted(suppressed_works):
             logger.warning(f"  {pid}")
     else:
         logger.info("No works are suppressed")
@@ -174,7 +174,7 @@ def log_workflow_status(bad_workflow: List[str], total_works: int) -> None:
     if bad_workflow:
         logger.error(f"{len(bad_workflow)} / {total_works} work(s) have unexpected workflow states")
         logger.error("Works with workflow issues:")
-        for item in bad_workflow:
+        for item in sorted(bad_workflow):
             logger.error(f"  {item}")
     else:
         logger.info(f"All {total_works} works have valid workflow states")
@@ -184,7 +184,7 @@ def log_visibility_status(bad_visibility: List[str], total_works: int) -> None:
     if bad_visibility:
         logger.error(f"{len(bad_visibility)} / {total_works} work(s) have private visibility")
         logger.error("Works with visibility issues:")
-        for item in bad_visibility:
+        for item in sorted(bad_visibility):
             logger.error(f"  {item}")
     else:
         logger.info(f"All {total_works} works have correct visibility")
