@@ -31,7 +31,7 @@ def build_solr_query_url(importer_no: int) -> tuple[str, Dict[str, str]]:
     base_url = "https://solr-od2.library.oregonstate.edu/solr/prod/select?"
     params = {
         'q': f'bulkrax_identifier_tesim:{importer_no}',
-        'fl': 'id,member_of_collection_ids_ssim,member_of_collections_ssim,file_set_ids_ssim',
+        'fl': 'id,member_of_collection_ids_ssim,member_of_collections_ssim,file_set_ids_ssim,thumbnail_path_ss,suppressed_bsi,workflow_state_name_ssim,visibility_ssi',
         'rows': '1000'
     }
     return base_url, params
