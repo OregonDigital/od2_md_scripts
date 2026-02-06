@@ -24,6 +24,8 @@ parser.add_argument('importer_no', type=int, help='Importer number')
 parser.add_argument('in_importer', type=int, help='Number of works in importer package')
 parser.add_argument('--print-response', '-p', action='store_true', 
                     help='Print the full Solr query response')
+parser.add_argument('--verbose', '-v', action='store_true',
+                    help='Print PIDs and data for works with errors')
 
 
 def build_solr_query_url(importer_no: int) -> tuple[str, Dict[str, str]]:
@@ -122,23 +124,25 @@ def analyze_works(docs: List[Dict]) -> tuple[List[str], List[Any], List[str]]:
 #     except:
 #         no_coll_id.append(work['id'])
 
-def log_file_set_status(no_file_set: List[str], total_works: int) -> None:
+def log_file_set_status(no_file_set: List[str], total_works: int, verbose: bool) -> None:
     """Log status of file sets in works"""
     if no_file_set:
         logger.error(f"{len(no_file_set)} / {total_works} work(s) have no file set id")
-        logger.error("PID(s) for works missing file set id:")
-        for pid in sorted(no_file_set):
-            logger.error(f"  {pid}")
+        if verbose:
+            logger.error("PID(s) for works missing file set id:")
+            for pid in sorted(no_file_set):
+                logger.error(f"  {pid}")
     else:
         logger.info(f"All {total_works} works have file set id")
 
-def log_collection_status(no_coll_id: List[str], coll_ids: List[Any], total_works: int, importer_no: int) -> None:
+def log_collection_status(no_coll_id: List[str], coll_ids: List[Any], total_works: int, importer_no: int, verbose: bool) -> None:
     """Log status of collection membership"""
     if no_coll_id:
         logger.error(f"{len(no_coll_id)} / {total_works} are NOT in collection(s)")
-        logger.error("PID(s) for works are not in any collection:")
-        for pid in sorted(no_coll_id):
-            logger.error(f"  {pid}")
+        if verbose:
+            logger.error("PID(s) for works are not in any collection:")
+            for pid in sorted(no_coll_id):
+                logger.error(f"  {pid}")
     else:
         logger.info(f"All {total_works} works are members of collection(s)")
     
@@ -147,43 +151,47 @@ def log_collection_status(no_coll_id: List[str], coll_ids: List[Any], total_work
         for coll_id in sorted(coll_ids):
             logger.info(f"  {coll_id}")
 
-def log_thumbnail_status(bad_thumbnail: List[str], total_works: int) -> None:
+def log_thumbnail_status(bad_thumbnail: List[str], total_works: int, verbose: bool) -> None:
     """Log status of thumbnail paths"""
     if bad_thumbnail:
         logger.error(f"{len(bad_thumbnail)} / {total_works} work(s) have missing or bad thumbnail paths")
-        logger.error("Works with thumbnail issues:")
-        for item in sorted(bad_thumbnail):
-            logger.error(f"  {item}")
+        if verbose:
+            logger.error("Works with thumbnail issues:")
+            for item in sorted(bad_thumbnail):
+                logger.error(f"  {item}")
     else:
         logger.info(f"All {total_works} works have valid thumbnail paths")
 
-def log_suppression_status(suppressed_works: List[str], total_works: int) -> None:
+def log_suppression_status(suppressed_works: List[str], total_works: int, verbose: bool) -> None:
     """Log status of suppressed works"""
     if suppressed_works:
         logger.warning(f"{len(suppressed_works)} / {total_works} work(s) are suppressed (haven't been reviewed)")
-        logger.warning("Suppressed PIDs:")
-        for pid in sorted(suppressed_works):
-            logger.warning(f"  {pid}")
+        if verbose:
+            logger.warning("Suppressed PIDs:")
+            for pid in sorted(suppressed_works):
+                logger.warning(f"  {pid}")
     else:
         logger.info("No works are suppressed")
 
-def log_workflow_status(bad_workflow: List[str], total_works: int) -> None:
+def log_workflow_status(bad_workflow: List[str], total_works: int, verbose: bool) -> None:
     """Log status of workflow states"""
     if bad_workflow:
         logger.error(f"{len(bad_workflow)} / {total_works} work(s) have unexpected workflow states")
-        logger.error("Works with workflow issues:")
-        for item in sorted(bad_workflow):
-            logger.error(f"  {item}")
+        if verbose:
+            logger.error("Works with workflow issues:")
+            for item in sorted(bad_workflow):
+                logger.error(f"  {item}")
     else:
         logger.info(f"All {total_works} works have valid workflow states")
 
-def log_visibility_status(bad_visibility: List[str], total_works: int) -> None:
+def log_visibility_status(bad_visibility: List[str], total_works: int, verbose: bool) -> None:
     """Log status of visibility settings"""
     if bad_visibility:
         logger.error(f"{len(bad_visibility)} / {total_works} work(s) have private visibility")
-        logger.error("Works with visibility issues:")
-        for item in sorted(bad_visibility):
-            logger.error(f"  {item}")
+        if verbose:
+            logger.error("Works with visibility issues:")
+            for item in sorted(bad_visibility):
+                logger.error(f"  {item}")
     else:
         logger.info(f"All {total_works} works have correct visibility")
 
@@ -238,12 +246,12 @@ def main():
     no_file_set, coll_ids, no_coll_id, bad_thumbnail, suppressed_works, bad_workflow, bad_visibility = analyze_works(docs)
 
     # Report results
-    log_file_set_status(no_file_set, num_found)
-    log_collection_status(no_coll_id, coll_ids, num_found, args.importer_no)
-    log_thumbnail_status(bad_thumbnail, num_found)
-    log_suppression_status(suppressed_works, num_found)
-    log_workflow_status(bad_workflow, num_found)
-    log_visibility_status(bad_visibility, num_found)
+    log_file_set_status(no_file_set, num_found, args.verbose)
+    log_collection_status(no_coll_id, coll_ids, num_found, args.importer_no, args.verbose)
+    log_thumbnail_status(bad_thumbnail, num_found, args.verbose)
+    log_suppression_status(suppressed_works, num_found, args.verbose)
+    log_workflow_status(bad_workflow, num_found, args.verbose)
+    log_visibility_status(bad_visibility, num_found, args.verbose)
 
     # Print response if requested
     if args.print_response:
