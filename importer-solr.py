@@ -134,9 +134,7 @@ def log_file_set_status(no_file_set: List[str], total_works: int) -> None:
 
 def log_collection_status(no_coll_id: List[str], coll_ids: List[Any], total_works: int, importer_no: int) -> None:
     """Log status of collection membership"""
-    if len(no_coll_id) == total_works:
-        logger.error(f"No works in importer {importer_no} are in collection(s)")
-    elif no_coll_id:
+    if no_coll_id:
         logger.error(f"{len(no_coll_id)} / {total_works} are NOT in collection(s)")
         logger.error("PID(s) for works are not in any collection:")
         for pid in sorted(no_coll_id):
