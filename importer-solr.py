@@ -127,7 +127,7 @@ def log_file_set_status(no_file_set: List[str], total_works: int) -> None:
     if no_file_set:
         logger.error(f"{len(no_file_set)} / {total_works} work(s) have no file set id")
         logger.error("PID(s) for works missing file set id:")
-        for pid in no_file_set:
+        for pid in sorted(no_file_set):
             logger.error(f"  {pid}")
     else:
         logger.info(f"All {total_works} works have file set id")
