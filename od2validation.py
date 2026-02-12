@@ -17,7 +17,8 @@ class Package(object):
         self.test = test
         self.metadata = self.filepaths()[0]
         self.assets = os.listdir(self.filepaths()[1])
-        self.default_config, self.headers_config = self.get_config(headers_config)
+        self.default_config, self.headers_config, self.validation_mappings = self.get_config(headers_config)
+        self.validator_mapping = self._build_validator_mapping()
         # custom config requred, must include at least enumeration of headers
         # use makeconfig.py?
 
@@ -32,6 +33,14 @@ class Package(object):
                 paths: Dict[str, Any] = yaml.safe_load(yf)
                 return (paths['metadata'], paths['assets'],)
 
+    def _build_validator_mapping(self) -> Dict[str, str]:
+        """Build mapping: field_name -> validator_name"""
+        mapping = {}
+        for validator_name, fields in self.validation_mappings.get('field_validators', {}).items():
+            for field in fields:
+                mapping[field.lower()] = validator_name
+        return mapping
+    
     def print_filepaths(self) -> None:
         logger.info(f"metadata file path\n{self.metadata[0]}")
         try:
@@ -45,7 +54,9 @@ class Package(object):
             default: Dict[str, Any] = yaml.safe_load(yf)
         with open(f"config/{headers_config}.yaml", "r") as yf:
             headers: Dict[str, Any] = yaml.safe_load(yf)
-        return (default, headers,) # any different/better tuple vs. list here?
+        with open("config/validation_mappings.yaml", "r") as yf:
+            mappings: Dict[str, Any] = yaml.safe_load(yf)
+        return (default, headers, mappings) # any different/better tuple vs. list here?
 
     def print_config(self) -> None:
         formatted_default: str = json.dumps(self.default_config, indent=4)
@@ -240,7 +251,7 @@ class Package(object):
 
         For each header in headers_config:
         1. If header has validation rules in headers_config, use those
-        2. If header is None in headers_config, use default_config
+        2. If header is None in headers_config, check validation_mappings for default validator
         3. If header isn't in either config, log no check configured
         """
         for header in self.headers_config:
@@ -248,16 +259,26 @@ class Package(object):
             if self.headers_config[header] != None:
                 logger.info(f"Validating '{header}' from config...")
                 self._process_instructions(header, self.headers_config[header], 'headers_config')
-            # Use default config
-            elif self.headers_config[header] == None:
-                try:
-                    if self.default_config[header] != None:
-                        logger.info(f"Validating '{header}' from default config...")
-                        self._process_instructions(header, self.default_config[header], 'default_config')
-                    else:
-                        logger.info(f"NO CHECK CONFIGURED for header '{header}' in headers_config or default_config")
-                except KeyError as e:
-                    logger.info(f"NO CHECK CONFIGURED for header {e} in headers_config or default_config")
+            # Use default config if field maps to default validator
+            elif self.headers_config[header] is None:
+                validator_type = self.validator_mapping.get(header.lower())
+                if validator_type and validator_type in self.default_config:
+                    logger.debug(f"Using mapped default validation '{validator_type}' for '{header}'")
+                    self._process_instructions(header, self.default_config[validator_type], 'default')
+                else:
+                    logger.info(f"NO VALIDATION CHECK CONFIGURED FOR '{header}' in headers_config or default")
+            else:
+                logger.info(f"NO VALIDATION CHECK CONFIGURED FOR '{header} in headers_config or default")
+            
+            # elif self.headers_config[header] == None:
+            #     try:
+            #         if self.default_config[header] != None:
+            #             logger.info(f"Validating '{header}' from default config...")
+            #             self._process_instructions(header, self.default_config[header], 'default_config')
+            #         else:
+            #             logger.info(f"NO CHECK CONFIGURED for header '{header}' in headers_config or default_config")
+            #     except KeyError as e:
+            #         logger.info(f"NO CHECK CONFIGURED for header {e} in headers_config or default_config")
 
     # methods for get_method
     # duplicative code here too in that I create and use dataframe separately for methods

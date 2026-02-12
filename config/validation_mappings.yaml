@@ -1,0 +1,10 @@
+field_validators:
+  creator:
+    - creator
+    - photographer
+    - artist
+    - author
+    - contributor
+
+  creator:
+    - lcnaf

@@ -6,6 +6,11 @@ file:
     args: ['file']
     # no which on method!
 subject: ~ # to do
+creator:
+  - method: 
+    args: 
+# need to do a method for each creator type? ex. photographer vs author vs artist etc. or just do creator?
 genus: ~
 species: ~
 # many more: # to do
+# geonames add ending with /?
