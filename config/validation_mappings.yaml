@@ -6,6 +6,26 @@ field_validators:
     - artist
     - author
     - contributor
+    - applicant
+    - arranger
+    - cartographer
+    - collector
+    - composer
+    - dedicatee
+    - designer
+    - donor
+    - editor
+    - illustrator
+    - interviewee
+    - interviewer
+    - landscape architect # might have to fix the space here somehow?
+    - lyricist
+    - owner
+    - patron
+    - print Maker
+    - recipient
+    - transcriber
+    - translator
 
 # Tell od2validation.py which vocabs correspond to each controlled vocab, so that they can all be checked
 controlled_vocab_map:
