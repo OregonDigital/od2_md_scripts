@@ -2,6 +2,7 @@ import yaml, os, json, re
 import pandas as pd
 import logging
 from typing import Tuple, List, Dict, Any, Optional, Pattern
+import vocabularies
 
 # Logger replaces print statements for debugging/usage
 # (It basically controls the level of info to print)
@@ -143,7 +144,8 @@ class Package(object):
         # see methods at bottom
         method_mapping = {
             'check_filenames_assets': self.check_filenames_assets,
-            'identifier_file_match': self.identifier_file_match
+            'identifier_file_match': self.identifier_file_match,
+            'validate_controlled_vocab': self.validate_controlled_vocab
             # more methods later?
         }
         try:
@@ -251,7 +253,9 @@ class Package(object):
 
         For each header in headers_config:
         1. If header has validation rules in headers_config, use those
-        2. If header is None in headers_config, check validation_mappings for default validator
+        2. If header is None in headers_config:
+           a. Check validation_mappings for mapped validator (e.g., photographer->creator)
+           b. Fallback to direct header lookup in default_config (e.g., dmrec)
         3. If header isn't in either config, log no check configured
         """
         for header in self.headers_config:
@@ -259,12 +263,17 @@ class Package(object):
             if self.headers_config[header] != None:
                 logger.info(f"Validating '{header}' from config...")
                 self._process_instructions(header, self.headers_config[header], 'headers_config')
-            # Use default config if field maps to default validator
+            # Use default config if no project-specific config
             elif self.headers_config[header] is None:
+                # Try mapped validator first (e.g., photographer->creator)
                 validator_type = self.validator_mapping.get(header.lower())
                 if validator_type and validator_type in self.default_config:
-                    logger.debug(f"Using mapped default validation '{validator_type}' for '{header}'")
+                    logger.info(f"Validating '{header}' from default config (mapped to '{validator_type}')...")
                     self._process_instructions(header, self.default_config[validator_type], 'default')
+                # Fallback to direct header name in default_config
+                elif header in self.default_config and self.default_config[header] is not None:
+                    logger.info(f"Validating '{header}' from default config...")
+                    self._process_instructions(header, self.default_config[header], 'default')
                 else:
                     logger.info(f"NO VALIDATION CHECK CONFIGURED FOR '{header}' in headers_config or default")
             else:
@@ -314,3 +323,44 @@ class Package(object):
     def save_as_csv(self) -> None:
         filename: str = self.filepaths[0].split('/')[-1]
         logger.debug(f"does filename == {filename}?")
+    
+    def validate_controlled_vocab(self, args: List[Any]) -> None:
+        """
+        Validate URIs in col agaisnt allowed vocabularies for that controlled vocab
+
+        Args:
+            args: [column_name] - the col header for validation
+        """
+        col: str = args[0]
+        df = self.get_dataframe()
+        
+        try:
+            controlled_vocab = self.validator_mapping.get(col.lower())
+        except KeyError:
+            logger.error(f"No controlled vocab mapping for '{col}'")
+            return
+        
+        try:
+            vocab_list = self.validation_mappings['controlled_vocab_map']['controlled_vocab']
+        except KeyError:
+            logger.error(f"controlled_vocab_map missing entry for '{controlled_vocab}' in validation_mappings.yaml")
+            return
+        
+        logger.debug(f"Validating '{col}' agaisnt vocabularies: {', '.join(vocab_list)}")
+
+        for index, row in df.iterrows():
+            if pd.notna(row[col]):
+                cell = row[col]
+                for value in str(cell).split('|'):
+                    value = value.strip()
+                    if not value:
+                        continue
+                    valid = False
+                    for vocab_name in vocab_list:
+                        validator = vocabularies.VOCABULARY_VALIDATORS.get(vocab_name)
+                        if validator and validator(value):
+                            valid = True
+                            logger.debug(f"  row {index + 2}: '{value}' matched {vocab_name}")
+                            break
+                    if not valid:
+                        logger.error(f"row {index + 2}: '{value}' does not match any vocabulary in ({', '.join(vocab_list)})")

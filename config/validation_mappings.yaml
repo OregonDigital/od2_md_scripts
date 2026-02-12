@@ -1,3 +1,4 @@
+# Tell od2validation.py which fields have the same validator (ex. photographer, aritst, and author all have the same validator as creator)
 field_validators:
   creator:
     - creator
@@ -6,5 +7,30 @@ field_validators:
     - author
     - contributor
 
+# Tell od2validation.py which vocabs correspond to each controlled vocab, so that they can all be checked
+controlled_vocab_map:
   creator:
     - lcnaf
+    - ulan
+    - creator
+    - people
+    - wikidata
+    - osuacademicunits
+
+  subject:
+    - lcsh
+    - lcnaf
+    - tgm
+    - aat
+    - subject
+    - lcorgs
+    - creator
+    - people
+    - itis
+    - ubio
+    - osubuildings
+    - wikidata
+    - ulan
+    - lcgenreforms
+    - osuacademicunits
+    - bne
