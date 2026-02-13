@@ -326,7 +326,7 @@ class Package(object):
     
     def validate_controlled_vocab(self, args: List[Any]) -> None:
         """
-        Validate URIs in col agaisnt allowed vocabularies for that controlled vocab
+        Validate URIs in col against allowed vocabularies for that controlled vocab
 
         Args:
             args: [column_name] - the col header for validation
@@ -346,8 +346,8 @@ class Package(object):
             logger.error(f"controlled_vocab_map missing entry for '{controlled_vocab}' in validation_mappings.yaml")
             return
         
-        logger.debug(f"Validating '{col}' agaisnt vocabularies: {', '.join(vocab_list)}")
-
+        logger.debug(f"Validating '{col}' against vocabularies: {', '.join(vocab_list)}")
+        # FIXME: don't use iterrows, it's inefficient because it loops through the whole df. Just do the header
         for index, row in df.iterrows():
             if pd.notna(row[col]):
                 cell = row[col]
