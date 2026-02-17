@@ -3,6 +3,7 @@ import pandas as pd
 import logging
 from typing import Tuple, List, Dict, Any, Optional, Pattern
 import vocabularies
+import copy
 
 # Logger replaces print statements for debugging/usage
 # (It basically controls the level of info to print)
@@ -247,6 +248,25 @@ class Package(object):
             else:
                 logger.error(f"unknown check type: {config_source} '{header}' instruction {instruction}")
 
+    def _update_method_args(self, instructions: List, old_name: str, new_name: str) -> List:
+        """
+        Update method args in instructions to use actual header name instead of validator type name
+
+        Args:
+            instructions: List of instruction dicts
+            old_name: Original validator type name (e.g., 'creator')  
+            new_name: Actual header name (e.g., 'photographer')
+
+        Returns:
+            Modified copy of instructions with updated args
+        """
+        updated_instructions = copy.deepcopy(instructions)
+        for instruction in updated_instructions:
+            if instruction.get('method') and instruction.get('args'):
+                # Replace old_name with new_name in args
+                instruction['args'] = [new_name if arg == old_name else arg for arg in instruction['args']]
+        return updated_instructions
+
     def get_headers_instructions(self) -> None:
         """
         Decide validation instructions for config files headers
@@ -269,7 +289,9 @@ class Package(object):
                 validator_type = self.validator_mapping.get(header.lower())
                 if validator_type and validator_type in self.default_config:
                     logger.info(f"Validating '{header}' from default config (mapped to '{validator_type}')...")
-                    self._process_instructions(header, self.default_config[validator_type], 'default')
+                    # Replace validator_type with actual header name in method args
+                    instructions = self._update_method_args(self.default_config[validator_type], validator_type, header)
+                    self._process_instructions(header, instructions, 'default')
                 # Fallback to direct header name in default_config
                 elif header in self.default_config and self.default_config[header] is not None:
                     logger.info(f"Validating '{header}' from default config...")
@@ -334,14 +356,17 @@ class Package(object):
         col: str = args[0]
         df = self.get_dataframe()
         
-        try:
-            controlled_vocab = self.validator_mapping.get(col.lower())
-        except KeyError:
+        controlled_vocab = self.validator_mapping.get(col.lower())
+        logger.debug(f"controlled_vocab for '{col}': {controlled_vocab}")
+        if not controlled_vocab:
             logger.error(f"No controlled vocab mapping for '{col}'")
             return
         
+        logger.debug(f"validation_mappings keys: {list(self.validation_mappings.keys())}")
+        logger.debug(f"controlled_vocab_map keys: {list(self.validation_mappings.get('controlled_vocab_map', {}).keys())}")
+        
         try:
-            vocab_list = self.validation_mappings['controlled_vocab_map']['controlled_vocab']
+            vocab_list = self.validation_mappings['controlled_vocab_map'][controlled_vocab]
         except KeyError:
             logger.error(f"controlled_vocab_map missing entry for '{controlled_vocab}' in validation_mappings.yaml")
             return
