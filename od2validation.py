@@ -300,16 +300,6 @@ class Package(object):
                     logger.info(f"NO VALIDATION CHECK CONFIGURED FOR '{header}' in headers_config or default")
             else:
                 logger.info(f"NO VALIDATION CHECK CONFIGURED FOR '{header} in headers_config or default")
-            
-            # elif self.headers_config[header] == None:
-            #     try:
-            #         if self.default_config[header] != None:
-            #             logger.info(f"Validating '{header}' from default config...")
-            #             self._process_instructions(header, self.default_config[header], 'default_config')
-            #         else:
-            #             logger.info(f"NO CHECK CONFIGURED for header '{header}' in headers_config or default_config")
-            #     except KeyError as e:
-            #         logger.info(f"NO CHECK CONFIGURED for header {e} in headers_config or default_config")
 
     # methods for get_method
     # duplicative code here too in that I create and use dataframe separately for methods
