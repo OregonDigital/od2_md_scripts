@@ -39,6 +39,7 @@ try:
     response = requests.get(f"{solrselect}{q}{fl}{rows}").json()
 except Exception as e:
     logger.error(f"Error making Solr request: {e}")
+    logger.error(f"This could be an issue with Solr or because you're not on the correct network when making the request")
     exit(1)
 
 logger.info(f"Solr query results for importer {importer_no}")
