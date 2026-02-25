@@ -175,6 +175,7 @@ def main():
         response = requests.get(base_url, params=params, timeout=10).json()
     except requests.RequestException as e:
         logger.error(f"Error making Solr request: {e}")
+        logger.error("This could be an issue with Solr or because you're not on the correct network when making the request")
         sys.exit(1)
 
     # Extract results

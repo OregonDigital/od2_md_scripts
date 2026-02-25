@@ -6,6 +6,12 @@ file:
     args: ['file']
     # no which on method!
 subject: ~ # to do
-genus: ~
+creator:
+  - regex: '^.+$'
+    which: all
+  - method: validate_controlled_vocab
+    args: ['creator']
+
 species: ~
 # many more: # to do
+# geonames add ending with /?
