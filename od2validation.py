@@ -152,7 +152,8 @@ class Package(object):
         try:
             method: Optional[Any] = method_mapping.get(method_name)
             if method:
-                # print(f"method_mapping.get({method_name}) is True") # check
+                logging.debug(f"method_mapping.get({method_name}) is True")
+                # FIXME -- is this return necessary? It doesn't actually set value in parent
                 return method(args)
             else:
                 logger.error(f"method_name {method_name} not in method_mapping")
@@ -221,7 +222,7 @@ class Package(object):
         else:
             logger.error(f"Invalid 'which' parameter: {which}. Expected 'all', 'complex', 'item', or 'na'.")
 
-    def _process_instructions(self, header: str, instructions: List, config_source: str) -> None:
+    def _process_instructions(self, header: str, instructions: List[Dict], config_source: str) -> None:
         """
         Process validation instructions for a specific header
 
@@ -269,14 +270,15 @@ class Package(object):
 
     def get_headers_instructions(self) -> None:
         """
-        Decide validation instructions for config files headers
+        Decide + execute validation instructions for config files headers
 
         For each header in headers_config:
         1. If header has validation rules in headers_config, use those
         2. If header is None in headers_config:
-           a. Check validation_mappings for mapped validator (e.g., photographer->creator)
+           a. Check validation_mappings for mapped validator (e.g., photographer->creator) after
+              replacing validator type name with actual header name in method args
            b. Fallback to direct header lookup in default_config (e.g., dmrec)
-        3. If header isn't in either config, log no check configured
+        3. If header has None value and not found by mapping or default, log no check configured
         """
         for header in self.headers_config:
             # Use project-specific config if possible
@@ -284,7 +286,7 @@ class Package(object):
                 logger.info(f"Validating '{header}' from config...")
                 self._process_instructions(header, self.headers_config[header], 'headers_config')
             # Use default config if no project-specific config
-            elif self.headers_config[header] is None:
+            else:
                 # Try mapped validator first (e.g., photographer->creator)
                 validator_type = self.validator_mapping.get(header.lower())
                 if validator_type and validator_type in self.default_config:
@@ -298,8 +300,6 @@ class Package(object):
                     self._process_instructions(header, self.default_config[header], 'default')
                 else:
                     logger.info(f"NO VALIDATION CHECK CONFIGURED FOR '{header}' in headers_config or default")
-            else:
-                logger.info(f"NO VALIDATION CHECK CONFIGURED FOR '{header} in headers_config or default")
 
     # methods for get_method
     # duplicative code here too in that I create and use dataframe separately for methods
@@ -346,6 +346,7 @@ class Package(object):
         col: str = args[0]
         df = self.get_dataframe()
         
+        # Get controlled vocab type
         controlled_vocab = self.validator_mapping.get(col.lower())
         logger.debug(f"controlled_vocab for '{col}': {controlled_vocab}")
         if not controlled_vocab:
@@ -355,23 +356,29 @@ class Package(object):
         logger.debug(f"validation_mappings keys: {list(self.validation_mappings.keys())}")
         logger.debug(f"controlled_vocab_map keys: {list(self.validation_mappings.get('controlled_vocab_map', {}).keys())}")
         
+        # Get possible vocabularies from a controlled vocab
         try:
             vocab_list = self.validation_mappings['controlled_vocab_map'][controlled_vocab]
+            # ex. 'lcnaf' or 'ulan'
         except KeyError:
             logger.error(f"controlled_vocab_map missing entry for '{controlled_vocab}' in validation_mappings.yaml")
             return
         
         logger.debug(f"Validating '{col}' against vocabularies: {', '.join(vocab_list)}")
         # FIXME: don't use iterrows, it's inefficient because it loops through the whole df. Just do the header
+
+        # Loop through values
         for index, row in df.iterrows():
             if pd.notna(row[col]):
                 cell = row[col]
+                # Split multi-value cells separated by |
                 for value in str(cell).split('|'):
-                    value = value.strip()
                     if not value:
                         continue
                     valid = False
+                    # Try all validators, if any pass then it is validated
                     for vocab_name in vocab_list:
+                        # Use the dict in vocabularies.py to get the correct function
                         validator = vocabularies.VOCABULARY_VALIDATORS.get(vocab_name)
                         if validator and validator(value):
                             valid = True
