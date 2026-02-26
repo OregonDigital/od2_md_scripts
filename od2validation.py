@@ -269,14 +269,15 @@ class Package(object):
 
     def get_headers_instructions(self) -> None:
         """
-        Decide validation instructions for config files headers
+        Decide + execute validation instructions for config files headers
 
         For each header in headers_config:
         1. If header has validation rules in headers_config, use those
         2. If header is None in headers_config:
-           a. Check validation_mappings for mapped validator (e.g., photographer->creator)
+           a. Check validation_mappings for mapped validator (e.g., photographer->creator) after
+              replacing validator type name with actual header name in method args
            b. Fallback to direct header lookup in default_config (e.g., dmrec)
-        3. If header isn't in either config, log no check configured
+        3. If header has None value and not found by mapping or default, log no check configured
         """
         for header in self.headers_config:
             # Use project-specific config if possible
@@ -284,7 +285,7 @@ class Package(object):
                 logger.info(f"Validating '{header}' from config...")
                 self._process_instructions(header, self.headers_config[header], 'headers_config')
             # Use default config if no project-specific config
-            elif self.headers_config[header] is None:
+            else:
                 # Try mapped validator first (e.g., photographer->creator)
                 validator_type = self.validator_mapping.get(header.lower())
                 if validator_type and validator_type in self.default_config:
@@ -298,8 +299,6 @@ class Package(object):
                     self._process_instructions(header, self.default_config[header], 'default')
                 else:
                     logger.info(f"NO VALIDATION CHECK CONFIGURED FOR '{header}' in headers_config or default")
-            else:
-                logger.info(f"NO VALIDATION CHECK CONFIGURED FOR '{header} in headers_config or default")
 
     # methods for get_method
     # duplicative code here too in that I create and use dataframe separately for methods
