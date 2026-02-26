@@ -377,6 +377,7 @@ class Package(object):
                     valid = False
                     # Try all validators, if any pass then it is validated
                     for vocab_name in vocab_list:
+                        # Use the dict in vocabularies.py to get the correct function
                         validator = vocabularies.VOCABULARY_VALIDATORS.get(vocab_name)
                         if validator and validator(value):
                             valid = True
