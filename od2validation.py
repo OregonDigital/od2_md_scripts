@@ -221,7 +221,7 @@ class Package(object):
         else:
             logger.error(f"Invalid 'which' parameter: {which}. Expected 'all', 'complex', 'item', or 'na'.")
 
-    def _process_instructions(self, header: str, instructions: List, config_source: str) -> None:
+    def _process_instructions(self, header: str, instructions: List[Dict], config_source: str) -> None:
         """
         Process validation instructions for a specific header
 
