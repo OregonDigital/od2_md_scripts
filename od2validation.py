@@ -153,6 +153,7 @@ class Package(object):
             method: Optional[Any] = method_mapping.get(method_name)
             if method:
                 logging.debug(f"method_mapping.get({method_name}) is True")
+                # FIXME -- is this return necessary? It doesn't actually set value in parent
                 return method(args)
             else:
                 logger.error(f"method_name {method_name} not in method_mapping")
