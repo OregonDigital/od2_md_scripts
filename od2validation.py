@@ -152,7 +152,7 @@ class Package(object):
         try:
             method: Optional[Any] = method_mapping.get(method_name)
             if method:
-                # print(f"method_mapping.get({method_name}) is True") # check
+                logging.debug(f"method_mapping.get({method_name}) is True")
                 return method(args)
             else:
                 logger.error(f"method_name {method_name} not in method_mapping")
