@@ -345,6 +345,7 @@ class Package(object):
         col: str = args[0]
         df = self.get_dataframe()
         
+        # Get controlled vocab type
         controlled_vocab = self.validator_mapping.get(col.lower())
         logger.debug(f"controlled_vocab for '{col}': {controlled_vocab}")
         if not controlled_vocab:
@@ -354,22 +355,27 @@ class Package(object):
         logger.debug(f"validation_mappings keys: {list(self.validation_mappings.keys())}")
         logger.debug(f"controlled_vocab_map keys: {list(self.validation_mappings.get('controlled_vocab_map', {}).keys())}")
         
+        # Get possible vocabularies from a controlled vocab
         try:
             vocab_list = self.validation_mappings['controlled_vocab_map'][controlled_vocab]
+            # ex. 'lcnaf' or 'ulan'
         except KeyError:
             logger.error(f"controlled_vocab_map missing entry for '{controlled_vocab}' in validation_mappings.yaml")
             return
         
         logger.debug(f"Validating '{col}' against vocabularies: {', '.join(vocab_list)}")
         # FIXME: don't use iterrows, it's inefficient because it loops through the whole df. Just do the header
+
+        # Loop through values
         for index, row in df.iterrows():
             if pd.notna(row[col]):
                 cell = row[col]
+                # Split multi-value cells separated by |
                 for value in str(cell).split('|'):
-                    value = value.strip()
                     if not value:
                         continue
                     valid = False
+                    # Try all validators, if any pass then it is validated
                     for vocab_name in vocab_list:
                         validator = vocabularies.VOCABULARY_VALIDATORS.get(vocab_name)
                         if validator and validator(value):
