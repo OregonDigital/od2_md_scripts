@@ -29,8 +29,8 @@ WARNING: Do not delete the "- " before your file path under metadata, it is part
 
 This is the process you'll use every time you want to select which csv and files to validate, since this tells the program the location of the files to check.
 
-## Making Your Config File
-Your config file tells the program what you expect your metadata values to look like. It includes which headers you expect, what the acceptable values for cells are, even if any of them should always be the same value (for example, maybe your collection only ever has 1 photographer, so you know the value for the photographer column should always be the same name).
+## Making Your Headers Config File
+Your headers config file tells the program what you expect your metadata values to look like. It includes which headers you expect, what the acceptable values for cells are, even if any of them should always be the same value (for example, maybe your collection only ever has 1 photographer, so you know the value for the photographer column should always be the same name).
 
 1. In your terminal, type and enter
 ```bash
@@ -50,7 +50,7 @@ TODO
 # Using the Program
 
 ## Validating Metadata Pre-Upload
-Before you import files with metadata to OD2, this script lets you automatically validate your metadata. Validation requires a file to check values against, which is what we just made in Setup under Making Your Config File. Default validation is a work-in-progress, but as of 2/24/2026 it automatically validates that any Creator-like URI like photographer, author, or artist is correctly formatted.
+Before you import files with metadata to OD2, this script lets you automatically validate your metadata. Validation requires a file to check values against, which is what we just made in Setup under Making Your Headers Config File. Default validation is a work-in-progress, but as of 2/24/2026 it automatically validates that any Creator-like URI like photographer, author, or artist is correctly formatted.
 
 1. Before validating, make sure you have the file you want to validate set as the path in filepaths.yaml (you need to set both the csv path and the files path -- described above in 'Making filepaths.yaml'
 2. To do the validation, you just need to run this command in your terminal:
