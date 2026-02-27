@@ -12,9 +12,9 @@ fixes:
   # fix location using http over https
   - type: regex_replace
     column: location
-    # the () encloses a specific group (automatically labeled 1,2,3... as they are made)
+    # select the start of the geonames url
     pattern: '^http://'
-    # this is replacing the http:// with https:// and then inserting group 1 (the rest of the url above)
+    # replace http with https, keeping the rest of the url intact
     replacement: 'https://'
 
     # fix file column missing file extension (append .tif to the end of the ID, which is what's almost always there instead)
