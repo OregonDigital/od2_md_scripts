@@ -30,7 +30,7 @@ WARNING: Do not delete the "- " before your file path under metadata, it is part
 
 This is the process you'll use every time you want to select which csv and files to validate, since this tells the program the location of the files to check.
 
-## Making Your Headers Config File
+### Making Your Headers Config File
 Your headers config file tells the program what you expect your metadata values to look like. It includes which headers you expect, what the acceptable values for cells are, even if any of them should always be the same value (for example, maybe your collection only ever has 1 photographer, so you know the value for the photographer column should always be the same name).
 
 1. In your terminal, type and enter
@@ -45,7 +45,7 @@ WARNING: DO NOT use spaces in the name of your config file, it will be very anno
 
 TODO: need to offer detailed instructions on the Regex to actually select values once the config file is made
 
-## Making a Fix File (Optional)
+### Making a Fix File (Optional)
 
 Note: fix files are optional because they can be complicated to correctly set up, at worst will *introduce* errors, and aren't necessary when you can manually fix sheets. However, fix files are very powerful tools when set up correctly because they can fix potentially hundreds of errors at once. It's up to you if you want to experiment with this. You must know or be willing to learn basic Regex and YAML to do this correctly.
 
@@ -74,6 +74,12 @@ fixes:
 ```
 
 There are **3 methods** (chosen by 'type: ' in the yaml) you can use to do auto-fixes. 
+
+Quick summary:
+- 'strip': remove leading and trailing whitespace
+- 'enforce_string': replace every value with a given string
+- 'regex_replace': select a pattern (part of or a whole value in a cell) and replace it with another pattern
+
 
 **Method 1: strip**
 
@@ -141,6 +147,8 @@ fixes:
 WARNING: you **must** exclude values from the pattern that you don't want to append to. '.tif' is excluded to prevent '.tif.tif' results.
 
 Notice that we are specifically *excluding* values that already end in '.tif'. Imagine if half of the cells in the column ended in '.tif', and half didn't. If we applied the fix to every cell in the column, we would end up with a bunch of '.tif.tif' double extensions because it would append every time. So we use the negative look-ahead in Regex to make sure that we only include files that don't end in '.tif'. 
+
+You can use these methods to fix most simple issues, and with some creativity they can do quite a lot. Anecdotally, for some of the more annoying uo-athletics fixes they've sped up fixing the metadata by ten times. But they can be a bit annoying to get right, so it's your choice to use this or not!
 
 # Using the Program
 
