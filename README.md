@@ -41,9 +41,44 @@ If you get an error saying you don't have Python installed, you either need to [
 
 2. Follow the instructions in the terminal
 
-WARNING: DO NOT use spaces in the name of your config file, it will be very annoying for you to use later and could break the code.
+WARNING: DO NOT use spaces in the name of your config file, it will break the code.
 
-TODO: need to offer detailed instructions on the Regex to actually select values once the config file is made
+3. Make the checks for each header
+
+There's 2 ways to check values under a header, and there's 2 special methods you may want to use. 
+
+*Checking values under a header:* 
+
+1. string
+
+A string check just lets you specify exactly what a value should be for every cell in a column (under a header). For example, if I know that the license for a particular collection will always be "http://creativecommons.org/licenses/by-nc-nd/4.0/", then I can write a check to make sure it's that. 
+
+Under the license header, I would write this:
+```yaml
+license:
+  - string: http://creativecommons.org/licenses/by-nc-nd/4.0/
+    which: all
+```
+The license is referring to the header I'm checking values for, the string shows what it should be, and the which specifies which values to apply it to (you can assume this will always be all).
+
+2. regex
+
+A regex check lets you check that values for a field that can change have an acceptable format. For example, the identifier might always start with "PH395_UP" followed by some characters. We can do a regex check to make sure the values fit that, even without knowing the specific values in a given identifier. It follows the same format, looking like:
+```yaml
+identifier:
+  - regex: ^PH395_UP\S*$
+    which: all
+```
+In this case, '\S*' is telling the program some special info -- it's saying there can be any number of non-whitespace characters at the end. 
+
+To check what your regex is doing, you could test it on [regex101](https://regex101.com/). For a tutorial, you could check [regexone](https://www.regexone.com/)
+
+*Special methods:*
+
+1. check_filenames_assets
+TODO
+
+2. identifier_file_match
 
 ### Making a Fix File (Optional)
 
