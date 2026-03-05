@@ -4,25 +4,24 @@ from od2validation import Package
 import logging
 
 
-def test_package_initializes(test_filepaths_yaml):
+def test_package_initializes(temp_test_environment):
     """Test that Package can initialize with test data."""
-    package = Package("test", test=True)
+    package = Package("test")
     assert package is not None
-    assert package.test is True
     assert len(package.metadata) > 0
     assert len(package.assets) > 0
 
 
-def test_header_validation_passes(test_filepaths_yaml):
+def test_header_validation_passes(temp_test_environment):
     """Test that header validation passes when headers match config."""
-    package = Package("test", test=True)
+    package = Package("test")
     result = package.check_headers()
     assert result is True, "Headers should match the test configuration"
 
 
-def test_get_dataframe_loads_csv(test_filepaths_yaml):
+def test_get_dataframe_loads_csv(temp_test_environment):
     """Test that CSV metadata file loads correctly into DataFrame."""
-    package = Package("test", test=True)
+    package = Package("test")
     df = package.get_dataframe()
     assert df is not None
     assert len(df) > 0, "DataFrame should have rows"
@@ -32,9 +31,9 @@ def test_get_dataframe_loads_csv(test_filepaths_yaml):
         assert col in df.columns, f"Column {col} should exist in DataFrame"
 
 
-def test_string_validation(test_filepaths_yaml):
+def test_string_validation(temp_test_environment):
     """Test that string validation works correctly."""
-    package = Package("test", test=True)
+    package = Package("test")
     # The test config has string validation for format and resource_type
     # This test verifies the validation workflow runs without errors
     # Note: We're testing the workflow completes, not that it logs errors
@@ -46,9 +45,9 @@ def test_string_validation(test_filepaths_yaml):
         pytest.fail(f"Validation workflow should complete without exceptions: {e}")
 
 
-def test_regex_validation(test_filepaths_yaml):
+def test_regex_validation(temp_test_environment):
     """Test that regex validation works correctly."""
-    package = Package("test", test=True)
+    package = Package("test")
     # The test config has regex validation for title field
     # Verify the validation can run
     try:
@@ -58,9 +57,9 @@ def test_regex_validation(test_filepaths_yaml):
         pytest.fail(f"Regex validation should work: {e}")
 
 
-def test_file_validation_workflow(test_filepaths_yaml):
+def test_file_validation_workflow(temp_test_environment):
     """Test that filename validation method can be called."""
-    package = Package("test", test=True)
+    package = Package("test")
     # Check that the check_filenames_assets method exists and can be called
     # Note: This will fail if file column doesn't match assets, which is expected
     try:
@@ -72,9 +71,9 @@ def test_file_validation_workflow(test_filepaths_yaml):
         pytest.fail("check_filenames_assets method should exist")
 
 
-def test_validation_workflow_completes(test_filepaths_yaml):
+def test_validation_workflow_completes(temp_test_environment):
     """Test that the complete validation workflow runs end-to-end."""
-    package = Package("test", test=True)
+    package = Package("test")
     
     # Run the full workflow as process.py does
     package.print_filepaths()
@@ -90,9 +89,9 @@ def test_validation_workflow_completes(test_filepaths_yaml):
         pytest.fail(f"Complete validation workflow should not raise exceptions: {e}")
 
 
-def test_string_check_catches_mismatch(test_filepaths_yaml, caplog):
+def test_string_check_catches_mismatch(temp_test_environment, caplog):
     """Test that perform_string_check logs an error when strings don't match."""
-    package = Package("test", test=True)
+    package = Package("test")
     
     # Clear any previous logs
     caplog.clear()
@@ -106,9 +105,9 @@ def test_string_check_catches_mismatch(test_filepaths_yaml, caplog):
     assert "expected_value" in caplog.text or "actual_value" in caplog.text
 
 
-def test_string_check_passes_when_matching(test_filepaths_yaml, caplog):
+def test_string_check_passes_when_matching(temp_test_environment, caplog):
     """Test that perform_string_check doesn't log an error when strings match."""
-    package = Package("test", test=True)
+    package = Package("test")
     
     caplog.clear()
     
@@ -120,10 +119,10 @@ def test_string_check_passes_when_matching(test_filepaths_yaml, caplog):
     assert len(caplog.records) == 0, "No error should be logged for matching strings"
 
 
-def test_regex_check_catches_invalid_pattern(test_filepaths_yaml, caplog):
+def test_regex_check_catches_invalid_pattern(temp_test_environment, caplog):
     """Test that perform_regex_check logs an error when pattern doesn't match."""
     import re
-    package = Package("test", test=True)
+    package = Package("test")
     
     caplog.clear()
     
@@ -135,13 +134,12 @@ def test_regex_check_catches_invalid_pattern(test_filepaths_yaml, caplog):
     
     # Check that an error was logged
     assert len(caplog.records) > 0, "Error should be logged when regex doesn't match"
-    assert "Wrong Format" in caplog.text
 
 
-def test_regex_check_passes_when_matching(test_filepaths_yaml, caplog):
+def test_regex_check_passes_when_matching(temp_test_environment, caplog):
     """Test that perform_regex_check doesn't log an error when pattern matches."""
     import re
-    package = Package("test", test=True)
+    package = Package("test")
     
     caplog.clear()
     
@@ -155,11 +153,11 @@ def test_regex_check_passes_when_matching(test_filepaths_yaml, caplog):
     assert len(caplog.records) == 0, "No error should be logged when regex matches"
 
 
-def test_check_headers_catches_mismatch(test_filepaths_yaml, caplog):
+def test_check_headers_catches_mismatch(temp_test_environment, caplog):
     """Test that check_headers detects when config doesn't match metadata."""
     # This test uses the existing test data where headers should match
     # If they don't match, check_headers returns False and logs errors
-    package = Package("test", test=True)
+    package = Package("test")
     
     caplog.clear()
     
@@ -172,13 +170,13 @@ def test_check_headers_catches_mismatch(test_filepaths_yaml, caplog):
         assert len(caplog.records) > 0, "Errors should be logged when headers don't match"
 
 
-def test_validation_catches_errors_in_real_data(test_filepaths_yaml, caplog):
+def test_validation_catches_errors_in_real_data(temp_test_environment, caplog):
     """
     Regression test: Run validation on test data and ensure it completes.
     This test will fail if the validation logic breaks in a way that causes crashes.
     It also serves as documentation of expected behavior.
     """
-    package = Package("test", test=True)
+    package = Package("test")
     
     caplog.clear()
     

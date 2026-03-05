@@ -13,10 +13,7 @@ logger = logging.getLogger(__name__)
 
 class Package(object):
 
-    def __init__(self, headers_config: str, test: bool = False) -> None:
-        # * instantiating with 1 vs 2 args ... any issues??
-        # should I make sure that headers_config="test" when testing?
-        self.test = test
+    def __init__(self, headers_config: str) -> None:
         self.metadata = self.filepaths()[0]
         self.assets = os.listdir(self.filepaths()[1])
         self.default_config, self.headers_config, self.validation_mappings = self.get_config(headers_config)
@@ -25,15 +22,10 @@ class Package(object):
         # use makeconfig.py?
 
     def filepaths(self) -> Tuple[List[str], str]:
-        if self.test == False:
-            with open("filepaths.yaml", "r") as yf:
-                paths: Dict[str, Any] = yaml.safe_load(yf)
-                return (paths['metadata'], paths['assets'],)
-                # * self.metadata is 1 or 2 item list
-        else:
-            with open("filepaths_test.yaml", "r") as yf:
-                paths: Dict[str, Any] = yaml.safe_load(yf)
-                return (paths['metadata'], paths['assets'],)
+        with open("filepaths.yaml", "r") as yf:
+            paths: Dict[str, Any] = yaml.safe_load(yf)
+            return (paths['metadata'], paths['assets'],)
+            # * self.metadata is 1 or 2 item list
 
     def _build_validator_mapping(self) -> Dict[str, str]:
         """Build mapping: field_name -> validator_name"""
