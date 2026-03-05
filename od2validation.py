@@ -306,6 +306,9 @@ class Package(object):
     # TODO: condense dataframe usage, one declaration possible in init?
     
     def check_filenames_assets(self, args: List[Any]) -> None:
+        """
+        
+        """
         col: str = args[0]
         filenames: List[str] = []
         for cell in self.get_dataframe()[col]:
@@ -324,6 +327,9 @@ class Package(object):
             pass
 
     def identifier_file_match(self, args: List[str]) -> None:
+        """
+        
+        """
         substring: str = args[0]
         df_for_method: pd.DataFrame = self.get_dataframe()
         for index, row in df_for_method.iterrows():
