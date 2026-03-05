@@ -15,7 +15,7 @@ Clone the repo to your device first. If you don't know how, check out the [docs]
 There are a few files that you will need to manually edit in order for the code to run. You can do this with your terminal, in any text editor you like, or an IDE like VSCode -- whatever you feel most comfortable with. 
 
 ### Making filepaths.yaml
-1. Copy filepaths_example.yaml (it's at the top level of the code folder, keep it there when you copy).
+1. Copy [filepaths_example.yaml](filepaths_example.yaml) (it's at the top level of the code folder, keep it there when you copy).
 2. Rename the copy to 'filepaths.yaml'.
 3. Replace the line under metadata with the file path to your csv.
 
