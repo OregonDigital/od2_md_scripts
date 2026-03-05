@@ -32,7 +32,7 @@ Your headers config file tells the program what you expect your metadata values 
 ```bash
 python makeconfig.py
 ```
-If you get an error saying you don't have Python installed, you either need to [check your version](https://www.howtogeek.com/796841/check-python-version/) or [install Python](https://www.python.org/downloads/)
+If you get an error saying you don't have Python installed, you either need to [check your version](https://www.howtogeek.com/796841/check-python-version/) or [install Python](https://www.python.org/downloads/).
 
 2. Follow the instructions in the terminal
 
@@ -66,7 +66,7 @@ identifier:
 ```
 In this case, '\S*' is a regex part indicating there can be any number of non-whitespace characters at the end.
 
-To check what your regex is doing, you could test it on [regex101](https://regex101.com/). For a tutorial, you could check [regexone](https://www.regexone.com/)
+To check what your regex is doing, you could test it on [regex101](https://regex101.com/). For a tutorial, you could check [regexone](https://www.regexone.com/).
 
 *Special methods:*
 
