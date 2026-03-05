@@ -151,7 +151,7 @@ def fix_enforce_string(df: pd.DataFrame, column: str, validation_config: dict[st
     return df, changes
 
 
-def apply_collection_fixes(df: pd.DataFrame, fix_config: dict[str, Any]) -> Tuple[pd.DataFrame, int]:
+def apply_collection_fixes(df: pd.DataFrame, fix_config: dict[str, Any], validation_config: dict[str, Any]) -> Tuple[pd.DataFrame, int]:
     """Apply collection-specific fixes from config"""
     total_changes = 0
     
@@ -181,6 +181,12 @@ def apply_collection_fixes(df: pd.DataFrame, fix_config: dict[str, Any]) -> Tupl
             logger.info(f"  Regex replace in '{column}': {changes} changes")
             total_changes += changes
             
+        elif fix_type == 'enforce_string':
+            column = fix.get('column')
+            df, changes = fix_enforce_string(df, column, validation_config)
+            logger.info(f"  Enforce string in '{column}': {changes} changes")
+            total_changes += changes
+
         else:
             logger.error(f"Unknown fix type '{fix_type}': {fix}")
     
@@ -236,14 +242,7 @@ def main() -> None:
 
     # Apply fixes
     logger.info(f"\nApplying fixes...")
-    df, total_changes = apply_collection_fixes(df, fix_config)
-    
-    # Enforce validation rules
-    logger.info("\nEnforcing validation rules...")
-    for column in validation_config.keys():
-        df, changes = fix_enforce_string(df, column, validation_config)
-        logger.info(f"  Enforce string in '{column}': {changes} changes")
-        total_changes += changes
+    df, total_changes = apply_collection_fixes(df, fix_config, validation_config)
     
     # Save if changes were made
     if total_changes > 0:
