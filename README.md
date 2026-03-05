@@ -8,13 +8,8 @@ Now featuring [a wiki](https://github.com/OregonDigital/od2_md_scripts/wiki) whi
 If you've used github before and are familiar with general programming, clone the repo and then follow the instructions in [Getting Started](https://github.com/OregonDigital/od2_md_scripts/wiki/Getting-Started). Otherwise, start with the guide below. 
 
 ## Downloading the Code
-We're going to *clone the repo*, which means adding the code here to your computer files.
-1. Click the green button near the top of this page that says "Code" and then copy the HTTP link to clipboard.
-2. In the terminal on your computer navigate to the folder you want to add the program to, and then type "git clone (repository link)", replacing (repository link) with the one you just copied.
 
-Now you have the code locally saved to your computer! It lives in the file you were in in terminal when you ran git clone.
-
-For more information about cloning the repo, check out the [docs](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
+Clone the repo to your device first. If you don't know how, check out the [docs](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
 
 ## Making Your Files
 There are a few files that you will need to manually edit in order for the code to run. You can do this with your terminal, in any text editor you like, or an IDE like VSCode -- whatever you feel most comfortable with. 
