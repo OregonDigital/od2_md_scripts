@@ -307,7 +307,7 @@ class Package(object):
     
     def check_filenames_assets(self, args: List[Any]) -> None:
         """
-        
+        Validate that all filenames in the csv match the actual asset file names in the assets folder
         """
         col: str = args[0]
         filenames: List[str] = []
@@ -328,7 +328,7 @@ class Package(object):
 
     def identifier_file_match(self, args: List[str]) -> None:
         """
-        
+        Check that identifier values match filename values (compare identifier col to file col)
         """
         substring: str = args[0]
         df_for_method: pd.DataFrame = self.get_dataframe()
