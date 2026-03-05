@@ -7,7 +7,7 @@ file:
     # no which on method!
 subject: ~ # to do
 creator:
-  - regex: '^.+$' #FIXME should not require 1+, let it be empty
+  - regex: '^.*$'
     which: all
   - method: validate_controlled_vocab
     args: ['creator']
