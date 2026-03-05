@@ -7,8 +7,6 @@ file:
     # no which on method!
 subject: ~ # to do
 creator:
-  - regex: '^.*$'
-    which: all
   - method: validate_controlled_vocab
     args: ['creator']
 
