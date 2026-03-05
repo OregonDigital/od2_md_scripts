@@ -69,16 +69,19 @@ identifier:
   - regex: ^PH395_UP\S*$
     which: all
 ```
-In this case, '\S*' is telling the program some special info -- it's saying there can be any number of non-whitespace characters at the end. 
+In this case, '\S*' is a regex part indicating there can be any number of non-whitespace characters at the end.
 
 To check what your regex is doing, you could test it on [regex101](https://regex101.com/). For a tutorial, you could check [regexone](https://www.regexone.com/)
 
 *Special methods:*
 
 1. check_filenames_assets
-TODO
 
-2. identifier_file_match
+Checking filenames and assets ensures that the filenames you have in your spreadsheet actually match the file names in the assets folder.
+
+3. identifier_file_match
+
+Checking the identifier and file for matches TODO
 
 ### Making a Fix File (Optional)
 
