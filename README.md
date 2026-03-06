@@ -69,7 +69,14 @@ python process.py uo-athletics
 This will show you a list of headers with errors in your spreadsheet. You can manually fix them and then run the check again, or if you've set up auto fixes you could run those and then check.
 Remember that to validate another work, you just have to replace the filepaths in filepath.yaml like we did when we set up the file.
 
-### Checking Status of Uploaded Works
+## Auto-Fixing Works
+You'll see a prompt after running process.py if there are errors saying you can run autofix. If you've set it up, you just enter:
+```bash
+python fixcsv.py [collection-name]
+```
+This is all there is to it, and you'll get a list of errors that were fixed. If you get an error, make sure you're typing the collection name, not the collection name with '-fixes' at the end. Also make sure your fixes file is exactly named "[collection name]-fixes". You can re-run process.py to check if everything was fixed now.
+
+## Checking Status of Uploaded Works
 You can see a variety of features about works you've uploaded with the importer-solr.py module. This will let you check if there are any glitches with importing that need to be resolved, and give a high-level overview of the works before you manually review them.
 
 To run the check, just type this into the terminal:
