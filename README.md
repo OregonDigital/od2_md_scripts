@@ -68,5 +68,5 @@ You can see a variety of features about works you've uploaded with the importer-
 
 To run the check, just type this into the terminal:
 ```bash
-python importer-solr.py [importer id] [number of works in collection]
+python importer-solr.py [importer id] [number of works within the collection]
 ```
