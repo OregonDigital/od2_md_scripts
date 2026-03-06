@@ -5,7 +5,8 @@ Scripts for metadata validation prior to ingest in Oregon Digital, and verifying
 Now featuring [a wiki](https://github.com/OregonDigital/od2_md_scripts/wiki) which contains other guides and explanations.
 
 # Setup
-If you've used github before and are familiar with general programming, clone the repo and then follow the instructions in [Getting Started](https://github.com/OregonDigital/od2_md_scripts/wiki/Getting-Started). Otherwise, start with the guide below. 
+
+The Setup section walks you through how to make the files you'll need, with links to expand on them if you'd like to.
 
 ## Downloading the Code
 
@@ -26,7 +27,7 @@ WARNING: Do not delete the "- " before your file path under metadata, it is part
 This is the process you'll use every time you want to select which csv and files to validate, since this tells the program the location of the files to check.
 
 ### Making Your Headers Config File
-Your headers config file tells the program what you expect your metadata values to look like. It includes which headers you expect, what the acceptable values for cells are, even if any of them should always be the same value (for example, maybe your collection only ever has 1 photographer, so you know the value for the photographer column should always be the same name).
+Your headers config file tells the program what you expect your metadata values to look like. At its most basic it includes only the headers from your metadata followed by a null tilda ~. The basic version will automatically check that the files in the metadata under the 'file' header match the files in your assets folder (called 'files'), and that your creator field has a valid URI format. You can add more yaml and some regex to include what the acceptable values for cells are (either one single value or a range of possible ones). 
 
 1. In your terminal, type and enter
 ```bash
@@ -40,43 +41,7 @@ WARNING: DO NOT use spaces in the name of your config file, it will break the co
 
 3. Make the checks for each header
 
-There's 2 ways to check values under a header, and there's 2 special methods you may want to use. 
-
-*Checking values under a header:* 
-
-1. string
-
-A string check just lets you specify exactly what a value should be for every cell in a column (under a header). For example, if I know that the license for a particular collection will always be "http://creativecommons.org/licenses/by-nc-nd/4.0/", then I can write a check to make sure it's that. 
-
-Under the license header, I would write this:
-```yaml
-license:
-  - string: http://creativecommons.org/licenses/by-nc-nd/4.0/
-    which: all
-```
-The license is referring to the header I'm checking values for, the string shows what it should be, and the which specifies which values to apply it to (you can assume this will always be all).
-
-2. regex
-
-A regex check lets you check that values for a field that can change have an acceptable format. For example, the identifier might always start with "PH395_UP" followed by some characters. We can do a regex check to make sure the values fit that, even without knowing the specific values in a given identifier. It follows the same format, looking like:
-```yaml
-identifier:
-  - regex: ^PH395_UP\S*$
-    which: all
-```
-In this case, '\S*' is a regex part indicating there can be any number of non-whitespace characters at the end.
-
-To check what your regex is doing, you could test it on [regex101](https://regex101.com/). For a tutorial, you could check [regexone](https://www.regexone.com/).
-
-*Special methods:*
-
-1. check_filenames_assets
-
-Checking filenames and assets ensures that the filenames you have in your spreadsheet actually match the file names in the assets folder.
-
-3. identifier_file_match
-
-Checking the identifier and file for matches TODO
+This step is optional, as it adds a lot of utility but also requires some regex and yaml knowledge, or the willingness to learn. Custom checks allow you to specify exactly what values or range of values you expect for a field, so you can detect if there's bad data without manually reading every column. To learn how to make your own checks for headers, read [Custom Checks in Headers Config](https://github.com/OregonDigital/od2_md_scripts/wiki/Custom-Checks-in-Headers-Config).
 
 ### Making a Fix File (Optional)
 
