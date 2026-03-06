@@ -93,9 +93,14 @@ def validate_lcsh(value: str) ->  bool:
     """Validate lcsh URI format
     
     Examples:
+    website: "http://id.loc.gov/authorities/subjects/sh85055245"
+    website: "http://id.loc.gov/authorities/subjects/sh85104841"
+    od2 map: "http://id.loc.gov/authorities/subjects/sh85105182"
 
     Match start through ...
     """
+    pattern = r''
+    return bool(re.match(pattern, value))
 
 def validate_tgm(value: str) ->  bool:
     """Validate tgm URI format
@@ -104,14 +109,21 @@ def validate_tgm(value: str) ->  bool:
 
     Match start through ...
     """
+    pattern = r''
+    return bool(re.match(pattern, value))
 
 def validate_aat(value: str) ->  bool:
     """Validate aat URI format
     
     Examples:
+    website: "http://vocab.getty.edu/aat/300011213"
+    website: "http://vocab.getty.edu/aat/300185650"
+    od2 map: "http://vocab.getty.edu/aat/300134977"
 
     Match start through ...
     """
+    pattern = r''
+    return bool(re.match(pattern, value))
 
 def validate_subject(value: str) ->  bool:
     """Validate subject URI format
@@ -120,6 +132,8 @@ def validate_subject(value: str) ->  bool:
 
     Match start through ...
     """
+    pattern = r''
+    return bool(re.match(pattern, value))
 
 def validate_lcorgs(value: str) ->  bool:
     """Validate lcorgs URI format
@@ -128,6 +142,8 @@ def validate_lcorgs(value: str) ->  bool:
 
     Match start through ...
     """
+    pattern = r''
+    return bool(re.match(pattern, value))
 
 def validate_itis(value: str) ->  bool:
     """Validate itis URI format
@@ -136,6 +152,8 @@ def validate_itis(value: str) ->  bool:
 
     Match start through ...
     """
+    pattern = r''
+    return bool(re.match(pattern, value))
 
 def validate_ubio(value: str) ->  bool:
     """Validate ubio URI format
@@ -144,6 +162,8 @@ def validate_ubio(value: str) ->  bool:
 
     Match start through ...
     """
+    pattern = r''
+    return bool(re.match(pattern, value))
 
 def validate_osubuildings(value: str) ->  bool:
     """Validate osubuildings URI format
@@ -152,6 +172,8 @@ def validate_osubuildings(value: str) ->  bool:
 
     Match start through ...
     """
+    pattern = r''
+    return bool(re.match(pattern, value))
 
 def validate_lcgenreforms(value: str) ->  bool:
     """Validate lcsh lcgenreforms format
@@ -160,6 +182,8 @@ def validate_lcgenreforms(value: str) ->  bool:
 
     Match start through ...
     """
+    pattern = r''
+    return bool(re.match(pattern, value))
 
 def validate_bne(value: str) ->  bool:
     """Validate bne URI format
@@ -168,6 +192,8 @@ def validate_bne(value: str) ->  bool:
 
     Match start through ...
     """
+    pattern = r''
+    return bool(re.match(pattern, value))
 
 def validate_homosaurus(value: str) ->  bool:
     """Validate homosaurus URI format
@@ -176,6 +202,8 @@ def validate_homosaurus(value: str) ->  bool:
 
     Match start through ...
     """
+    pattern = r''
+    return bool(re.match(pattern, value))
 
 
 
