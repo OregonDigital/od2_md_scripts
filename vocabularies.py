@@ -89,9 +89,93 @@ def validate_osuacademicunits(value: str) -> bool:
     pattern = r'http:\/\/opaquenamespace\.org\/ns\/osuAcademicUnits\/[a-zA-Z\d]+'
     return bool(re.match(pattern, value))
 
-# Add rest here (from under each subfield of fields in controlled_vocab_map, in validation_mappings.yaml)
+def validate_lcsh(value: str) ->  bool:
+    """Validate lcsh URI format
+    
+    Examples:
 
+    Match start through ...
+    """
 
+def validate_tgm(value: str) ->  bool:
+    """Validate tgm URI format
+    
+    Examples:
+
+    Match start through ...
+    """
+
+def validate_aat(value: str) ->  bool:
+    """Validate aat URI format
+    
+    Examples:
+
+    Match start through ...
+    """
+
+def validate_subject(value: str) ->  bool:
+    """Validate subject URI format
+    
+    Examples:
+
+    Match start through ...
+    """
+
+def validate_lcorgs(value: str) ->  bool:
+    """Validate lcorgs URI format
+    
+    Examples:
+
+    Match start through ...
+    """
+
+def validate_itis(value: str) ->  bool:
+    """Validate itis URI format
+    
+    Examples:
+
+    Match start through ...
+    """
+
+def validate_ubio(value: str) ->  bool:
+    """Validate ubio URI format
+    
+    Examples:
+
+    Match start through ...
+    """
+
+def validate_osubuildings(value: str) ->  bool:
+    """Validate osubuildings URI format
+    
+    Examples:
+
+    Match start through ...
+    """
+
+def validate_lcgenreforms(value: str) ->  bool:
+    """Validate lcsh lcgenreforms format
+    
+    Examples:
+
+    Match start through ...
+    """
+
+def validate_bne(value: str) ->  bool:
+    """Validate bne URI format
+    
+    Examples:
+
+    Match start through ...
+    """
+
+def validate_homosaurus(value: str) ->  bool:
+    """Validate homosaurus URI format
+    
+    Examples:
+
+    Match start through ...
+    """
 
 
 
@@ -101,6 +185,17 @@ VOCABULARY_VALIDATORS = {
     'creator': validate_creator,
     'people': validate_people,
     'wikidata': validate_wikidata,
-    'osuacademicunits': validate_osuacademicunits
+    'osuacademicunits': validate_osuacademicunits,
+    'lcsh': validate_lcsh,
+    'tgm': validate_tgm,
+    'aat': validate_aat,
+    'subject': validate_subject,
+    'lcorgs': validate_lcorgs,
+    'itis': validate_itis,
+    'ubio': validate_ubio,
+    'osubuildings': validate_osubuildings,
+    'lcgenreforms': validate_lcgenreforms,
+    'bne': validate_bne,
+    'homosaurus': validate_homosaurus
     # Add rest here
 }
