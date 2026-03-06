@@ -227,7 +227,8 @@ class TestApplyCollectionFixes:
                 {'type': 'strip', 'column': 'title'}
             ]
         }
-        result_df, total_changes = apply_collection_fixes(df, fix_config)
+        validation_config = {}
+        result_df, total_changes = apply_collection_fixes(df, fix_config, validation_config)
         assert total_changes == 2
         assert result_df['title'].iloc[0] == 'text'
         assert result_df['title'].iloc[2] == 'word'
@@ -241,7 +242,8 @@ class TestApplyCollectionFixes:
                  'pattern': r'^http://', 'replacement': 'https://'}
             ]
         }
-        result_df, total_changes = apply_collection_fixes(df, fix_config)
+        validation_config = {}
+        result_df, total_changes = apply_collection_fixes(df, fix_config, validation_config)
         assert total_changes == 2
         assert result_df['url'].iloc[0] == 'https://example.com'
     
@@ -258,7 +260,8 @@ class TestApplyCollectionFixes:
                  'pattern': r'^http://', 'replacement': 'https://'}
             ]
         }
-        result_df, total_changes = apply_collection_fixes(df, fix_config)
+        validation_config = {}
+        result_df, total_changes = apply_collection_fixes(df, fix_config, validation_config)
         assert total_changes == 3  # 1 strip + 2 regex
         assert result_df['title'].iloc[0] == 'text'
         assert result_df['url'].iloc[0] == 'https://example.com'
@@ -271,7 +274,8 @@ class TestApplyCollectionFixes:
                 {'type': 'unknown_type', 'column': 'title'}
             ]
         }
-        result_df, total_changes = apply_collection_fixes(df, fix_config)
+        validation_config = {}
+        result_df, total_changes = apply_collection_fixes(df, fix_config, validation_config)
         assert total_changes == 0
     
     def test_handles_missing_column_field(self):
@@ -282,7 +286,8 @@ class TestApplyCollectionFixes:
                 {'type': 'strip'}  # Missing 'column'
             ]
         }
-        result_df, total_changes = apply_collection_fixes(df, fix_config)
+        validation_config = {}
+        result_df, total_changes = apply_collection_fixes(df, fix_config, validation_config)
         assert total_changes == 0
     
     def test_handles_missing_regex_fields(self):
@@ -293,7 +298,8 @@ class TestApplyCollectionFixes:
                 {'type': 'regex_replace', 'column': 'url'}  # Missing pattern and replacement
             ]
         }
-        result_df, total_changes = apply_collection_fixes(df, fix_config)
+        validation_config = {}
+        result_df, total_changes = apply_collection_fixes(df, fix_config, validation_config)
         assert total_changes == 0
     
     def test_continues_after_failed_fix(self):
@@ -309,7 +315,8 @@ class TestApplyCollectionFixes:
                  'pattern': r'^http://', 'replacement': 'https://'}  # Should still run
             ]
         }
-        result_df, total_changes = apply_collection_fixes(df, fix_config)
+        validation_config = {}
+        result_df, total_changes = apply_collection_fixes(df, fix_config, validation_config)
         assert total_changes == 1
         assert result_df['url'].iloc[0] == 'https://example.com'
     
@@ -317,7 +324,8 @@ class TestApplyCollectionFixes:
         """Test that empty fixes list results in zero changes."""
         df = pd.DataFrame({'title': [' text ']})
         fix_config = {'fixes': []}
-        result_df, total_changes = apply_collection_fixes(df, fix_config)
+        validation_config = {}
+        result_df, total_changes = apply_collection_fixes(df, fix_config, validation_config)
         assert total_changes == 0
     
     def test_real_world_uo_athletics_example(self):
@@ -337,12 +345,80 @@ class TestApplyCollectionFixes:
                  'replacement': r'https://\1'}
             ]
         }
-        result_df, total_changes = apply_collection_fixes(df, fix_config)
+        validation_config = {}
+        result_df, total_changes = apply_collection_fixes(df, fix_config, validation_config)
         assert total_changes == 4  # 2 strips + 2 regex
         assert result_df['institution'].iloc[0] == 'University of Oregon'
         assert result_df['institution'].iloc[1] == 'UO'
         assert result_df['location'].iloc[0] == 'https://sws.geonames.org/5720727/'
         assert result_df['location'].iloc[1] == 'https://sws.geonames.org/5720728/'
+    
+    def test_applies_single_enforce_string_fix(self):
+        """Test applying a single enforce_string fix."""
+        df = pd.DataFrame({'license': ['wrong', 'incorrect', 'bad']})
+        fix_config = {
+            'fixes': [
+                {'type': 'enforce_string', 'column': 'license'}
+            ]
+        }
+        validation_config = {
+            'license': [{'string': 'https://creativecommons.org/licenses/by-nc-nd/4.0/'}]
+        }
+        result_df, total_changes = apply_collection_fixes(df, fix_config, validation_config)
+        assert total_changes == 3
+        for i in range(3):
+            assert result_df['license'].iloc[i] == 'https://creativecommons.org/licenses/by-nc-nd/4.0/'
+    
+    def test_applies_enforce_string_with_other_fixes(self):
+        """Test applying enforce_string combined with other fix types."""
+        df = pd.DataFrame({
+            'title': [' text ', 'clean'],
+            'license': ['wrong', 'bad'],
+            'url': ['http://example.com', 'http://test.org']
+        })
+        fix_config = {
+            'fixes': [
+                {'type': 'strip', 'column': 'title'},
+                {'type': 'enforce_string', 'column': 'license'},
+                {'type': 'regex_replace', 'column': 'url',
+                 'pattern': r'^http://', 'replacement': 'https://'}
+            ]
+        }
+        validation_config = {
+            'license': [{'string': 'correct_license'}]
+        }
+        result_df, total_changes = apply_collection_fixes(df, fix_config, validation_config)
+        assert total_changes == 5  # 1 strip + 2 enforce_string + 2 regex
+        assert result_df['title'].iloc[0] == 'text'
+        assert result_df['license'].iloc[0] == 'correct_license'
+        assert result_df['license'].iloc[1] == 'correct_license'
+        assert result_df['url'].iloc[0] == 'https://example.com'
+    
+    def test_enforce_string_handles_missing_validation_config(self):
+        """Test that enforce_string handles missing validation config gracefully."""
+        df = pd.DataFrame({'license': ['value']})
+        fix_config = {
+            'fixes': [
+                {'type': 'enforce_string', 'column': 'license'}
+            ]
+        }
+        validation_config = {}  # No config for license
+        result_df, total_changes = apply_collection_fixes(df, fix_config, validation_config)
+        assert total_changes == 0
+    
+    def test_enforce_string_handles_missing_column_field(self):
+        """Test that enforce_string without column field is handled."""
+        df = pd.DataFrame({'license': ['value']})
+        fix_config = {
+            'fixes': [
+                {'type': 'enforce_string'}  # Missing 'column'
+            ]
+        }
+        validation_config = {
+            'license': [{'string': 'correct'}]
+        }
+        result_df, total_changes = apply_collection_fixes(df, fix_config, validation_config)
+        assert total_changes == 0
 
 
 # Parametrized tests run test functions with different inputs -- basically

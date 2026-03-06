@@ -4,3 +4,5 @@ filepaths.yaml
 *.~lock.*
 .venv
 .coverage
+.vscode
+.pytest_cache
