@@ -29,17 +29,17 @@ This is the process you'll use every time you want to select which csv and files
 ### Making Your Headers Config File
 Your headers config file tells the program what you expect your metadata values to look like. At its most basic it includes only the headers from your metadata followed by a null tilda ~. The basic version will automatically check that the files in the metadata under the 'file' header match the files in your assets folder (called 'files'), and that your creator field has a valid URI format. You can add more yaml and some regex to include what the acceptable values for cells are (either one single value or a range of possible ones). 
 
-1. In your terminal, type and enter
+**1. In your terminal, type and enter**
 ```bash
 python makeconfig.py
 ```
 If you get an error saying you don't have Python installed, you either need to [check your version](https://www.howtogeek.com/796841/check-python-version/) or [install Python](https://www.python.org/downloads/).
 
-2. Follow the instructions in the terminal
+**2. Follow the instructions in the terminal**
 
 WARNING: DO NOT use spaces in the name of your config file, it will break the code.
 
-3. Make the checks for each header
+**3. Make the checks for each header (optional)**
 
 This step is optional, as it adds a lot of utility but also requires some regex and yaml knowledge, or the willingness to learn. Custom checks allow you to specify exactly what values or range of values you expect for a field, so you can detect if there's bad data without manually reading every column. To learn how to make your own checks for headers, read [Custom Checks in Headers Config](https://github.com/OregonDigital/od2_md_scripts/wiki/Custom-Checks-in-Headers-Config).
 
@@ -61,4 +61,12 @@ python process.py [config file name]
 ```
 Do not include the .yaml on the end of the config file.
 
-This will show you a list of headers with errors in your spreadsheet.
+This will show you a list of headers with errors in your spreadsheet. You can manually fix them and then run the check again, or if you've set up auto fixes you could run those and then check.
+
+### Checking Status of Uploaded Works
+You can see a variety of features about works you've uploaded with the importer-solr.py module. This will let you check if there are any glitches with importing that need to be resolved, and give a high-level overview of the works before you manually review them.
+
+To run the check, just type this into the terminal:
+```bash
+python importer-solr.py [importer id] [number of works in collection]
+```
