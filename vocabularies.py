@@ -96,6 +96,7 @@ def validate_lcsh(value: str) ->  bool:
     from website: "http://id.loc.gov/authorities/subjects/sh85055245"
     from website: "http://id.loc.gov/authorities/subjects/sh85104841"
     od2 map: "http://id.loc.gov/authorities/subjects/sh85105182"
+    TODO slightly suspicious that these all have the same starting 'sh' given that lcnaf didn't, and there's not very many examples in the solr select. Check more extensively 
 
     Match start through subjects/sh, then 8 digits
     """
@@ -124,27 +125,35 @@ def validate_aat(value: str) ->  bool:
     website: "http://vocab.getty.edu/aat/300185650"
     od2 map: "http://vocab.getty.edu/aat/300134977"
 
-    Match start through ...
+    Match start through aat/300, then 6 digits
     """
-    pattern = r''
+    pattern = r'http:\/\/vocab\.getty\.edu\/aat\/300\d{6}/gm'
     return bool(re.match(pattern, value))
 
 def validate_subject(value: str) ->  bool:
     """Validate subject URI format
     
     Examples:
+    website: "http://opaquenamespace.org/ns/subject/BiddleMorelandAlice"
+    website: "http://opaquenamespace.org/ns/subject/AutzenStadiumEugeneOr"
+    od2 map: "http://opaquenamespace.org/ns/subject/Glasswork"
 
-    Match start through ...
+    Match start through subject/, then 1 or more letters
+    TODO check if numbers are ok and if this is never empty
     """
-    pattern = r''
+    pattern = r'http:\/\/opaquenamespace\.org\/ns\/subject\/[a-zA-Z]+'
     return bool(re.match(pattern, value))
 
 def validate_lcorgs(value: str) ->  bool:
     """Validate lcorgs URI format
     
     Examples:
+    website: "http://id.loc.gov/vocabulary/organizations/orul"
+    website: ""
+    od2 map: "http://id.loc.gov/vocabulary/organizations/orumu"
 
     Match start through ...
+    TODO find more examples
     """
     pattern = r''
     return bool(re.match(pattern, value))
