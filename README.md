@@ -33,7 +33,7 @@ Your headers config file tells the program what you expect your metadata values 
 ```bash
 python makeconfig.py
 ```
-Make sure that you're in the project directory when you enter the command, or you'll get an error saying there's no file called makeconfig.py. This can be done with 'cd' and 'ls' (or by default in an IDE). See this [Changing Directories Tutorial](https://www.geeksforgeeks.org/techtips/change-directories-in-command-prompt/) if you're nto sure how.
+Make sure that you're in the project directory when you enter the command, or you'll get an error saying there's no file called makeconfig.py. This can be done with 'cd' and 'ls' (or by default in an IDE). See this [Changing Directories Tutorial](https://www.geeksforgeeks.org/techtips/change-directories-in-command-prompt/) if you're not sure how.
 
 If you get an error saying you don't have Python installed, you either need to [check your version](https://www.howtogeek.com/796841/check-python-version/) or [install Python](https://www.python.org/downloads/).
 
