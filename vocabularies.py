@@ -93,23 +93,27 @@ def validate_lcsh(value: str) ->  bool:
     """Validate lcsh URI format
     
     Examples:
-    website: "http://id.loc.gov/authorities/subjects/sh85055245"
-    website: "http://id.loc.gov/authorities/subjects/sh85104841"
+    from website: "http://id.loc.gov/authorities/subjects/sh85055245"
+    from website: "http://id.loc.gov/authorities/subjects/sh85104841"
     od2 map: "http://id.loc.gov/authorities/subjects/sh85105182"
 
-    Match start through ...
+    Match start through subjects/sh, then 8 digits
     """
-    pattern = r''
+    pattern = r'http:\/\/id\.loc\.gov\/authorities\/subjects\/sh\d{8}'
     return bool(re.match(pattern, value))
 
 def validate_tgm(value: str) ->  bool:
     """Validate tgm URI format
     
     Examples:
+    from website: "http://id.loc.gov/vocabulary/graphicMaterials/tgm003035"
+    from website: "http://id.loc.gov/vocabulary/graphicMaterials/tgm009453"
+    from website: "http://id.loc.gov/vocabulary/graphicMaterials/tgm003961"
+    od2 map: "http://id.loc.gov/vocabulary/graphicMaterials/tgm007711"
 
-    Match start through ...
+    Match start through graphicMaterials/tgm, then 6 digits
     """
-    pattern = r''
+    pattern = r'http:\/\/id\.loc\.gov\/vocabulary\/graphicMaterials\/tgm\d{6}/gm'
     return bool(re.match(pattern, value))
 
 def validate_aat(value: str) ->  bool:
