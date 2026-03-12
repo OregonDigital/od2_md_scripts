@@ -15,7 +15,7 @@ def validate_lcnaf(value: str) -> bool:
 
     Match exact start from http through names/, then could be n or no or nr or nb, then 8-10 integers
     """
-    pattern = r'^http:\/\/id\.loc\.gov\/authorities\/names\/(n|no|nr|nb)\d{8,10}$'
+    pattern = r'http:\/\/id\.loc\.gov\/authorities\/names\/(n|no|nr|nb)\d{8,10}'
     return bool(re.match(pattern, value))
 
 def validate_ulan(value: str) -> bool:
@@ -114,7 +114,7 @@ def validate_tgm(value: str) ->  bool:
 
     Match start through graphicMaterials/tgm, then 6 digits
     """
-    pattern = r'http:\/\/id\.loc\.gov\/vocabulary\/graphicMaterials\/tgm\d{6}/gm'
+    pattern = r'http:\/\/id\.loc\.gov\/vocabulary\/graphicMaterials\/tgm\d{6}'
     return bool(re.match(pattern, value))
 
 def validate_aat(value: str) ->  bool:
@@ -127,7 +127,7 @@ def validate_aat(value: str) ->  bool:
 
     Match start through aat/300, then 6 digits
     """
-    pattern = r'http:\/\/vocab\.getty\.edu\/aat\/300\d{6}/gm'
+    pattern = r'http:\/\/vocab\.getty\.edu\/aat\/300\d{6}'
     return bool(re.match(pattern, value))
 
 def validate_subject(value: str) ->  bool:
@@ -152,20 +152,24 @@ def validate_lcorgs(value: str) ->  bool:
     website: ""
     od2 map: "http://id.loc.gov/vocabulary/organizations/orumu"
 
-    Match start through ...
+    Match start through organizations/oru, then 1 or more letters
     TODO find more examples
     """
-    pattern = r''
+    pattern = r'http:\/\/id\.loc\.gov\/vocabulary\/organizations\/oru[a-zA-Z]+'
     return bool(re.match(pattern, value))
 
 def validate_itis(value: str) ->  bool:
     """Validate itis URI format
     
     Examples:
+    website: "https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=82696"
+    website: "https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=563984"
+    website: "https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=175861"
+    od2 map: "https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=99208"
 
-    Match start through ...
+    Match start through search_value= and then 1 or more integers
     """
-    pattern = r''
+    pattern = r'https:\/\/www\.itis\.gov\/servlet\/SingleRpt\/SingleRpt\?search_topic=TSN&search_value=\d+'
     return bool(re.match(pattern, value))
 
 def validate_ubio(value: str) ->  bool:
