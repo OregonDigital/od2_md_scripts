@@ -71,7 +71,7 @@ python process.py uo-athletics
 This will show you a list of headers with errors in your spreadsheet. You can manually fix them and then run the check again, or if you've set up auto fixes you could run those and then check.
 Remember that to validate another work, you just have to replace the filepaths in filepath.yaml like we did when we set up the file.
 
-## Auto-Fixing Works
+## Auto-Fixing Works (Optional)
 You'll see a prompt after running process.py if there are errors saying you can run autofix. If you've set it up, you just enter:
 ```bash
 python fixcsv.py [collection-name]
