@@ -172,55 +172,68 @@ def validate_itis(value: str) ->  bool:
     pattern = r'https:\/\/www\.itis\.gov\/servlet\/SingleRpt\/SingleRpt\?search_topic=TSN&search_value=\d+'
     return bool(re.match(pattern, value))
 
-def validate_ubio(value: str) ->  bool:
-    """Validate ubio URI format
+# def validate_ubio(value: str) ->  bool:
+#     """Validate ubio URI format
     
-    Examples:
+#     Examples:
+#     website: ""
+#     website: ""
+#     od2 map: "http://ubio.org/authority/metadata.php?lsid=urn:lsid:ubio.org:namebank:2633146"
 
-    Match start through ...
-    """
-    pattern = r''
-    return bool(re.match(pattern, value))
+#     TODO there's no data on this and site seems to be down. Should we remove?
+#     Match start through ...
+#     """
+#     pattern = r''
+#     return bool(re.match(pattern, value))
 
 def validate_osubuildings(value: str) ->  bool:
     """Validate osubuildings URI format
     
     Examples:
+    website: "http://opaquenamespace.org/ns/osuBuildings/WomensCenter"
+    website: "http://opaquenamespace.org/ns/osuBuildings/GeorgeWPeavyForestScienceCenter"
+    od2 map: "http://opaquenamespace.org/ns/osuBuildings/NashHall"
 
-    Match start through ...
+    Match start through osuBuildings/ and then any number letters
     """
-    pattern = r''
+    pattern = r'http:\/\/opaquenamespace\.org\/ns\/osuBuildings\/[a-zA-Z]+'
     return bool(re.match(pattern, value))
 
 def validate_lcgenreforms(value: str) ->  bool:
     """Validate lcsh lcgenreforms format
     
     Examples:
+    website: ""
+    website: ""
+    od2 map: "http://id.loc.gov/authorities/genreForms/gf2018026004"
 
-    Match start through ...
+    TODO find more examples
+    Match start through genreForms/gf then 1 or more integers
     """
-    pattern = r''
+    pattern = r'http:\/\/id\.loc\.gov\/authorities\/genreForms\/gf\d+'
     return bool(re.match(pattern, value))
 
-def validate_bne(value: str) ->  bool:
-    """Validate bne URI format
+# def validate_bne(value: str) ->  bool:
+#     """Validate bne URI format
     
-    Examples:
+#     Examples:
 
-    Match start through ...
-    """
-    pattern = r''
-    return bool(re.match(pattern, value))
+#     TODO no examples in MAP or anywhere
+#     Match start through ...
+#     """
+#     pattern = r''
+#     return bool(re.match(pattern, value))
 
-def validate_homosaurus(value: str) ->  bool:
-    """Validate homosaurus URI format
+# def validate_homosaurus(value: str) ->  bool:
+#     """Validate homosaurus URI format
     
-    Examples:
+#     Examples:
 
-    Match start through ...
-    """
-    pattern = r''
-    return bool(re.match(pattern, value))
+#     TODO no examples in MAP or anywhere
+#     Match start through ...
+#     """
+#     pattern = r''
+#     return bool(re.match(pattern, value))
 
 
 
@@ -237,10 +250,10 @@ VOCABULARY_VALIDATORS = {
     'subject': validate_subject,
     'lcorgs': validate_lcorgs,
     'itis': validate_itis,
-    'ubio': validate_ubio,
+    # 'ubio': validate_ubio,
     'osubuildings': validate_osubuildings,
     'lcgenreforms': validate_lcgenreforms,
-    'bne': validate_bne,
-    'homosaurus': validate_homosaurus
+    # 'bne': validate_bne,
+    # 'homosaurus': validate_homosaurus
     # Add rest here
 }

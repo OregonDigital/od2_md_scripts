@@ -18,7 +18,7 @@ field_validators:
     - illustrator
     - interviewee
     - interviewer
-    - landscape architect # might have to fix the space here somehow?
+    - landscape architect
     - lyricist
     - owner
     - patron
@@ -26,6 +26,21 @@ field_validators:
     - recipient
     - transcriber
     - translator
+  subject:
+    - subject
+    - award
+    - cultural context
+    - ethnographic term
+    - event
+    - keyword
+    - legal name
+    - military branch
+    - sports team
+    # Note that spaces have to be the same between here and header column. Capitalization and using '/' is fine
+    - style / edition
+    - style / period
+    - tribal classes
+    - tribal terms
 
 # Tell od2validation.py which vocabs correspond to each controlled vocab, so that they can all be checked
 controlled_vocab_map:
@@ -47,11 +62,11 @@ controlled_vocab_map:
     - creator
     - people
     - itis
-    - ubio
+    # - ubio
     - osubuildings
     - wikidata
     - ulan
     - lcgenreforms
     - osuacademicunits
-    - bne
-    - homosaurus
+    # - bne
+    # - homosaurus
