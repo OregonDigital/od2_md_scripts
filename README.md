@@ -1,4 +1,3 @@
-# ⚠️IN PROGRESS ⚠️
 # od2_md_scripts
 Scripts for metadata validation prior to ingest in Oregon Digital, and verifying status of works that have been ingested. 
 
