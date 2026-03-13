@@ -3,14 +3,16 @@ field_validators:
   creator:
     - creator
     - photographer
-    - artist
-    - author
-    - contributor
     - applicant
     - arranger
+    - artist
+    - author
     - cartographer
     - collector
     - composer
+    - creator_display
+    - contributor
+    - arranger
     - dedicatee
     - designer
     - donor
@@ -18,29 +20,28 @@ field_validators:
     - illustrator
     - interviewee
     - interviewer
-    - landscape architect
+    - landscape_architect
     - lyricist
     - owner
     - patron
-    - print Maker
+    - print_maker
     - recipient
     - transcriber
     - translator
   subject:
     - subject
     - award
-    - cultural context
-    - ethnographic term
+    - cultural_context
+    - ethnographic_term
     - event
     - keyword
-    - legal name
-    - military branch
-    - sports team
-    # Note that spaces have to be the same between here and header column. Capitalization and using '/' is fine
-    - style / edition
-    - style / period
-    - tribal classes
-    - tribal terms
+    - legal_name
+    - military_branch
+    - sports_team
+    - state_or_edition
+    - style_or_period
+    - tribal_classes
+    - tribal_terms
 
 # Tell od2validation.py which vocabs correspond to each controlled vocab, so that they can all be checked
 controlled_vocab_map:
