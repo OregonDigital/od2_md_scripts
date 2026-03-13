@@ -7,9 +7,11 @@ Now featuring [a wiki](https://github.com/OregonDigital/od2_md_scripts/wiki) whi
 
 The Setup section walks you through how to make the files you'll need, with links to expand on them if you'd like to.
 
-## Downloading the Code
+## Downloading the Code and Installing Dependencies
 
-Clone the repo to your device first. If you don't know how, check out the [docs](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
+First, clone the repo to your device first. If you don't know how, check out the [docs](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
+
+Next, install the required packages for the code from [requirements.txt](https://github.com/OregonDigital/od2_md_scripts/blob/main/requirements.txt). You can follow this [geeksforgeeks guide](https://www.geeksforgeeks.org/python/how-to-install-python-packages-with-requirements-txt/) to see how. If you want to avoid overlapping dependencies for other coding projects, you can optionally install it in a [virtual environment](https://python.land/virtual-environments/virtualenv).
 
 ## Making Your Files
 There are a few files that you will need to manually edit in order for the code to run. You can do this with your terminal, in any text editor you like, or an IDE like VSCode -- whatever you feel most comfortable with. 
