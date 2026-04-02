@@ -90,4 +90,4 @@ try:
     
 except IndexError:
     logger.error("Missing config file name (do not include file extension)")
-    logger.error("EXAMPLE: python3 process.py uo-athletics")
+    logger.error("EXAMPLE: python process.py uo-athletics")
