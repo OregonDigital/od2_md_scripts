@@ -213,16 +213,17 @@ def validate_lcgenreforms(value: str) ->  bool:
     pattern = r'http:\/\/id\.loc\.gov\/authorities\/genreForms\/gf\d+'
     return bool(re.match(pattern, value))
 
-# def validate_bne(value: str) ->  bool:
-#     """Validate bne URI format
+def validate_bne(value: str) ->  bool:
+    """Validate bne URI format
     
-#     Examples:
-
-#     TODO no examples in MAP or anywhere
-#     Match start through ...
-#     """
-#     pattern = r''
-#     return bool(re.match(pattern, value))
+    Examples:
+    website: "https://datos.bne.es/resource/XX5094894"
+    website: "https://datos.bne.es/resource/XX576905"
+    
+    Match start through resource/XX, then 1 or more integers
+    """
+    pattern = r'https:\/\/datos\.bne\.es\/resource\/XX\d+'
+    return bool(re.match(pattern, value))
 
 # def validate_homosaurus(value: str) ->  bool:
 #     """Validate homosaurus URI format
