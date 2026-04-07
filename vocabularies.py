@@ -254,7 +254,7 @@ VOCABULARY_VALIDATORS = {
     # 'ubio': validate_ubio,
     'osubuildings': validate_osubuildings,
     'lcgenreforms': validate_lcgenreforms,
-    # 'bne': validate_bne,
+    'bne': validate_bne,
     # 'homosaurus': validate_homosaurus
     # Add rest here
 }
