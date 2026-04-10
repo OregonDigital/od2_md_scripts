@@ -69,5 +69,5 @@ controlled_vocab_map:
     - ulan
     - lcgenreforms
     - osuacademicunits
-    # - bne
+    - bne
     # - homosaurus
