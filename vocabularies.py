@@ -73,6 +73,8 @@ def validate_wikidata(value: str) -> bool:
     Match start through entity/, then Q, then digits
     """
     pattern = r'http:\/\/www\.wikidata\.org\/entity\/Q\d+'
+    # More general pattern based on Bulkrax CSV Guidance Document, hot swap this if above pattern breaks
+    # pattern = r'http:\/\/www\.wikidata\.org\/entity\/\S+'
     return bool(re.match(pattern, value))
 
 def validate_osuacademicunits(value: str) -> bool:
@@ -223,6 +225,8 @@ def validate_bne(value: str) ->  bool:
     Match start through resource/XX, then 1 or more integers
     """
     pattern = r'https:\/\/datos\.bne\.es\/resource\/XX\d+'
+    # More general pattern based on Bulkrax CSV Guidance Document, hot swap this if above pattern breaks
+    # pattern = r'https:\/\/datos\.bne\.es\/resource\/\S+'
     return bool(re.match(pattern, value))
 
 # def validate_homosaurus(value: str) ->  bool:
