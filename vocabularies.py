@@ -237,7 +237,7 @@ def validate_bne(value: str) ->  bool:
 #     return bool(re.match(pattern, value))
 
 
-
+# If uncommenting a validator, you have to do it here, do the actual function, and in config/validation_mappings.yaml
 VOCABULARY_VALIDATORS = {
     'lcnaf': validate_lcnaf,
     'ulan': validate_ulan,
