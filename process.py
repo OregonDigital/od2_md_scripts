@@ -85,7 +85,7 @@ try:
             logger.warning(f"Total errors: {error_count}")
         logger.warning("")
         logger.warning("To automatically fix common issues:")
-        logger.warning(f"  python3 fixcsv.py {collection_name}")
+        logger.warning(f"  python fixcsv.py {collection_name}")
         logger.warning("="*60)
     
 except IndexError:
