@@ -15,7 +15,7 @@ def validate_lcnaf(value: str) -> bool:
 
     Match exact start from http through names/, then could be n or no or nr or nb, then 8-10 integers
     """
-    pattern = r'http:\/\/id\.loc\.gov\/authorities\/names\/(n|no|nr|nb)\d{8,10}'
+    pattern = r'http:\/\/id\.loc\.gov\/authorities\/names\/(n|no|nr|nb)\d{8,10}$'
     return bool(re.match(pattern, value))
 
 def validate_ulan(value: str) -> bool:
@@ -30,7 +30,7 @@ def validate_ulan(value: str) -> bool:
     Match start through ulan/, then 500, then 6 integers
     """
     # Examples
-    pattern = r'http:\/\/vocab.getty.edu\/ulan\/500\d{6}'
+    pattern = r'http:\/\/vocab.getty.edu\/ulan\/500\d{6}$'
     return bool(re.match(pattern, value))
 
 def validate_creator(value: str) -> bool:
@@ -46,7 +46,7 @@ def validate_creator(value: str) -> bool:
     
     Match start through creator/, then any string with length > 0
     """
-    pattern = r'http:\/\/opaquenamespace.org\/ns\/creator\/[a-zA-Z]+'
+    pattern = r'http:\/\/opaquenamespace.org\/ns\/creator\/[a-zA-Z]+$'
     return bool(re.match(pattern, value))
 
 def validate_people(value: str) -> bool:
@@ -60,7 +60,7 @@ def validate_people(value: str) -> bool:
 
     Match start through people/, then any number of digits or letters with length > 0
     """
-    pattern = r'http:\/\/opaquenamespace.org\/ns\/people\/[a-zA-Z\d]+'
+    pattern = r'http:\/\/opaquenamespace.org\/ns\/people\/[a-zA-Z\d]+$'
     return bool(re.match(pattern, value))
 
 def validate_wikidata(value: str) -> bool:
@@ -72,7 +72,7 @@ def validate_wikidata(value: str) -> bool:
     
     Match start through entity/, then Q, then digits
     """
-    pattern = r'http:\/\/www\.wikidata\.org\/entity\/Q\d+'
+    pattern = r'http:\/\/www\.wikidata\.org\/entity\/Q\d+$'
     # More general pattern based on Bulkrax CSV Guidance Document, hot swap this if above pattern breaks
     # pattern = r'http:\/\/www\.wikidata\.org\/entity\/\S+'
     return bool(re.match(pattern, value))
@@ -88,7 +88,7 @@ def validate_osuacademicunits(value: str) -> bool:
     
     Match start through osuAcademicUnits/, then any number of digits or letters with length > 0 
     """
-    pattern = r'http:\/\/opaquenamespace\.org\/ns\/osuAcademicUnits\/[a-zA-Z\d]+'
+    pattern = r'http:\/\/opaquenamespace\.org\/ns\/osuAcademicUnits\/[a-zA-Z\d]+$'
     return bool(re.match(pattern, value))
 
 def validate_lcsh(value: str) ->  bool:
@@ -102,7 +102,7 @@ def validate_lcsh(value: str) ->  bool:
 
     Match start through subjects/sh, then 8 digits
     """
-    pattern = r'http:\/\/id\.loc\.gov\/authorities\/subjects\/sh\d{8}'
+    pattern = r'http:\/\/id\.loc\.gov\/authorities\/subjects\/sh\d{8}$'
     return bool(re.match(pattern, value))
 
 def validate_tgm(value: str) ->  bool:
@@ -116,7 +116,7 @@ def validate_tgm(value: str) ->  bool:
 
     Match start through graphicMaterials/tgm, then 6 digits
     """
-    pattern = r'http:\/\/id\.loc\.gov\/vocabulary\/graphicMaterials\/tgm\d{6}'
+    pattern = r'http:\/\/id\.loc\.gov\/vocabulary\/graphicMaterials\/tgm\d{6}$'
     return bool(re.match(pattern, value))
 
 def validate_aat(value: str) ->  bool:
@@ -129,7 +129,7 @@ def validate_aat(value: str) ->  bool:
 
     Match start through aat/300, then 6 digits
     """
-    pattern = r'http:\/\/vocab\.getty\.edu\/aat\/300\d{6}'
+    pattern = r'http:\/\/vocab\.getty\.edu\/aat\/300\d{6}$'
     return bool(re.match(pattern, value))
 
 def validate_subject(value: str) ->  bool:
@@ -143,7 +143,7 @@ def validate_subject(value: str) ->  bool:
     Match start through subject/, then 1 or more letters
     TODO check if numbers are ok and if this is never empty
     """
-    pattern = r'http:\/\/opaquenamespace\.org\/ns\/subject\/[a-zA-Z]+'
+    pattern = r'http:\/\/opaquenamespace\.org\/ns\/subject\/[a-zA-Z]+$'
     return bool(re.match(pattern, value))
 
 def validate_lcorgs(value: str) ->  bool:
@@ -157,7 +157,7 @@ def validate_lcorgs(value: str) ->  bool:
     Match start through organizations/oru, then 1 or more letters
     TODO find more examples
     """
-    pattern = r'http:\/\/id\.loc\.gov\/vocabulary\/organizations\/oru[a-zA-Z]+'
+    pattern = r'http:\/\/id\.loc\.gov\/vocabulary\/organizations\/oru[a-zA-Z]+$'
     return bool(re.match(pattern, value))
 
 def validate_itis(value: str) ->  bool:
@@ -171,7 +171,7 @@ def validate_itis(value: str) ->  bool:
 
     Match start through search_value= and then 1 or more integers
     """
-    pattern = r'https:\/\/www\.itis\.gov\/servlet\/SingleRpt\/SingleRpt\?search_topic=TSN&search_value=\d+'
+    pattern = r'https:\/\/www\.itis\.gov\/servlet\/SingleRpt\/SingleRpt\?search_topic=TSN&search_value=\d+$'
     return bool(re.match(pattern, value))
 
 # def validate_ubio(value: str) ->  bool:
@@ -198,7 +198,7 @@ def validate_osubuildings(value: str) ->  bool:
 
     Match start through osuBuildings/ and then any number letters
     """
-    pattern = r'http:\/\/opaquenamespace\.org\/ns\/osuBuildings\/[a-zA-Z]+'
+    pattern = r'http:\/\/opaquenamespace\.org\/ns\/osuBuildings\/[a-zA-Z]+$'
     return bool(re.match(pattern, value))
 
 def validate_lcgenreforms(value: str) ->  bool:
@@ -212,7 +212,7 @@ def validate_lcgenreforms(value: str) ->  bool:
     TODO find more examples
     Match start through genreForms/gf then 1 or more integers
     """
-    pattern = r'http:\/\/id\.loc\.gov\/authorities\/genreForms\/gf\d+'
+    pattern = r'http:\/\/id\.loc\.gov\/authorities\/genreForms\/gf\d+$'
     return bool(re.match(pattern, value))
 
 def validate_bne(value: str) ->  bool:
@@ -224,7 +224,7 @@ def validate_bne(value: str) ->  bool:
     
     Match start through resource/XX, then 1 or more integers
     """
-    pattern = r'https:\/\/datos\.bne\.es\/resource\/XX\d+'
+    pattern = r'https:\/\/datos\.bne\.es\/resource\/XX\d+$'
     # More general pattern based on Bulkrax CSV Guidance Document, hot swap this if above pattern breaks
     # pattern = r'https:\/\/datos\.bne\.es\/resource\/\S+'
     return bool(re.match(pattern, value))
