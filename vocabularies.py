@@ -174,6 +174,7 @@ def validate_itis(value: str) ->  bool:
     pattern = r'https:\/\/www\.itis\.gov\/servlet\/SingleRpt\/SingleRpt\?search_topic=TSN&search_value=\d+$'
     return bool(re.match(pattern, value))
 
+# Deprecated vocabulary
 # def validate_ubio(value: str) ->  bool:
 #     """Validate ubio URI format
     
@@ -229,16 +230,18 @@ def validate_bne(value: str) ->  bool:
     # pattern = r'https:\/\/datos\.bne\.es\/resource\/\S+'
     return bool(re.match(pattern, value))
 
-# def validate_homosaurus(value: str) ->  bool:
-#     """Validate homosaurus URI format
+def validate_homosaurus(value: str) ->  bool:
+    """Validate homosaurus URI format
     
-#     Examples:
+    Examples:
 
-#     TODO no examples in MAP or anywhere
-#     Match start through ...
-#     """
-#     pattern = r''
-#     return bool(re.match(pattern, value))
+    website: "https://homosaurus.org/v4/homoit0001652"
+    website: "https://homosaurus.org/v4/homoit0001009"
+    website: "https://homosaurus.org/v4/homoit0002075"
+    Match start through homoit, then 7 integers
+    """
+    pattern = r'https:\/\/homosaurus\.org\/v4\/homoit\d{7}$'
+    return bool(re.match(pattern, value))
 
 
 # If uncommenting a validator, you have to do it here, do the actual function, and in config/validation_mappings.yaml
@@ -259,6 +262,6 @@ VOCABULARY_VALIDATORS = {
     'osubuildings': validate_osubuildings,
     'lcgenreforms': validate_lcgenreforms,
     'bne': validate_bne,
-    # 'homosaurus': validate_homosaurus
+    'homosaurus': validate_homosaurus
     # Add rest here
 }
