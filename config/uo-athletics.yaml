@@ -9,7 +9,7 @@ file:
 title: ~
 description: ~
 identifier:
-  - regex: ^PH395_UP\S*$ # any non-whitespace char too lax?
+  - regex: ^PH395_UP\S*$
     which: all
 local_collection_name:
   - string: http://opaquenamespace.org/ns/localCollectionName/UniversityPhotosPaulHarveyIV
