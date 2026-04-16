@@ -5,7 +5,9 @@ file:
   - method: check_filenames_assets
     args: ['file']
     # no which on method!
-subject: ~ # to do
+subject:
+  - method: validate_controlled_vocab
+    args: ['subject']
 creator:
   - method: validate_controlled_vocab
     args: ['creator']
