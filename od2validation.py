@@ -367,6 +367,7 @@ class Package(object):
 
         # Loop through values
         for index, row in df.iterrows():
+            # Run validation on non-empty cell (including empty strings, ex. cell has '')
             if pd.notna(row[col]):
                 cell = row[col]
                 # Split multi-value cells separated by |
@@ -384,3 +385,6 @@ class Package(object):
                             break
                     if not valid:
                         logger.error(f"row {index + 2}: '{value}' does not match any vocabulary in ({', '.join(vocab_list)})")
+            else:
+                # Skip over empty cell (this means count it as valid)
+                continue
