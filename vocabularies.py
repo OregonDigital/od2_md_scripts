@@ -238,9 +238,11 @@ def validate_homosaurus(value: str) ->  bool:
     website: "https://homosaurus.org/v4/homoit0001652"
     website: "https://homosaurus.org/v4/homoit0001009"
     website: "https://homosaurus.org/v4/homoit0002075"
-    Match start through homoit, then 7 integers
+    website: "<https://homosaurus.org/v3/homoit0001218"
+
+    Match start through.org/, then either v3 or v4, then /homoit, then 7 integers
     """
-    pattern = r'https:\/\/homosaurus\.org\/v4\/homoit\d{7}$'
+    pattern = r'https:\/\/homosaurus\.org\/(v3|v4)\/homoit\d{7}$'
     return bool(re.match(pattern, value))
 
 
