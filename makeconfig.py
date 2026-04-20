@@ -8,20 +8,26 @@ print(">>> C:\\Users\\briesenb\\Desktop\\metadata.csv")
 print("(2) absolute filepath to .xlsx metadata file followed by space and sheet name, as:")
 print(">>> C:\\Users\\briesenb\\Desktop\\metadata.xlsx Sheet1")
 
-file = input(">>> ")
+file_user_input = input(">>> ").strip()
 
-if len(file.split()) > 1 and file.split()[0].split('.')[-1] == "xlsx":
-    filepath = file.split()[0]
-    sheet_name = file.split()[1]
-    df = pd.read_excel(filepath, sheet_name=sheet_name)
-    headers = df.columns.to_list()
-elif len(file.split()) == 1 and file.split('.')[-1] == "csv":
-    with open(file, "r", encoding="utf-8-sig") as csvf:
+if file_user_input.lower().endswith(".csv"):
+    filepath = file_user_input
+    # Treat the whole string as a path, so spaces are ok
+    with open(filepath, "r", encoding="utf-8-sig") as csvf:
         reader = csv.reader(csvf)
         headers = next(reader)
 else:
-    print("(!) wrong number of input strings and/or unknown metadata file extension")
-    exit()
+    # Expects [full xlsx path] [sheet name]
+    # Checks right-most space, splits on it - this separates xlsx and sheet name (breaks if sheet name has space)
+    parts = file_user_input.rsplit(" ", 1)
+    # Checks first term is excel file, second term exists
+    if len(parts) == 2 and parts[0].lower().endswith(".xlsx") and parts[1].strip():
+        filepath, sheet_name = parts[0], parts[1].strip()
+        df = pd.read_excel(filepath, sheet_name=sheet_name)
+        headers = df.columns.to_list()
+    else:
+        print("(!) expected either a .csv path, or: [xlsx path] [sheet name]")
+        exit()
 
 config = {}
 for entry in headers:
