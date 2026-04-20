@@ -36,6 +36,7 @@ for entry in headers:
 
 print("enter a name for your config file, excluding file extension, for example:")
 print(">>> archival-materials")
+print("names should not include spaces in them")
 print("enter 'n' to exit")
 
 def get_input() -> str:
