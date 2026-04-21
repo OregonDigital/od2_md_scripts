@@ -12,7 +12,7 @@ repository: ~
 material: ~
 full_size_download_allowed: ~
 workType: 
-  - regex: ^http:\/\/opaquenamespace\.org\/ns\/workType\/ICQSPU4k|http:\/\/vocab\.getty\.edu\/aat\/(300041273|300194222|300083023|300055099|300055023|300037321|300311670|300183938|300028731|300263751)$ # add other Getty options here
+  - regex: ^http:\/\/opaquenamespace\.org\/ns\/workType\/ICQSPU4k|http:\/\/vocab\.getty\.edu\/aat\/(300041273|300194222|300083023|300055099|300055023|300037321|300311670|300183938|300028731|300263751|300026690|300128347|300417761|300026867|300014109|300411543)$ # 2026-04-21, these are all existing recorded workType URIs from Getty
     which: all
 item_locator: ~
 rights_statement: ~
