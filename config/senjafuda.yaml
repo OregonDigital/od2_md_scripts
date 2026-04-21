@@ -11,7 +11,9 @@ style_or_period: ~
 repository: ~
 material: ~
 full_size_download_allowed: ~
-workType: ~
+workType: 
+  - regex: ^http:\/\/opaquenamespace\.org\/ns\/workType\/ICQSPU4k$ # add other options here
+    which: all
 item_locator: ~
 rights_statement: ~
 replaces_url: ~
