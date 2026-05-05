@@ -9,7 +9,7 @@ The Setup section walks you through how to make the files you'll need, with link
 
 ## Downloading the Code and Installing Dependencies
 
-First, clone the repo to your device first. If you don't know how, check out the [docs](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
+First, clone the repo to your device. If you don't know how, check out the [docs](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
 
 Next, install the required packages for the code from [requirements.txt](https://github.com/OregonDigital/od2_md_scripts/blob/main/requirements.txt). You can follow this [geeksforgeeks guide](https://www.geeksforgeeks.org/python/how-to-install-python-packages-with-requirements-txt/) to see how. If you want to avoid overlapping dependencies for other coding projects, you can optionally install it in a [virtual environment](https://python.land/virtual-environments/virtualenv).
 
