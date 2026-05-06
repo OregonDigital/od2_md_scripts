@@ -9,13 +9,12 @@ import copy
 # (It basically controls the level of info to print)
 logger = logging.getLogger(__name__)
 
-# to dos search "to do" + "duplicative codeblock"
-
 class Package(object):
 
     def __init__(self, headers_config: str) -> None:
         self.metadata = self.filepaths()[0]
         self.assets = os.listdir(self.filepaths()[1])
+        # Running get_config on the yaml file (name passed in through process.py creating Package()) the user specified in the command line
         self.default_config, self.headers_config, self.validation_mappings = self.get_config(headers_config)
         self.validator_mapping = self._build_validator_mapping()
         # custom config requred, must include at least enumeration of headers
@@ -272,27 +271,106 @@ class Package(object):
            b. Fallback to direct header lookup in default_config (e.g., dmrec)
         3. If header has None value and not found by mapping or default, log no check configured
         """
+        # for header in self.headers_config:
+        #     # Use project-specific config if possible
+        #     if self.headers_config[header] != None:
+        #         logger.info(f"Validating '{header}' from config...")
+        #         self._process_instructions(header, self.headers_config[header], 'headers_config')
+        #     # Use default config if no project-specific config
+        #     else:
+        #         # Try mapped validator first (e.g., photographer->creator)
+        #         validator_type = self.validator_mapping.get(header.lower())
+        #         if validator_type and validator_type in self.default_config:
+        #             logger.info(f"Validating '{header}' from default config (mapped to '{validator_type}')...")
+        #             # Replace validator_type with actual header name in method args
+        #             instructions = self._update_method_args(self.default_config[validator_type], validator_type, header)
+        #             self._process_instructions(header, instructions, 'default')
+        #         # Fallback to direct header name in default_config
+        #         elif header in self.default_config and self.default_config[header] is not None:
+        #             logger.info(f"Validating '{header}' from default config...")
+        #             self._process_instructions(header, self.default_config[header], 'default')
+        #         else:
+        #             logger.info(f"NO VALIDATION CHECK CONFIGURED FOR '{header}' in headers_config or default")
+        df = self.get_dataframe()
         for header in self.headers_config:
-            # Use project-specific config if possible
-            if self.headers_config[header] != None:
-                logger.info(f"Validating '{header}' from config...")
-                self._process_instructions(header, self.headers_config[header], 'headers_config')
-            # Use default config if no project-specific config
-            else:
-                # Try mapped validator first (e.g., photographer->creator)
-                validator_type = self.validator_mapping.get(header.lower())
-                if validator_type and validator_type in self.default_config:
-                    logger.info(f"Validating '{header}' from default config (mapped to '{validator_type}')...")
-                    # Replace validator_type with actual header name in method args
-                    instructions = self._update_method_args(self.default_config[validator_type], validator_type, header)
-                    self._process_instructions(header, instructions, 'default')
-                # Fallback to direct header name in default_config
-                elif header in self.default_config and self.default_config[header] is not None:
-                    logger.info(f"Validating '{header}' from default config...")
-                    self._process_instructions(header, self.default_config[header], 'default')
-                else:
-                    logger.info(f"NO VALIDATION CHECK CONFIGURED FOR '{header}' in headers_config or default")
+            for instruction in self._resolve_instructions(header):
+                self._run_instruction(df, header, instruction)
+    
+    def _select_rows(self, df: pd.DataFrame, which: str) -> pd.DataFrame:
+        """Return filtered df that filters for all, only complex objects, or only items"""
+        if which == "all":
+            return df
+        if which == "complex":
+            if "format" not in df.columns:
+                logger.error("complex objects need 'format' col")
+                return df.iloc[0:0]
+            return df[df["format"] == "https://w3id.org/spar/mediatype/application/xml"]
+        if which == "item":
+            if "format" not in df.columns:
+                logger.error("complex object has unexpected 'format' value")
+                return df.iloc[0:0]
+            return df[(df["format"].isna()) | (df["format"] != "https://w3id.org/spar/mediatype/application/xml")]
+        logger.error(f"Invalid 'which' parameter: {which}")
+        return df.iloc[0:0]
+    
+    def _resolve_instructions(self, header: str):
+        """Return instructions (config) for a single header, with an updated name if using auto validator"""
+        config = self.headers_config.get(header)
+        if config is not None:
+            logger.info(f"Validating '{header}' from config...")
+            return config
+        
+        validator_type = self.validator_mapping.get(header.lower())
+        if validator_type and validator_type in self.default_config:
+            logger.info(f"Validating '{header}' from default config (mapped to '{validator_type}')")
+            return self._update_method_args(self.default_config[validator_type], validator_type, header)
+    
+        fallback = self.default_config.get(header)
+        if fallback is not None:
+            logger.info(f"Validating '{header}' from default config...")
+            return fallback
+        
+        logger.info(f"NO VALIDATION CHECK CONFIGURED FOR '{header}' in headers_config or default")
+        return []
 
+    def _run_instruction(self, df: pd.DataFrame, header: str, instruction: Dict) -> None:
+        """Run instructions on col under header for each instruction type (string, regex, method)"""
+        # Handle 3 cases: string, regex, method
+        if "method" in instruction:
+            handlers = {
+                "check_filenames_assets": self.check_filenames_assets,
+                "identifier_file_match": self.identifier_file_match,
+                "validate_controlled_vocab": self.validate_controlled_vocab
+            }
+            method_name = instruction["method"]
+            handler = handlers.get(method_name)
+            if not handler:
+                logger.error(f"method_name '{method_name}' not in method_mapping")
+                return
+            handler(instruction.get("args", []))
+            return
+        
+        which = instruction.get("which", "all")
+        rows = self._select_rows(df, which)
+
+        if "string" in instruction:
+            expected = instruction["string"]
+            for index, row in rows.iterrows():
+                cell = row[header] if pd.notna(row[header]) else ""
+                for value in str(cell).split("|"):
+                    self.perform_string_check(expected, value, index)
+            return
+        
+        if "regex" in instruction:
+            pattern = re.compile(str(instruction["regex"]))
+            for index, row in rows.iterrows():
+                cell = row[header] if pd.notna(row[header]) else ""
+                for value in str(cell).split("|"):
+                    self.perform_regex_check(pattern, value, index)
+            return
+
+        logger.error(f"Unkown check type for '{header}' instruction '{instruction}'")
+    
     # methods for get_method
     # duplicative code here too in that I create and use dataframe separately for methods
     # TODO: condense dataframe usage, one declaration possible in init?

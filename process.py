@@ -59,7 +59,7 @@ class ErrorTrackingHandler(logging.Handler):
             error_count += 1
             headers_with_errors.add(current_header)
 
-# Add error tracking handler for this module (process.py)'s logger
+# Add the error tracking handler we made above for this module's (process.py) logger
 logging.getLogger().addHandler(ErrorTrackingHandler())
 
 try:
