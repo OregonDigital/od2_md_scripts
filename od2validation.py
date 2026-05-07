@@ -4,6 +4,7 @@ import logging
 from typing import Tuple, List, Dict, Any, Optional, Pattern
 import vocabularies
 import copy
+from abc import ABC, abstractmethod
 
 # Logger replaces print statements for debugging/usage
 # (It basically controls the level of info to print)
@@ -292,7 +293,10 @@ class Package(object):
         #         else:
         #             logger.info(f"NO VALIDATION CHECK CONFIGURED FOR '{header}' in headers_config or default")
         df = self.get_dataframe()
+        # Loop through each header, running instructions for each
         for header in self.headers_config:
+            # Loop through resolved (either from specific config or default) instructions
+            # Generally there's only 1, but possible to have more like in file in uo-athletics
             for instruction in self._resolve_instructions(header):
                 self._run_instruction(df, header, instruction)
     
@@ -314,7 +318,7 @@ class Package(object):
         return df.iloc[0:0]
     
     def _resolve_instructions(self, header: str):
-        """Return instructions (config) for a single header, with an updated name if using auto validator"""
+        """Return instructions (config) for a header, with updated header names if using auto validator"""
         config = self.headers_config.get(header)
         if config is not None:
             logger.info(f"Validating '{header}' from config...")
@@ -466,3 +470,53 @@ class Package(object):
             else:
                 # Skip over empty cell (this means count it as valid)
                 continue
+
+
+class Instruction(ABC):
+    row_scoped = True # find better name
+    which = "all"
+
+    @abstractmethod
+    def execute(self, package, df, header, rows):
+        """Run an instruction, where package is the Package instance"""
+        pass
+
+    @staticmethod
+    def from_dict(d: dict) -> Instruction:
+        """Instantiate an Instruction subclass (string, regex, etc.) based on the instructions in a config dict""" #FIXME check exactly where this comes from
+        if "string" in d:
+            return StringInstruction()
+        if "regex" in d:
+            return RegexInstruction()
+        if "check_filenames_assets" in d:
+            return FilenamesAssetsInstruction()
+        if "identifier_file_match" in d:
+            return IdentifierFileInstruction()
+        if "validate_controlled_vocab" in d:
+            return ValidateControlledVocabInstruction()
+        raise ValueError(f"Unknown instruction type: {d}")
+
+class StringInstruction(Instruction):
+    def __init__(self, expected: str, which: str):
+        self.expected = expected
+        self.which = which
+
+    def execute():
+        raise NotImplementedError
+
+
+class RegexInstruction(Instruction):
+    def __init__():
+        raise NotImplementedError
+    
+class FilenamesAssetsInstruction(Instruction):
+    def __init__():
+        raise NotImplementedError
+    
+class IdentifierFileInstruction(Instruction):
+    def __init__():
+        raise NotImplementedError
+    
+class ValidateControlledVocabInstruction(Instruction):
+    def __init__():
+        raise NotImplementedError
