@@ -125,14 +125,6 @@ class Package(object):
             pass
         return check
 
-    def perform_string_check(self, validation_data: Any, instance_data: Any, index: int) -> None:
-        if str(validation_data) != str(instance_data):
-            logger.error(f"row {index + 2}: '{instance_data}' != string '{validation_data}'")
-    
-    def perform_regex_check(self, validation_data: Pattern[str], instance_data: str, index: int) -> None:
-        if not re.match(validation_data, instance_data):
-            logger.error(f"row {index + 2}: '{instance_data}' does not match regex for header values")
-
     def get_method(self, method_name: str, args: Optional[List[Any]]) -> Optional[Any]:
         # see methods at bottom
         method_mapping = {
@@ -411,10 +403,6 @@ class Package(object):
                 pass
             else:
                 logger.error(f"row {index + 2} '{row['identifier']} / '{row['file']}'")
-
-    def save_as_csv(self) -> None:
-        filename: str = self.filepaths[0].split('/')[-1]
-        logger.debug(f"does filename == {filename}?")
     
     def validate_controlled_vocab(self, args: List[Any]) -> None:
         """
@@ -485,15 +473,15 @@ class Instruction(ABC):
     def from_dict(d: dict) -> Instruction:
         """Instantiate an Instruction subclass (string, regex, etc.) based on the instructions in a config dict""" #FIXME check exactly where this comes from
         if "string" in d:
-            return StringInstruction()
+            return StringInstruction(d["string"], d["which"])
         if "regex" in d:
-            return RegexInstruction()
+            return RegexInstruction(re.compile(str(d["regex"])), d["which"])
         if "check_filenames_assets" in d:
-            return FilenamesAssetsInstruction()
+            return FilenamesAssetsInstruction(d["check_filenames_assets"])
         if "identifier_file_match" in d:
-            return IdentifierFileInstruction()
+            return IdentifierFileInstruction(d["identifier_file_match"])
         if "validate_controlled_vocab" in d:
-            return ValidateControlledVocabInstruction()
+            return ValidateControlledVocabInstruction(d["validate_controlled_vocab"])
         raise ValueError(f"Unknown instruction type: {d}")
 
 class StringInstruction(Instruction):
@@ -501,21 +489,66 @@ class StringInstruction(Instruction):
         self.expected = expected
         self.which = which
 
-    def execute():
-        raise NotImplementedError
-
+    def execute(self, package, df, header, rows):
+        for idx in rows.index:
+            for value in package._values_for_header(rows, header, idx):
+                if self.expected != value:
+                    logger.error(f"row {idx + 2}: '{value}' != string '{self.expected}")
+    
 
 class RegexInstruction(Instruction):
-    def __init__():
-        raise NotImplementedError
+    def __init__(self, expected_pattern: Pattern[str], which: str):
+        self.expected_pattern = expected_pattern
+        self.which = which
+    
+    def execute(self, package, df, header, rows):
+        for idx in rows.index:
+            for value in package._values_for_header(rows, header, idx):
+                if not re.match(self.expected_pattern, value):
+                    logger.error(f"row {idx + 2}: '{value}' does not match regex for header values")
     
 class FilenamesAssetsInstruction(Instruction):
-    def __init__():
-        raise NotImplementedError
+    """
+    Validate that all filenames in the csv match the actual asset file names in the assets folder
+    """
+    which = False
+
+    def __init__(self, args: List[Any]):
+        self.args = args
     
+    def execute(self, package, df, header, rows) -> None:
+        col: str = self.args[0]
+        filenames: List[str] = []
+        for cell in package.get_dataframe()[col]:
+            if pd.notna(cell):
+                for value in str(cell).split('|'):
+                    filenames.append(value)
+        if set(filenames) != set(package.assets):
+            logger.error("set(filenames) != set(self.assets)")
+            for filename in filenames:
+                if filename not in package.assets:
+                    logger.error(f"'{filename}' not in files/ directory")
+            for asset in package.assets:
+                if asset not in filenames:
+                    logger.error(f"'{asset}' not in metadata filenames")
+        else:
+            pass
+
 class IdentifierFileInstruction(Instruction):
-    def __init__():
-        raise NotImplementedError
+    """
+    Check that identifier values match filename values (compare identifier col to file col)
+    """
+    def __init__(self, args: List[Any]):
+        self.args = args
+    
+    def execute(self, package, df, header, rows) -> None:
+        substring: str = self.args[0]
+        df_for_method: pd.DataFrame = package.get_dataframe()
+        for index, row in df_for_method.iterrows():
+            if str(row['identifier']) == str(row['file']).replace(substring, ''):
+                pass
+            else:
+                logger.error(f"row {index + 2} '{row['identifier']} / '{row['file']}'")
     
 class ValidateControlledVocabInstruction(Instruction):
     def __init__():
