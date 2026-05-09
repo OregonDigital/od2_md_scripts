@@ -125,113 +125,6 @@ class Package(object):
             pass
         return check
 
-    def get_method(self, method_name: str, args: Optional[List[Any]]) -> Optional[Any]:
-        # see methods at bottom
-        method_mapping = {
-            'check_filenames_assets': self.check_filenames_assets,
-            'identifier_file_match': self.identifier_file_match,
-            'validate_controlled_vocab': self.validate_controlled_vocab
-            # more methods later?
-        }
-        try:
-            method: Optional[Any] = method_mapping.get(method_name)
-            if method:
-                logging.debug(f"method_mapping.get({method_name}) is True")
-                # FIXME -- is this return necessary? It doesn't actually set value in parent
-                return method(args)
-            else:
-                logger.error(f"method_name {method_name} not in method_mapping")
-        except Exception as e:
-            logger.error(f"get_method > try > except for '{method_name}': {e}")
-
-    def _validate_cell_values(self, df: pd.DataFrame, header: str, validation_data: Any, 
-                              checktype: str, p: Optional[Pattern[str]] = None) -> None:
-        """
-        Validates cell values in a dataframe column.
-        Works by:
-
-        1. Iterates through each row in dataframe
-        2. Gets cell value or empty string if missing
-        3. Splits multi-value cells on '|'
-        4. Validates each value using string or regex check
-        """
-        for index, row in df.iterrows():
-            # Get cell value and convert missing values to empty string
-            if pd.notna(row[header]):
-                cell = row[header]
-            else:
-                cell = ''
-
-            # Split on '|' for multi-value cells and validate each value
-            for value in str(cell).split('|'):
-                if checktype == 'string':
-                    self.perform_string_check(validation_data, value, index)
-                elif checktype == 'regex' and p is not None:
-                    self.perform_regex_check(p, value, index)
-                else:
-                    logger.error(f"Unkown checktype '{checktype}' in  _validate_cell_values")
-
-    def select_data_for_checks(self, header: str, which: str, checktype: str, validation_data: Any, args: Optional[List[Any]]) -> None:
-        df: pd.DataFrame = self.get_dataframe()
-        
-        # Compile regex pattern
-        # TODO: verify pattern is actually the right thing to use here (p: Pattern[str]) for type hint
-        p = re.compile(r"{}".format(validation_data))
-
-        if which == 'all':
-            # Validate all rows without filtering
-            self._validate_cell_values(df, header, validation_data, checktype, p)
-
-        elif which == 'complex':
-            # Only validate rows with format column that has XML (complex object)
-            try:
-                complex_df: pd.DataFrame = df[df['format'] == 'https://w3id.org/spar/mediatype/application/xml']
-                self._validate_cell_values(complex_df, header, validation_data, checktype, p)
-            except KeyError:
-                logger.error(f"metadata specified as complex object but no 'format' column exists")
-
-        elif which == 'item':
-                # Only validate rows where format is missing or not XML (simple item)
-                try:
-                    # Filter to rows where format is NaN or not XML
-                    item_df: pd.DataFrame = df[(df['format'].isna()) | 
-                                 (df['format'] != 'https://w3id.org/spar/mediatype/application/xml')]
-                    self._validate_cell_values(item_df, header, validation_data, checktype, p)
-                except KeyError:
-                    logger.error("metadata specified as complex-object item but has unexpected 'format' value")
-
-        elif which == 'na' and checktype == 'method':
-            # Run custom method, not standard validation
-            self.get_method(validation_data, args)
-        else:
-            logger.error(f"Invalid 'which' parameter: {which}. Expected 'all', 'complex', 'item', or 'na'.")
-
-    def _process_instructions(self, header: str, instructions: List[Dict], config_source: str) -> None:
-        """
-        Process validation instructions for a specific header
-
-        Iterates through list of validation instructions and executes check (string, regex, or method) for each instruction
-
-        Args:
-            header: Column name being validated
-            instructions: List of instruction dicts (which hold validation type and parameters)
-            config_source: Name of config file for error logging
-        """
-        for instruction in instructions:
-            if instruction.get('string'):
-                logger.debug(f"string check for header '{header}' ({instruction['which']})")
-                self.select_data_for_checks(header, instruction['which'], 'string',
-                                            instruction['string'], None)
-            elif instruction.get('regex'):
-                logger.debug(f"regex check for header '{header}' ({instruction['which']})")
-                self.select_data_for_checks(header, instruction['which'], 'regex',
-                                            instruction['regex'], None)
-            elif instruction.get('method'):
-                logger.debug(f"method check ({instruction['method']}) for header '{header}'")
-                self.select_data_for_checks(header, 'na', 'method', instruction['method'], 
-                                            instruction['args'])
-            else:
-                logger.error(f"unknown check type: {config_source} '{header}' instruction {instruction}")
 
     def _update_method_args(self, instructions: List, old_name: str, new_name: str) -> List:
         """
@@ -264,26 +157,6 @@ class Package(object):
            b. Fallback to direct header lookup in default_config (e.g., dmrec)
         3. If header has None value and not found by mapping or default, log no check configured
         """
-        # for header in self.headers_config:
-        #     # Use project-specific config if possible
-        #     if self.headers_config[header] != None:
-        #         logger.info(f"Validating '{header}' from config...")
-        #         self._process_instructions(header, self.headers_config[header], 'headers_config')
-        #     # Use default config if no project-specific config
-        #     else:
-        #         # Try mapped validator first (e.g., photographer->creator)
-        #         validator_type = self.validator_mapping.get(header.lower())
-        #         if validator_type and validator_type in self.default_config:
-        #             logger.info(f"Validating '{header}' from default config (mapped to '{validator_type}')...")
-        #             # Replace validator_type with actual header name in method args
-        #             instructions = self._update_method_args(self.default_config[validator_type], validator_type, header)
-        #             self._process_instructions(header, instructions, 'default')
-        #         # Fallback to direct header name in default_config
-        #         elif header in self.default_config and self.default_config[header] is not None:
-        #             logger.info(f"Validating '{header}' from default config...")
-        #             self._process_instructions(header, self.default_config[header], 'default')
-        #         else:
-        #             logger.info(f"NO VALIDATION CHECK CONFIGURED FOR '{header}' in headers_config or default")
         df = self.get_dataframe()
         # Loop through each header, running instructions for each
         for header in self.headers_config:
@@ -330,138 +203,37 @@ class Package(object):
         return []
 
     def _run_instruction(self, df: pd.DataFrame, header: str, instruction: Dict) -> None:
-        """Run instructions on col under header for each instruction type (string, regex, method)"""
-        # Handle 3 cases: string, regex, method
-        if "method" in instruction:
-            handlers = {
-                "check_filenames_assets": self.check_filenames_assets,
-                "identifier_file_match": self.identifier_file_match,
-                "validate_controlled_vocab": self.validate_controlled_vocab
-            }
-            method_name = instruction["method"]
-            handler = handlers.get(method_name)
-            if not handler:
-                logger.error(f"method_name '{method_name}' not in method_mapping")
-                return
-            handler(instruction.get("args", []))
-            return
-        
-        which = instruction.get("which", "all")
+        which = instruction["which"]
         rows = self._select_rows(df, which)
+        Instruction.from_dict(instruction).execute(self, df, header, rows)
 
-        if "string" in instruction:
-            expected = instruction["string"]
-            for index, row in rows.iterrows():
-                cell = row[header] if pd.notna(row[header]) else ""
-                for value in str(cell).split("|"):
-                    self.perform_string_check(expected, value, index)
-            return
-        
-        if "regex" in instruction:
-            pattern = re.compile(str(instruction["regex"]))
-            for index, row in rows.iterrows():
-                cell = row[header] if pd.notna(row[header]) else ""
-                for value in str(cell).split("|"):
-                    self.perform_regex_check(pattern, value, index)
-            return
-
-        logger.error(f"Unkown check type for '{header}' instruction '{instruction}'")
+    def _combine_enumerated_headers(self, header: str, df: pd.DataFrame) -> List[str]:
+        """
+        Return all cols that belong to one header type
+        Ex. subject_1, subject_2, subject_3
+        """
+        pattern = re.compile(rf"^{re.escape(header)}(?:_\d+)?$")
+        return [col for col in df.columns if pattern.match(col)]
     
-    # methods for get_method
-    # duplicative code here too in that I create and use dataframe separately for methods
-    # TODO: condense dataframe usage, one declaration possible in init?
-    
-    def check_filenames_assets(self, args: List[Any]) -> None:
+    def _cell_values(self, value: Any) -> List[str]:
         """
-        Validate that all filenames in the csv match the actual asset file names in the assets folder
+        Normalize one cell into a flat list of values. Splits pipe-delimited cells and removes empty cells
         """
-        col: str = args[0]
-        filenames: List[str] = []
-        for cell in self.get_dataframe()[col]:
-            if pd.notna(cell):
-                for value in str(cell).split('|'):
-                    filenames.append(value)
-        if set(filenames) != set(self.assets):
-            logger.error("set(filenames) != set(self.assets)")
-            for filename in filenames:
-                if filename not in self.assets:
-                    logger.error(f"'{filename}' not in files/ directory")
-            for asset in self.assets:
-                if asset not in filenames:
-                    logger.error(f"'{asset}' not in metadata filenames")
-        else:
-            pass
+        if pd.isna(value):
+            return []
+        return [part for part in str(value).split("|") if part]
 
-    def identifier_file_match(self, args: List[str]) -> None:
+    def _values_for_header(self, df: pd.DataFrame, header: str, row_idx: int) -> List[str]:
         """
-        Check that identifier values match filename values (compare identifier col to file col)
+        Collect all values for one header from matching cols
         """
-        substring: str = args[0]
-        df_for_method: pd.DataFrame = self.get_dataframe()
-        for index, row in df_for_method.iterrows():
-            if str(row['identifier']) == str(row['file']).replace(substring, ''):
-                pass
-            else:
-                logger.error(f"row {index + 2} '{row['identifier']} / '{row['file']}'")
-    
-    def validate_controlled_vocab(self, args: List[Any]) -> None:
-        """
-        Validate URIs in col against allowed vocabularies for that controlled vocab
-
-        Args:
-            args: [column_name] - the col header for validation
-        """
-        col: str = args[0]
-        df = self.get_dataframe()
-        
-        # Get controlled vocab type
-        controlled_vocab = self.validator_mapping.get(col.lower())
-        logger.debug(f"controlled_vocab for '{col}': {controlled_vocab}")
-        if not controlled_vocab:
-            logger.error(f"No controlled vocab mapping for '{col}'")
-            return
-        
-        logger.debug(f"validation_mappings keys: {list(self.validation_mappings.keys())}")
-        logger.debug(f"controlled_vocab_map keys: {list(self.validation_mappings.get('controlled_vocab_map', {}).keys())}")
-        
-        # Get possible vocabularies from a controlled vocab
-        try:
-            vocab_list = self.validation_mappings['controlled_vocab_map'][controlled_vocab]
-            # ex. 'lcnaf' or 'ulan'
-        except KeyError:
-            logger.error(f"controlled_vocab_map missing entry for '{controlled_vocab}' in validation_mappings.yaml")
-            return
-        
-        logger.debug(f"Validating '{col}' against vocabularies: {', '.join(vocab_list)}")
-        # FIXME: don't use iterrows, it's inefficient because it loops through the whole df. Just do the header
-
-        # Loop through values
-        for index, row in df.iterrows():
-            # Run validation on non-empty cell (including empty strings, ex. cell has '')
-            if pd.notna(row[col]):
-                cell = row[col]
-                # Split multi-value cells separated by |
-                for value in str(cell).split('|'):
-                    if not value:
-                        continue
-                    valid = False
-                    # Try all validators, if any pass then it is validated
-                    for vocab_name in vocab_list:
-                        # Use the dict in vocabularies.py to get the correct function
-                        validator = vocabularies.VOCABULARY_VALIDATORS.get(vocab_name)
-                        if validator and validator(value):
-                            valid = True
-                            logger.debug(f"  row {index + 2}: '{value}' matched {vocab_name}")
-                            break
-                    if not valid:
-                        logger.error(f"row {index + 2}: '{value}' does not match any vocabulary in ({', '.join(vocab_list)})")
-            else:
-                # Skip over empty cell (this means count it as valid)
-                continue
-
+        values: List[str] = []
+        for col in self._combine_enumerated_headers(header, df):
+            values.extend(self._cell_values(df.at[row_idx, col]))
+        return values
 
 class Instruction(ABC):
-    row_scoped = True # find better name
+    row_scoped = True #FIXME find better name
     which = "all"
 
     @abstractmethod
@@ -551,5 +323,58 @@ class IdentifierFileInstruction(Instruction):
                 logger.error(f"row {index + 2} '{row['identifier']} / '{row['file']}'")
     
 class ValidateControlledVocabInstruction(Instruction):
-    def __init__():
-        raise NotImplementedError
+    """
+    Validate URIs in col against allowed vocabularies for that controlled vocab
+    """
+    def __init__(self, args: List[Any]):
+        self.args = args
+
+    def execute(self, package, df, header, rows) -> None:
+        col: str = self.args[0]
+        df = package.get_dataframe()
+        
+        # Get controlled vocab type
+        controlled_vocab = package.validator_mapping.get(col.lower())
+        logger.debug(f"controlled_vocab for '{col}': {controlled_vocab}")
+        if not controlled_vocab:
+            logger.error(f"No controlled vocab mapping for '{col}'")
+            return
+        
+        logger.debug(f"validation_mappings keys: {list(package.validation_mappings.keys())}")
+        logger.debug(f"controlled_vocab_map keys: {list(package.validation_mappings.get('controlled_vocab_map', {}).keys())}")
+        
+        # Get possible vocabularies from a controlled vocab
+        try:
+            vocab_list = package.validation_mappings['controlled_vocab_map'][controlled_vocab]
+            # ex. 'lcnaf' or 'ulan'
+        except KeyError:
+            logger.error(f"controlled_vocab_map missing entry for '{controlled_vocab}' in validation_mappings.yaml")
+            return
+        
+        logger.debug(f"Validating '{col}' against vocabularies: {', '.join(vocab_list)}")
+        # FIXME: don't use iterrows, it's inefficient because it loops through the whole df. Just do the header
+
+        # Loop through values
+        for index, row in df.iterrows():
+            # Run validation on non-empty cell (including empty strings, ex. cell has '')
+            if pd.notna(row[col]):
+                cell = row[col]
+                # Split multi-value cells separated by |
+                for value in str(cell).split('|'):
+                    if not value:
+                        continue
+                    valid = False
+                    # Try all validators, if any pass then it is validated
+                    for vocab_name in vocab_list:
+                        # Use the dict in vocabularies.py to get the correct function
+                        validator = vocabularies.VOCABULARY_VALIDATORS.get(vocab_name)
+                        if validator and validator(value):
+                            valid = True
+                            logger.debug(f"  row {index + 2}: '{value}' matched {vocab_name}")
+                            break
+                    if not valid:
+                        logger.error(f"row {index + 2}: '{value}' does not match any vocabulary in ({', '.join(vocab_list)})")
+            else:
+                # Skip over empty cell (this means count it as valid)
+                continue
+

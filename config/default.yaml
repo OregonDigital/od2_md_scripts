@@ -2,15 +2,13 @@ dmrec:
   - regex: ^$
     which: all
 file:
-  - method: check_filenames_assets
-    args: ['file']
-    # no which on method!
+  - check_filenames_assets: ['file']
+    which: all
 subject:
-  - method: validate_controlled_vocab
-    args: ['subject']
+  - validate_controlled_vocab: ['subject']
+    which: all
 creator:
-  - method: validate_controlled_vocab
-    args: ['creator']
+  - validate_controlled_vocab: ['creator']
 
 species: ~
 # many more: # to do

@@ -1,4 +1,4 @@
-"""URI validation functiosn for controlled vocabularies"""
+"""URI validation functions for controlled vocabularies"""
 import re
 import logging
 
