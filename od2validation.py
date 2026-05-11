@@ -203,6 +203,7 @@ class Package(object):
         return []
 
     def _run_instruction(self, df: pd.DataFrame, header: str, instruction: Dict) -> None:
+        """Instantiate Instruction subclass and execute it on given header (and select rows by 'which' in instruction)"""
         which = instruction["which"]
         rows = self._select_rows(df, which)
         Instruction.from_dict(instruction).execute(self, df, header, rows)
@@ -243,7 +244,7 @@ class Instruction(ABC):
 
     @staticmethod
     def from_dict(d: dict) -> Instruction:
-        """Instantiate an Instruction subclass (string, regex, etc.) based on the instructions in a config dict""" #FIXME check exactly where this comes from
+        """Instantiate an Instruction subclass (string, regex, etc.) based on the instructions dict"""
         if "string" in d:
             return StringInstruction(d["string"], d["which"])
         if "regex" in d:
