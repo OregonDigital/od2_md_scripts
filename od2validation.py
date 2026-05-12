@@ -203,7 +203,7 @@ class Package(object):
         return []
 
     def _run_instruction(self, df: pd.DataFrame, header: str, instruction: Dict) -> None:
-        """Instantiate Instruction subclass and execute it on given header (and select rows by 'which' in instruction)"""
+        """Instantiate Instruction subclass and execute it on given header, selecting rows by 'which' in instruction)"""
         which = instruction["which"]
         rows = self._select_rows(df, which)
         Instruction.from_dict(instruction).execute(self, df, header, rows)
@@ -216,7 +216,7 @@ class Package(object):
         pattern = re.compile(rf"^{re.escape(header)}(?:_\d+)?$")
         return [col for col in df.columns if pattern.match(col)]
     
-    def _cell_values(self, value: Any) -> List[str]:
+    def _flatten_cell_values(self, value: Any) -> List[str]:
         """
         Normalize one cell into a flat list of values. Splits pipe-delimited cells and removes empty cells
         """
@@ -230,7 +230,8 @@ class Package(object):
         """
         values: List[str] = []
         for col in self._combine_enumerated_headers(header, df):
-            values.extend(self._cell_values(df.at[row_idx, col]))
+            # Appends a whole list as individual 
+            values.extend(self._flatten_cell_values(df.at[row_idx, col]))
         return values
 
 class Instruction(ABC):
@@ -284,7 +285,6 @@ class FilenamesAssetsInstruction(Instruction):
     """
     Validate that all filenames in the csv match the actual asset file names in the assets folder
     """
-    which = False
 
     def __init__(self, args: List[Any]):
         self.args = args
@@ -378,4 +378,3 @@ class ValidateControlledVocabInstruction(Instruction):
             else:
                 # Skip over empty cell (this means count it as valid)
                 continue
-
