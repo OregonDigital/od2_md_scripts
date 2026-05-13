@@ -98,7 +98,7 @@ def test_solr_query_execution(mock_get):
     
     importer_no = 123
     solrselect = "https://solr-od2.library.oregonstate.edu/solr/prod/select?"
-    q = f"q=bulkrax_identifier_tesim:{importer_no}"
+    q = f"q=bulkrax_identifier_sim:{importer_no}:*"
     fl = "&fl=id,member_of_collection_ids_ssim,member_of_collections_ssim,file_set_ids_ssim"
     rows = "&rows=1000"
     
@@ -110,4 +110,3 @@ def test_solr_query_execution(mock_get):
     # Verify the response structure
     assert 'response' in result
     assert result['response']['numFound'] == 1
-
