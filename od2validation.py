@@ -147,15 +147,7 @@ class Package(object):
 
     def get_headers_instructions(self) -> None:
         """
-        Decide + execute validation instructions for config files headers
-
-        For each header in headers_config:
-        1. If header has validation rules in headers_config, use those
-        2. If header is None in headers_config:
-           a. Check validation_mappings for mapped validator (e.g., photographer->creator) after
-              replacing validator type name with actual header name in method args
-           b. Fallback to direct header lookup in default_config (e.g., dmrec)
-        3. If header has None value and not found by mapping or default, log no check configured
+        Run the whole instruction loop: check each header, apply checks to rows under the header
         """
         df = self.get_dataframe()
         # Loop through each header, running instructions for each
@@ -230,7 +222,7 @@ class Package(object):
         """
         values: List[str] = []
         for col in self._combine_enumerated_headers(header, df):
-            # Appends a whole list as individual 
+            # Appends all values from flatten_cell_values as individual items in list
             values.extend(self._flatten_cell_values(df.at[row_idx, col]))
         return values
 
