@@ -1,3 +1,4 @@
+"""Define Package class for data reading and parsing and Instructions classes to run validation checks"""
 import yaml, os, json, re
 import pandas as pd
 import logging
@@ -140,9 +141,9 @@ class Package(object):
         """
         updated_instructions = copy.deepcopy(instructions)
         for instruction in updated_instructions:
-            if instruction.get('method') and instruction.get('args'):
-                # Replace old_name with new_name in args
-                instruction['args'] = [new_name if arg == old_name else arg for arg in instruction['args']]
+            if instruction.get('validate_controlled_vocab'):
+                # Replace old name with new name in args
+                instruction['validate_controlled_vocab'] = [new_name if arg == old_name else arg for arg in instruction['validate_controlled_vocab']]
         return updated_instructions
 
     def get_headers_instructions(self) -> None:
@@ -177,15 +178,20 @@ class Package(object):
     def _resolve_instructions(self, header: str):
         """Return instructions (config) for a header, with updated header names if using auto validator"""
         config = self.headers_config.get(header)
+        # Use the project-specific config
         if config is not None:
             logger.info(f"Validating '{header}' from config...")
             return config
         
+        # Use a mapped validator if one exists (ex. 'collector', 'author', or 'illustrator' could be mapped to Creator and use Creator validation)
         validator_type = self.validator_mapping.get(header.lower())
         if validator_type and validator_type in self.default_config:
             logger.info(f"Validating '{header}' from default config (mapped to '{validator_type}')")
+            # Default validation has default yaml fields, so we have to replace them or they don't match the csv
+            # Ex. 'collector' gets replaced by 'creator' unless we update the args
             return self._update_method_args(self.default_config[validator_type], validator_type, header)
     
+        # Use the default validation (config/default.yaml) config
         fallback = self.default_config.get(header)
         if fallback is not None:
             logger.info(f"Validating '{header}' from default config...")
@@ -196,8 +202,10 @@ class Package(object):
 
     def _run_instruction(self, df: pd.DataFrame, header: str, instruction: Dict) -> None:
         """Instantiate Instruction subclass and execute it on given header, selecting rows by 'which' in instruction)"""
-        which = instruction["which"]
+        # Get 'which' from the instruction, then select rows based on it (default to "all" if no value found)
+        which = instruction.get("which", "all")
         rows = self._select_rows(df, which)
+        # Create an instruction subclass (String, Regex, FilenamesAssets, etc.) and execute it
         Instruction.from_dict(instruction).execute(self, df, header, rows)
 
     def _combine_enumerated_headers(self, header: str, df: pd.DataFrame) -> List[str]:
@@ -228,7 +236,6 @@ class Package(object):
 
 class Instruction(ABC):
     row_scoped = True #FIXME find better name
-    which = "all"
 
     @abstractmethod
     def execute(self, package, df, header, rows):
@@ -239,9 +246,9 @@ class Instruction(ABC):
     def from_dict(d: dict) -> Instruction:
         """Instantiate an Instruction subclass (string, regex, etc.) based on the instructions dict"""
         if "string" in d:
-            return StringInstruction(d["string"], d["which"])
+            return StringInstruction(d["string"])
         if "regex" in d:
-            return RegexInstruction(re.compile(str(d["regex"])), d["which"])
+            return RegexInstruction(re.compile(str(d["regex"])))
         if "check_filenames_assets" in d:
             return FilenamesAssetsInstruction(d["check_filenames_assets"])
         if "identifier_file_match" in d:
@@ -251,21 +258,20 @@ class Instruction(ABC):
         raise ValueError(f"Unknown instruction type: {d}")
 
 class StringInstruction(Instruction):
-    def __init__(self, expected: str, which: str):
+    """Validate string values in a column against expected string value for the header"""
+    def __init__(self, expected: str):
         self.expected = expected
-        self.which = which
 
     def execute(self, package, df, header, rows):
         for idx in rows.index:
             for value in package._values_for_header(rows, header, idx):
                 if self.expected != value:
                     logger.error(f"row {idx + 2}: '{value}' != string '{self.expected}")
-    
 
 class RegexInstruction(Instruction):
-    def __init__(self, expected_pattern: Pattern[str], which: str):
+    """Validate string values in a column against expected regex pattern for the header"""
+    def __init__(self, expected_pattern: Pattern[str]):
         self.expected_pattern = expected_pattern
-        self.which = which
     
     def execute(self, package, df, header, rows):
         for idx in rows.index:
@@ -313,7 +319,7 @@ class IdentifierFileInstruction(Instruction):
             if str(row['identifier']) == str(row['file']).replace(substring, ''):
                 pass
             else:
-                logger.error(f"row {index + 2} '{row['identifier']} / '{row['file']}'")
+                logger.error(f"row: {index + 2} '{row['identifier']} / '{row['file']}'")
     
 class ValidateControlledVocabInstruction(Instruction):
     """
