@@ -18,9 +18,8 @@ class Package(object):
         self.assets = os.listdir(self.filepaths()[1])
         # Running get_config on the yaml file (name passed in through process.py creating Package()) the user specified in the command line
         self.default_config, self.headers_config, self.validation_mappings = self.get_config(headers_config)
+        # Build validator map - links auto-validated fields to their common validator (ex. 'photographer' -> 'creator')
         self.validator_mapping = self._build_validator_mapping()
-        # custom config requred, must include at least enumeration of headers
-        # use makeconfig.py?
 
     def filepaths(self) -> Tuple[List[str], str]:
         with open("filepaths.yaml", "r") as yf:
@@ -240,7 +239,7 @@ class Instruction(ABC):
     @abstractmethod
     def execute(self, package, df, header, rows):
         """Run an instruction, where package is the Package instance"""
-        pass
+        raise NotImplementedError
 
     @staticmethod
     def from_dict(d: dict) -> Instruction:
@@ -264,6 +263,7 @@ class StringInstruction(Instruction):
 
     def execute(self, package, df, header, rows):
         for idx in rows.index:
+            # Check all values that are part of the header, whether enumerated or pipe separated
             for value in package._values_for_header(rows, header, idx):
                 if self.expected != value:
                     logger.error(f"row {idx + 2}: '{value}' != string '{self.expected}")
@@ -275,6 +275,7 @@ class RegexInstruction(Instruction):
     
     def execute(self, package, df, header, rows):
         for idx in rows.index:
+            # Check all values that are part of the header, whether enumerated or pipe separated
             for value in package._values_for_header(rows, header, idx):
                 if not re.match(self.expected_pattern, value):
                     logger.error(f"row {idx + 2}: '{value}' does not match regex for header values")
@@ -351,28 +352,20 @@ class ValidateControlledVocabInstruction(Instruction):
             return
         
         logger.debug(f"Validating '{col}' against vocabularies: {', '.join(vocab_list)}")
-        # FIXME: don't use iterrows, it's inefficient because it loops through the whole df. Just do the header
 
-        # Loop through values
-        for index, row in df.iterrows():
-            # Run validation on non-empty cell (including empty strings, ex. cell has '')
-            if pd.notna(row[col]):
-                cell = row[col]
-                # Split multi-value cells separated by |
-                for value in str(cell).split('|'):
-                    if not value:
-                        continue
-                    valid = False
-                    # Try all validators, if any pass then it is validated
-                    for vocab_name in vocab_list:
-                        # Use the dict in vocabularies.py to get the correct function
-                        validator = vocabularies.VOCABULARY_VALIDATORS.get(vocab_name)
-                        if validator and validator(value):
-                            valid = True
-                            logger.debug(f"  row {index + 2}: '{value}' matched {vocab_name}")
-                            break
-                    if not valid:
-                        logger.error(f"row {index + 2}: '{value}' does not match any vocabulary in ({', '.join(vocab_list)})")
-            else:
-                # Skip over empty cell (this means count it as valid)
-                continue
+        for idx in rows.index:
+            # Check all values for header, including enumerated and pipe separated. Empty cells already skipped in _values_for_header
+            for value in package._values_for_header(rows, header, idx):
+                if not value:
+                    continue
+                valid = False
+                # Try all validators, if any pass then it's correctly formatted
+                for vocab_name in vocab_list:
+                    validator = vocabularies.VOCABULARY_VALIDATORS.get(vocab_name)
+                    if validator and validator(value):
+                        valid = True
+                        logger.debug(f"  row {idx + 2}: '{value}' matched {vocab_name}")
+                        break
+                if not valid:
+                    logger.error(f"row {idx + 2}: '{value}' does not match any vocabulary in ({', '.join(vocab_list)})")
+            

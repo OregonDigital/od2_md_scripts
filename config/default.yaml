@@ -9,6 +9,7 @@ subject:
     which: all
 creator:
   - validate_controlled_vocab: ['creator']
+    which: all
 
 species: ~
 # many more: # to do

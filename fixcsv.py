@@ -248,10 +248,10 @@ def main() -> None:
     if total_changes > 0:
         logger.info("")
         save_dataframe(df, metadata_path)
-        logger.info(f"\n✓ Applied {total_changes} fixes")
+        logger.info(f"\n! Applied {total_changes} fixes")
         logger.info(f"Run 'python3 process.py {collection}' to validate")
     else:
-        logger.info(f"\n✓ No issues found - file is clean")
+        logger.info(f"\n! No issues found - file is clean")
     
     logger.info("="*60)
 
