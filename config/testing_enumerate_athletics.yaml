@@ -1,0 +1,37 @@
+date: null
+description: null
+dmrec: null
+file: null
+format: null
+full_size_download_allowed: null
+has_finding_aid: null
+identifier: null
+institution: null
+license: null
+local_collection_id: null
+local_collection_name: null
+location: null
+model: null
+parents: null
+photographer: null
+repository: null
+resource_type: null
+rights_holder: null
+rights_statement: null
+subject_1:
+  - regex: (^http:\/\/id\.loc\.gov\/authorities\/subjects\/sh\d{1,15}$|^http:\/\/opaquenamespace\.org\/ns\/people\/\S*$)
+    which: all
+subject_2:
+  - regex: (^http:\/\/id\.loc\.gov\/authorities\/subjects\/sh\d{1,15}$|^http:\/\/opaquenamespace\.org\/ns\/people\/\S*$)
+    which: all
+subject_3:
+  - regex: (^http:\/\/id\.loc\.gov\/authorities\/subjects\/sh\d{1,15}$|^http:\/\/opaquenamespace\.org\/ns\/people\/\S*$)
+    which: all
+subject_4:
+  - regex: (^http:\/\/id\.loc\.gov\/authorities\/subjects\/sh\d{1,15}$|^http:\/\/opaquenamespace\.org\/ns\/people\/\S*$)
+    which: all
+subject_5:
+  - regex: (^http:\/\/id\.loc\.gov\/authorities\/subjects\/sh\d{1,15}$|^http:\/\/opaquenamespace\.org\/ns\/people\/\S*$)
+    which: all
+title: null
+visibility: null
