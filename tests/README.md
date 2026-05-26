@@ -73,8 +73,7 @@ The test configuration is in `config/test.yaml`.
 
 ## Notes
 
-- Tests should be independent - they can run in any order
-- Each test should clearly show what it's testing (descriptive name and docstring)
-- If a test fails, fix the code, not the test (unless the test is wrong)
-- Add tests when you find bugs - write a test that catches the bug first
+- Tests should be independent, able to run in any order
+- Each test should clearly show what it's testing (good name and docstring)
+- Add tests when you find bugs -- write a test that catches the bug first
 

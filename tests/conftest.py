@@ -19,7 +19,7 @@ def temp_test_environment(tmp_path):
     # Create default config (minimal version)
     default_config = {
         'dmrec': [{'regex': r'^$', 'which': 'all'}],
-        'file': [{'method': 'check_filenames_assets', 'args': ['file']}],
+        'file': [{'check_filenames_assets': ['file']}],
     }
     
     with open(config_dir / "default.yaml", "w") as f:
@@ -28,7 +28,7 @@ def temp_test_environment(tmp_path):
     # Create test config
     test_config = {
         'dmrec': [{'regex': r'^coll123_\d+$', 'which': 'all'}],
-        'file': [{'method': 'check_filenames_assets', 'args': ['file']}],
+        'file': [{'check_filenames_assets': ['file']}],
         'title': [{'regex': r'^.+$', 'which': 'all'}],
         'format': [
             {'string': 'image/jpeg', 'which': 'all'},

@@ -3,7 +3,7 @@ import yaml, os, json, re
 import pandas as pd
 import logging
 from typing import Tuple, List, Dict, Any, Optional, Pattern
-import vocabularies
+import vocabularies, utils
 import copy
 from abc import ABC, abstractmethod
 
@@ -44,9 +44,9 @@ class Package(object):
         logger.info(f"assets file path\n{self.filepaths()[1]}")
 
     def get_config(self, headers_config: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-        with open("config/default.yaml", "r") as yf:
+        with open("headers_fixes_config/default.yaml", "r") as yf:
             default: Dict[str, Any] = yaml.safe_load(yf)
-        with open(f"config/{headers_config}.yaml", "r") as yf:
+        with open(f"headers_fixes_config/{headers_config}.yaml", "r") as yf:
             headers: Dict[str, Any] = yaml.safe_load(yf)
         with open("config/validation_mappings.yaml", "r") as yf:
             mappings: Dict[str, Any] = yaml.safe_load(yf)
@@ -107,15 +107,24 @@ class Package(object):
     def check_headers(self) -> bool:
         check: bool = True
         logger.info("check headers configuration / headers in metadata")
-        if set(self.headers_config) != set(self.get_headers()):
+
+        # Compare base headers to config, not the actual csv headers. Otherwise headers_config won't match, since it has only base headers while csv could have enumerated headers
+        real_headers = self.get_headers()
+        # Get all base headers (duplicates possible)
+        base_headers = [utils.base_header(h) for h in real_headers]
+        # Remove duplicate headers
+        real_base_headers = set(base_headers)
+
+
+        if set(self.headers_config) != set(real_base_headers):
             check = False
             logger.error("headers_config != metadata headers")
-            diff: List[str] = list(set(self.get_headers()) - set(self.headers_config))
+            diff: List[str] = list(real_base_headers - set(self.headers_config))
             if len(diff) > 0:
                 logger.info("metadata headers not in config file:")
                 for item in diff:
                     logger.error("  %s", item)
-            diff: List[str] = list(set(self.headers_config) - set(self.get_headers()))
+            diff: List[str] = list(set(self.headers_config) - real_base_headers)
             if len(diff) > 0:
                 logger.error("headers_config fields not in metadata headers:")
                 for item in diff:
@@ -151,11 +160,11 @@ class Package(object):
         """
         df = self.get_dataframe()
         # Loop through each header, running instructions for each
-        for header in self.headers_config:
+        for real_header in self.get_headers():
             # Loop through resolved (either from specific config or default) instructions
             # Generally there's only 1, but possible to have more like in file in uo-athletics
-            for instruction in self._resolve_instructions(header):
-                self._run_instruction(df, header, instruction)
+            for instruction in self._resolve_instructions(real_header):
+                self._run_instruction(df, real_header, instruction)
     
     def _select_rows(self, df: pd.DataFrame, which: str) -> pd.DataFrame:
         """Return filtered df that filters for all, only complex objects, or only items"""
@@ -174,29 +183,31 @@ class Package(object):
         logger.error(f"Invalid 'which' parameter: {which}")
         return df.iloc[0:0]
     
-    def _resolve_instructions(self, header: str):
+    def _resolve_instructions(self, real_header: str):
         """Return instructions (config) for a header, with updated header names if using auto validator"""
+        
+        header = utils.base_header(real_header)
         config = self.headers_config.get(header)
         # Use the project-specific config
         if config is not None:
-            logger.info(f"Validating '{header}' from config...")
+            logger.info(f"Validating '{real_header}' from config...")
             return config
         
         # Use a mapped validator if one exists (ex. 'collector', 'author', or 'illustrator' could be mapped to Creator and use Creator validation)
         validator_type = self.validator_mapping.get(header.lower())
         if validator_type and validator_type in self.default_config:
-            logger.info(f"Validating '{header}' from default config (mapped to '{validator_type}')")
+            logger.info(f"Validating '{real_header}' from default config (mapped to '{validator_type}')")
             # Default validation has default yaml fields, so we have to replace them or they don't match the csv
             # Ex. 'collector' gets replaced by 'creator' unless we update the args
             return self._update_method_args(self.default_config[validator_type], validator_type, header)
     
-        # Use the default validation (config/default.yaml) config
+        # Use the default validation (headers_fixes_config/default.yaml) config
         fallback = self.default_config.get(header)
         if fallback is not None:
-            logger.info(f"Validating '{header}' from default config...")
+            logger.info(f"Validating '{real_header}' from default config...")
             return fallback
         
-        logger.info(f"NO VALIDATION CHECK CONFIGURED FOR '{header}' in headers_config or default")
+        logger.info(f"NO VALIDATION CHECK CONFIGURED FOR '{real_header}' in headers_config or default")
         return []
 
     def _run_instruction(self, df: pd.DataFrame, header: str, instruction: Dict) -> None:
@@ -368,4 +379,3 @@ class ValidateControlledVocabInstruction(Instruction):
                         break
                 if not valid:
                     logger.error(f"row {idx + 2}: '{value}' does not match any vocabulary in ({', '.join(vocab_list)})")
-            
