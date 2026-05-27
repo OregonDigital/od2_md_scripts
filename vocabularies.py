@@ -98,11 +98,12 @@ def validate_lcsh(value: str) ->  bool:
     from website: "http://id.loc.gov/authorities/subjects/sh85055245"
     from website: "http://id.loc.gov/authorities/subjects/sh85104841"
     od2 map: "http://id.loc.gov/authorities/subjects/sh85105182"
+    bmr test case: "http://id.loc.gov/authorities/subjects/sh2010012822"
     TODO slightly suspicious that these all have the same starting 'sh' given that lcnaf didn't, and there's not very many examples in the solr select. Check more extensively 
 
-    Match start through subjects/sh, then 8 digits
+    Match start through subjects/sh, then any number digits > 0
     """
-    pattern = r'http:\/\/id\.loc\.gov\/authorities\/subjects\/sh\d{8}$'
+    pattern = r'http:\/\/id\.loc\.gov\/authorities\/subjects\/sh\d+$'
     return bool(re.match(pattern, value))
 
 def validate_tgm(value: str) ->  bool:
