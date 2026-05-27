@@ -86,6 +86,7 @@ try:
         logger.warning("")
         logger.warning("To automatically fix common issues:")
         logger.warning(f"  python fixcsv.py {collection_name}")
+        logger.warning("Note: this file is not created by default, you will have to make it manually")
         logger.warning("="*60)
     
 except IndexError:
