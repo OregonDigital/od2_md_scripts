@@ -234,9 +234,9 @@ class Package(object):
             return []
         return [part for part in str(value).split("|") if part]
 
-    def _values_for_header(self, df: pd.DataFrame, header: str, row_idx: int) -> List[str]:
+    def values_for_header(self, df: pd.DataFrame, header: str, row_idx: int) -> List[str]:
         """
-        Collect all values for one header from matching cols
+        Collect all values for one header from matching cols in a given row
         """
         values: List[str] = []
         for col in self._combine_enumerated_headers(header, df):
@@ -248,7 +248,7 @@ class Instruction(ABC):
     row_scoped = True #FIXME find better name
 
     @abstractmethod
-    def execute(self, package, df, header, rows):
+    def execute(self, package, df, header, rows) -> List[Optional[ValidationError]]:
         """Run an instruction, where package is the Package instance"""
         raise NotImplementedError
 
@@ -272,12 +272,16 @@ class StringInstruction(Instruction):
     def __init__(self, expected: str):
         self.expected = expected
 
-    def execute(self, package, df, header, rows):
+    def execute(self, package, df, header, rows) -> List[Optional[ValidationError]]:
+        validation_errors = []
         for idx in rows.index:
             # Check all values that are part of the header, whether enumerated or pipe separated
-            for value in package._values_for_header(rows, header, idx):
+            for value in package.values_for_header(rows, header, idx):
                 if self.expected != value:
+                    error = ValidationError(idx+2, header, value, self.expected, f"row {idx + 2}: '{value}' != string '{self.expected}")
+                    validation_errors.append(error)
                     logger.error(f"row {idx + 2}: '{value}' != string '{self.expected}")
+        return validation_errors
 
 class RegexInstruction(Instruction):
     """Validate string values in a column against expected regex pattern for the header"""
@@ -285,11 +289,15 @@ class RegexInstruction(Instruction):
         self.expected_pattern = expected_pattern
     
     def execute(self, package, df, header, rows):
+        validation_errors = []
         for idx in rows.index:
             # Check all values that are part of the header, whether enumerated or pipe separated
-            for value in package._values_for_header(rows, header, idx):
+            for value in package.values_for_header(rows, header, idx):
                 if not re.match(self.expected_pattern, value):
+                    error = ValidationError(idx+2, header, value, self.expected_pattern, f"row {idx + 2}: '{value}' does not match regex for header values")
+                    validation_errors.append(error)
                     logger.error(f"row {idx + 2}: '{value}' does not match regex for header values")
+        return validation_errors
     
 class FilenamesAssetsInstruction(Instruction):
     """
@@ -299,23 +307,30 @@ class FilenamesAssetsInstruction(Instruction):
     def __init__(self, args: List[Any]):
         self.args = args
     
-    def execute(self, package, df, header, rows) -> None:
+    def execute(self, package, df, header, rows) -> List[Optional[ValidationError]]:
         col: str = self.args[0]
+        base_col = utils.base_header(col)
         filenames: List[str] = []
-        for cell in package.get_dataframe()[col]:
-            if pd.notna(cell):
-                for value in str(cell).split('|'):
-                    filenames.append(value)
+        validation_errors = []
+
+        for idx in df.index:
+            filenames.extend(package.values_for_header(df, base_col, idx))
+
         if set(filenames) != set(package.assets):
             logger.error("set(filenames) != set(self.assets)")
             for filename in filenames:
                 if filename not in package.assets:
+                    #FIXME Unclear how to make error object for these
+                    # error = ValidationError(idx+2, header, filename, ??)
+                    # validation_errors.append(error)
                     logger.error(f"'{filename}' not in files/ directory")
             for asset in package.assets:
                 if asset not in filenames:
+                    #FIXME Unclear how to make error object for these
+                    # error = ValidationError()
+                    # validation_errors.append(error)
                     logger.error(f"'{asset}' not in metadata filenames")
-        else:
-            pass
+        return validation_errors
 
 class IdentifierFileInstruction(Instruction):
     """
@@ -325,13 +340,41 @@ class IdentifierFileInstruction(Instruction):
         self.args = args
     
     def execute(self, package, df, header, rows) -> None:
+        #TODO after removing this (if we can), note that new solution fixes #37
+        # ORIGINAL IMPLEMENTATION
+        # substring: str = self.args[0]
+        # df_for_method: pd.DataFrame = package.get_dataframe()
+        # for index, row in df_for_method.iterrows():
+        #     if str(row['identifier']) == str(row['file']).replace(substring, ''):
+        #         pass
+        #     else:
+        #         logger.error(f"row: {index + 2} '{row['identifier']} / '{row['file']}'")
+
+        # NOTE: implementation for if 'file' and 'identifier' can be enumerated or pipe separated and their order might be mismatched
+        # substring is the file ending to remove, which is the arg passed to the identifier_file_match yaml field
         substring: str = self.args[0]
-        df_for_method: pd.DataFrame = package.get_dataframe()
-        for index, row in df_for_method.iterrows():
-            if str(row['identifier']) == str(row['file']).replace(substring, ''):
-                pass
-            else:
-                logger.error(f"row: {index + 2} '{row['identifier']} / '{row['file']}'")
+        file_base = utils.base_header(header)
+        for idx in df.index:
+            # Load all identifiers and files for a given row (since they could be enumerated or pipe separated)
+            id_vals = package.values_for_header(df, "identifier", idx)
+            file_vals = package.values_for_header(df, "file", idx)
+            # Skip validating row if no values
+            if not id_vals and not file_vals:
+                continue
+            # Loop through all identifiers
+            for id in id_vals:
+                # Skip if no identifier value
+                if not id:
+                    continue
+                matched = False
+                for file in file_vals:
+                    # Slice off file ending
+                    candidate = file[:-len(substring)]
+                    if str(candidate) == str(id):
+                        matched = True
+                        break
+                if not matched:
+                    logger.error(f"row: {idx + 2} '{candidate}' / '{file}'")
     
 class ValidateControlledVocabInstruction(Instruction):
     """
@@ -365,8 +408,8 @@ class ValidateControlledVocabInstruction(Instruction):
         logger.debug(f"Validating '{col}' against vocabularies: {', '.join(vocab_list)}")
 
         for idx in rows.index:
-            # Check all values for header, including enumerated and pipe separated. Empty cells already skipped in _values_for_header
-            for value in package._values_for_header(rows, header, idx):
+            # Check all values for header, including enumerated and pipe separated. Empty cells already skipped in values_for_header
+            for value in package.values_for_header(rows, header, idx):
                 if not value:
                     continue
                 valid = False
@@ -379,3 +422,16 @@ class ValidateControlledVocabInstruction(Instruction):
                         break
                 if not valid:
                     logger.error(f"row {idx + 2}: '{value}' does not match any vocabulary in ({', '.join(vocab_list)})")
+
+
+
+class ValidationError:
+    """Contains error attributes for easy access and counting"""
+    def __init__(self, error_row, error_header, value, expected_value, error_message):
+        # Pass the actual error row as would be seen in the csv, not the df row (likely add 2 to idx)
+        self.error_row = error_row
+        self.error_header = error_header
+        self.value = value
+        self.expected_value = expected_value
+        self.error_message = error_message
+        # self.validation_status = (could be bool where true = validated and false = error with validation, or maybe more specific?)

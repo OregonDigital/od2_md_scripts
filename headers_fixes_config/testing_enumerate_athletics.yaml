@@ -1,7 +1,9 @@
 date: null
 description: null
 dmrec: null
-file: null
+file:
+  - identifier_file_match: ['.tif']
+    which: all
 format: null
 full_size_download_allowed: null
 has_finding_aid: null
