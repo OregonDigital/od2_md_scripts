@@ -105,14 +105,18 @@ class Package(object):
             logger.info(header)
 
     def check_headers(self) -> bool:
+        """Check that all headers in the yaml config exist in metadata (where a base header in yaml like subject covers all enumerated headers like subject_1, subject_2, ...)"""
         check: bool = True
         logger.info("check headers configuration / headers in metadata")
 
-        # Compare base headers to config, not the actual csv headers. Otherwise headers_config won't match, since it has only base headers while csv could have enumerated headers
+        # Compare base headers to config, not the actual csv headers. Otherwise headers_config won't match, 
+        # since it has only base headers while csv could have enumerated headers
+
+        # Get actual existing csv headers (so enumerated headers are possible)
         real_headers = self.get_headers()
-        # Get all base headers (duplicates possible)
+        # Get all base headers (duplicates are possible for sliced enumerated headers, but no enumeration is possible)
         base_headers = [utils.base_header(h) for h in real_headers]
-        # Remove duplicate headers
+        # Remove duplicate headers (no duplicates or enumerated headers now)
         real_base_headers = set(base_headers)
 
 
@@ -310,71 +314,55 @@ class FilenamesAssetsInstruction(Instruction):
     def execute(self, package, df, header, rows) -> List[Optional[ValidationError]]:
         col: str = self.args[0]
         base_col = utils.base_header(col)
-        filenames: List[str] = []
-        validation_errors = []
+        validation_errors: List[ValidationError] = []
 
+        # Building dict mapping file names to the row where each filename appears 
+        # (this assumes file names are unique per sheet)
+        filenames_by_value: Dict[str, int] = {}
         for idx in df.index:
-            filenames.extend(package.values_for_header(df, base_col, idx))
+            for v in package.values_for_header(df, base_col, idx):
+                #FIXME Skip empty? That's what we do now with the strip and 'if not v'
+                v = v.strip()
+                if not v:
+                    continue
+                # Map filename to row
+                filenames_by_value[v] = idx + 2
+        
+        # Make filenames and assets into sets for easy comparison
+        filenames_set = set(filenames_by_value.keys())
+        assets_set = set(package.assets)
 
-        if set(filenames) != set(package.assets):
-            logger.error("set(filenames) != set(self.assets)")
-            for filename in filenames:
-                if filename not in package.assets:
-                    #FIXME Unclear how to make error object for these
-                    # error = ValidationError(idx+2, header, filename, ??)
-                    # validation_errors.append(error)
-                    logger.error(f"'{filename}' not in files/ directory")
-            for asset in package.assets:
-                if asset not in filenames:
-                    #FIXME Unclear how to make error object for these
-                    # error = ValidationError()
-                    # validation_errors.append(error)
-                    logger.error(f"'{asset}' not in metadata filenames")
+        # Compare each set (get what's missng from each)
+        extra_filenames = filenames_set - assets_set
+        missing_assets = assets_set - filenames_set
+
+        # List all extra files and extra assets
+        for file in sorted(extra_filenames):
+            row = filenames_by_value.get(file)
+            validation_errors.append(ValidationError(row, col, file, None, f"'{file}' not in assets/"))
+            logger.error(f"row {row}: '{file}' not in assets/")
+        
+        for asset in sorted(missing_assets):
+            validation_errors.append(ValidationError(None, col, asset, None, f"'{asset}' exists in assets but not in csv"))
+            logger.error(f"row {row}: '{asset}' exists in assets but not in csv")
+            
         return validation_errors
 
 class IdentifierFileInstruction(Instruction):
     """
-    Check that identifier values match filename values (compare identifier col to file col)
+    Check that identifier values match filename values (compare identifier col to file col). Only works for one of each, can't be enumerated or pipe separated.
     """
     def __init__(self, args: List[Any]):
         self.args = args
     
     def execute(self, package, df, header, rows) -> None:
-        #TODO after removing this (if we can), note that new solution fixes #37
-        # ORIGINAL IMPLEMENTATION
-        # substring: str = self.args[0]
-        # df_for_method: pd.DataFrame = package.get_dataframe()
-        # for index, row in df_for_method.iterrows():
-        #     if str(row['identifier']) == str(row['file']).replace(substring, ''):
-        #         pass
-        #     else:
-        #         logger.error(f"row: {index + 2} '{row['identifier']} / '{row['file']}'")
-
-        # NOTE: implementation for if 'file' and 'identifier' can be enumerated or pipe separated and their order might be mismatched
-        # substring is the file ending to remove, which is the arg passed to the identifier_file_match yaml field
         substring: str = self.args[0]
-        file_base = utils.base_header(header)
-        for idx in df.index:
-            # Load all identifiers and files for a given row (since they could be enumerated or pipe separated)
-            id_vals = package.values_for_header(df, "identifier", idx)
-            file_vals = package.values_for_header(df, "file", idx)
-            # Skip validating row if no values
-            if not id_vals and not file_vals:
+        df_for_method: pd.DataFrame = package.get_dataframe()
+        for index, row in df_for_method.iterrows():
+            if str(row['identifier']) == str(row['file']).replace(substring, ''):
                 continue
-            # Loop through all identifiers
-            for id in id_vals:
-                # Skip if no identifier value
-                if not id:
-                    continue
-                matched = False
-                for file in file_vals:
-                    # Slice off file ending
-                    candidate = file[:-len(substring)]
-                    if str(candidate) == str(id):
-                        matched = True
-                        break
-                if not matched:
-                    logger.error(f"row: {idx + 2} '{candidate}' / '{file}'")
+            else:
+                logger.error(f"row {index + 2}: '{row['identifier']} / '{row['file']}'")
     
 class ValidateControlledVocabInstruction(Instruction):
     """
