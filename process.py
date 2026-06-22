@@ -1,7 +1,7 @@
-from od2validation import Package
+from od2validation import Package, ValidationError
 import sys
 import logging
-from typing import Dict
+from typing import List, Optional
 import re
 
 # Set up logging (level is set to INFO, format tells log how to display messages)
@@ -29,45 +29,83 @@ header_config_errors = 0
 # Be careful -- if od2validation log messages change, the regex here could break
 
 # Unlike regular handlers, this doesn't output anything -- it just tracks errors
-class ErrorTrackingHandler(logging.Handler):
-    """Handler to track which headers have errors"""
-    # emit() is called automatically by logger for every log
-    def emit(self, record):
-        global error_count, current_header, header_config_errors
+# class ErrorTrackingHandler(logging.Handler):
+#     """Handler to track which headers have errors"""
+#     # emit() is called automatically by logger for every log
+#     def emit(self, record):
+#         global error_count, current_header, header_config_errors
         
-        # Detect header configuration errors (before validation starts)
-        if record.levelno >= logging.ERROR and "headers_config" in record.msg:
-            header_config_errors += 1
-            error_count += 1
-            return  # Don't process further for config errors
+#         # Detect header configuration errors (before validation starts)
+#         if record.levelno >= logging.ERROR and "headers_config" in record.msg:
+#             header_config_errors += 1
+#             error_count += 1
+#             return  # Don't process further for config errors
         
-        # Detect when we're validating a new header for INFO level logs
-        if record.levelno == logging.INFO and "Validating" in record.msg:
-            # Extract header name from message like "Validating 'subject' from config..."
-            # This is where the regex search through logs happens
-            match = re.search(r"Validating '([^']+)'", record.msg)
-            # If the header matches the regex, set it to current header and add it to the validated list (this is how we know total headers later)
-            if match:
-                current_header = match.group(1)
-                if current_header not in validated_headers:
-                    validated_headers.append(current_header)
+#         # Detect when we're validating a new header for INFO level logs
+#         if record.levelno == logging.INFO and "Validating" in record.msg:
+#             # Extract header name from message like "Validating 'subject' from config..."
+#             # This is where the regex search through logs happens
+#             match = re.search(r"Validating '([^']+)'", record.msg)
+#             # If the header matches the regex, set it to current header and add it to the validated list (this is how we know total headers later)
+#             if match:
+#                 current_header = match.group(1)
+#                 if current_header not in validated_headers:
+#                     validated_headers.append(current_header)
         
-        # Track errors for current header
-        # Log levels are equivalent to numbers: DEBUG = 10, INFO = 20, WARNING = 30, ERROR = 40, CRITICAL = 50
-        # So we're checking if the level is ERROR (40) or higher and then adding the current header to the error set
-        if record.levelno >= logging.ERROR and current_header:
-            error_count += 1
-            headers_with_errors.add(current_header)
+#         # Track errors for current header
+#         # Log levels are equivalent to numbers: DEBUG = 10, INFO = 20, WARNING = 30, ERROR = 40, CRITICAL = 50
+#         # So we're checking if the level is ERROR (40) or higher and then adding the current header to the error set
+#         if record.levelno >= logging.ERROR and current_header:
+#             error_count += 1
+#             headers_with_errors.add(current_header)
+
+def count_header_errors(errors, headers) -> dict[str, int]:
+    """TODO"""
+    d = {}
+    for h in headers:
+        d[h] = 0
+    for e in errors:
+        if e.error_header in h:
+            d[e.error_header] += 1
+        else:
+            logger.error(f"Header {e.error_header} present in errors but not in header list")
+    return d
+
+def print_errors(errors: List[Optional[ValidationError]]) -> None:
+    """TODO"""
+    headers_with_errors = set([h.error_header for h in errors])
+    error_count = len(errors)
+    errors_per_header = count_header_errors(errors, headers_with_errors)
+    
+    # List of errors under each header
+    if headers_with_errors:
+        for h in headers_with_errors:
+            print(h + '\n')
+            errors_under_h = sorted([e for e in errors if e.error_header == h])
+            for e in errors_under_h:
+                print(f"     {e}")
+    
+    # Short error summary at bottom of message
+    print("\nERROR SUMMARY")
+    print("\n" + "="*60)
+    if headers_with_errors:
+        print("Headers with errors:\n")
+        for h in headers_with_errors:
+            print(f"{h}: {errors_per_header[h]}" + '\n')
+    else:
+        print("\nNO ERRORS FOUND")
+    print("\n" + "="*60)
 
 def main():
     # Add the error tracking handler we made above for this module's (process.py) logger
-    logging.getLogger().addHandler(ErrorTrackingHandler())
+    # logging.getLogger().addHandler(ErrorTrackingHandler())
     try:
         collection_name = sys.argv[1]
         processing = Package(collection_name)
         processing.print_filepaths()
         processing.check_headers()
-        processing.get_headers_instructions()
+        errors = processing.get_headers_instructions()
+        print_errors(errors)
         
         logger.info("-- Validation complete --")
         if error_count == 0:

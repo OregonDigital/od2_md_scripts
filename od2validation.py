@@ -10,6 +10,9 @@ from abc import ABC, abstractmethod
 # Logger replaces print statements for debugging/usage
 # (It basically controls the level of info to print)
 logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO
+)
 
 class Package(object):
 
@@ -158,17 +161,19 @@ class Package(object):
                 instruction['validate_controlled_vocab'] = [new_name if arg == old_name else arg for arg in instruction['validate_controlled_vocab']]
         return updated_instructions
 
-    def get_headers_instructions(self) -> None:
+    def get_headers_instructions(self) -> List[Optional[ValidationError]]:
         """
         Run the whole instruction loop: check each header, apply checks to rows under the header
         """
         df = self.get_dataframe()
+        errors = []
         # Loop through each header, running instructions for each
         for real_header in self.get_headers():
             # Loop through resolved (either from specific config or default) instructions
             # Generally there's only 1, but possible to have more like in file in uo-athletics
             for instruction in self._resolve_instructions(real_header):
-                self._run_instruction(df, real_header, instruction)
+                errors.extend(self._run_instruction(df, real_header, instruction))
+        return errors
     
     def _select_rows(self, df: pd.DataFrame, which: str) -> pd.DataFrame:
         """Return filtered df that filters for all, only complex objects, or only items"""
@@ -214,13 +219,14 @@ class Package(object):
         logger.info(f"NO VALIDATION CHECK CONFIGURED FOR '{real_header}' in headers_config or default")
         return []
 
-    def _run_instruction(self, df: pd.DataFrame, header: str, instruction: Dict) -> None:
+    def _run_instruction(self, df: pd.DataFrame, header: str, instruction: Dict) -> List[Optional[ValidationError]]:
         """Instantiate Instruction subclass and execute it on given header, selecting rows by 'which' in instruction)"""
         # Get 'which' from the instruction, then select rows based on it (default to "all" if no value found)
         which = instruction.get("which", "all")
         rows = self._select_rows(df, which)
         # Create an instruction subclass (String, Regex, FilenamesAssets, etc.) and execute it
-        Instruction.from_dict(instruction).execute(self, df, header, rows)
+        errors = Instruction.from_dict(instruction).execute(self, df, header, rows)
+        return errors
 
     def _combine_enumerated_headers(self, header: str, df: pd.DataFrame) -> List[str]:
         """
@@ -350,7 +356,8 @@ class FilenamesAssetsInstruction(Instruction):
 
 class IdentifierFileInstruction(Instruction):
     """
-    Check that identifier values match filename values (compare identifier col to file col). Only works for one of each, can't be enumerated or pipe separated.
+    Check that identifier values match filename values without the file ending (compare identifier col to file col). 
+    Only works for one of each, can't be enumerated or pipe separated.
     """
     def __init__(self, args: List[Any]):
         self.args = args
@@ -358,11 +365,19 @@ class IdentifierFileInstruction(Instruction):
     def execute(self, package, df, header, rows) -> None:
         substring: str = self.args[0]
         df_for_method: pd.DataFrame = package.get_dataframe()
+        validation_errors = []
+        
         for index, row in df_for_method.iterrows():
-            if str(row['identifier']) == str(row['file']).replace(substring, ''):
+            actual_id = str(row['identifier'])
+            # Remove file ending from file (leftover should match identifier)
+            expected_id = str(row['file']).replace(substring, '')
+            if actual_id == expected_id:
                 continue
             else:
-                logger.error(f"row {index + 2}: '{row['identifier']} / '{row['file']}'")
+                validation_errors.append(ValidationError(row, 'identifier', actual_id, expected_id, f"{row['identifier']} doesn't match '{row['file']}'"))
+                logger.error(f"row {index + 2}: '{row['identifier']} doesn't match '{row['file']}'")
+
+        return validation_errors
     
 class ValidateControlledVocabInstruction(Instruction):
     """
@@ -374,6 +389,7 @@ class ValidateControlledVocabInstruction(Instruction):
     def execute(self, package, df, header, rows) -> None:
         col: str = self.args[0]
         df = package.get_dataframe()
+        validation_errors = []
         
         # Get controlled vocab type
         controlled_vocab = package.validator_mapping.get(col.lower())
@@ -409,13 +425,16 @@ class ValidateControlledVocabInstruction(Instruction):
                         logger.debug(f"  row {idx + 2}: '{value}' matched {vocab_name}")
                         break
                 if not valid:
+                    validation_errors.append(ValidationError(idx+2, header, value, None, f"'{value}' does not match any vocabulary in ({', '.join(vocab_list)})"))
                     logger.error(f"row {idx + 2}: '{value}' does not match any vocabulary in ({', '.join(vocab_list)})")
+
+        return validation_errors
 
 
 
 class ValidationError:
     """Contains error attributes for easy access and counting"""
-    def __init__(self, error_row, error_header, value, expected_value, error_message):
+    def __init__(self, error_row: int, error_header, value, expected_value, error_message):
         # Pass the actual error row as would be seen in the csv, not the df row (likely add 2 to idx)
         self.error_row = error_row
         self.error_header = error_header
@@ -423,3 +442,13 @@ class ValidationError:
         self.expected_value = expected_value
         self.error_message = error_message
         # self.validation_status = (could be bool where true = validated and false = error with validation, or maybe more specific?)
+
+    # Define comparison method for <, which is used in sorting
+    def __lt__(self, other: ValidationError):
+        return self.error_row < other.error_row
+        return True
+    
+    # Define how to print a validation error (this is what's displayed in print(error) where error is type ValidationError)
+    def __str__(self):
+        return self.error_message
+    
