@@ -52,6 +52,7 @@ controlled_vocab_map:
     - people
     - wikidata
     - osuacademicunits
+    - publisher
 
   subject:
     - lcsh

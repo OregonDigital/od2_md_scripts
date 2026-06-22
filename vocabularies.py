@@ -152,13 +152,12 @@ def validate_lcorgs(value: str) ->  bool:
     
     Examples:
     website: "http://id.loc.gov/vocabulary/organizations/orul"
-    website: ""
+    BMR: "http://id.loc.gov/vocabulary/organizations/nnmm"
     od2 map: "http://id.loc.gov/vocabulary/organizations/orumu"
 
-    Match start through organizations/oru, then 1 or more letters
-    TODO find more examples
+    Match start through organizations/, then 1 or more letters
     """
-    pattern = r'http:\/\/id\.loc\.gov\/vocabulary\/organizations\/oru[a-zA-Z]+$'
+    pattern = r'http:\/\/id\.loc\.gov\/vocabulary\/organizations\/[a-zA-Z]+$'
     return bool(re.match(pattern, value))
 
 def validate_itis(value: str) ->  bool:
@@ -241,9 +240,20 @@ def validate_homosaurus(value: str) ->  bool:
     website: "https://homosaurus.org/v4/homoit0002075"
     website: "<https://homosaurus.org/v3/homoit0001218"
 
-    Match start through.org/, then either v3 or v4, then /homoit, then 7 integers
+    Match start through .org/, then either v3 or v4, then /homoit, then 7 integers
     """
     pattern = r'https:\/\/homosaurus\.org\/(v3|v4)\/homoit\d{7}$'
+    return bool(re.match(pattern, value))
+
+def validate_publisher(value: str) -> bool:
+    """Validate publisher URI format
+    
+    Examples:
+    MAP: "http://opaquenamespace.org/ns/publisher/BergstromMusicCompany"
+
+    Match start through publisher/, then at least 1 letter
+    """
+    pattern = r'http:\/\/opaquenamespace\.org\/ns\/publisher\/[a-zA-Z]+$'
     return bool(re.match(pattern, value))
 
 
@@ -265,6 +275,7 @@ VOCABULARY_VALIDATORS = {
     'osubuildings': validate_osubuildings,
     'lcgenreforms': validate_lcgenreforms,
     'bne': validate_bne,
-    'homosaurus': validate_homosaurus
-    # Add rest here
+    'homosaurus': validate_homosaurus,
+    'publisher': validate_publisher
+    # Add more here as needed
 }
