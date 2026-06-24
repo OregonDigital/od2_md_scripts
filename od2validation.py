@@ -10,9 +10,6 @@ from abc import ABC, abstractmethod
 # Logger replaces print statements for debugging/usage
 # (It basically controls the level of info to print)
 logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.INFO
-)
 
 class Package(object):
 
@@ -430,8 +427,6 @@ class ValidateControlledVocabInstruction(Instruction):
 
         return validation_errors
 
-
-
 class ValidationError:
     """Contains error attributes for easy access and counting"""
     def __init__(self, error_row: int, error_header, value, expected_value, error_message):
@@ -446,7 +441,6 @@ class ValidationError:
     # Define comparison method for <, which is used in sorting
     def __lt__(self, other: ValidationError):
         return self.error_row < other.error_row
-        return True
     
     # Define how to print a validation error (this is what's displayed in print(error) where error is type ValidationError)
     def __str__(self):

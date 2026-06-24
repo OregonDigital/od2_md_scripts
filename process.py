@@ -2,7 +2,6 @@ from od2validation import Package, ValidationError
 import sys
 import logging
 from typing import List, Optional
-import re
 
 # Set up logging (level is set to INFO, format tells log how to display messages)
 # format uses a weird syntax because logging uses older string format style
@@ -12,52 +11,8 @@ logging.basicConfig(
     format='%(levelname)s:     %(message)s'
 )
 
-# There can be multiple loggers -- this sets the name of this one to the module (__main__ if it's run directly)
-# so it's clear where logs come from. If another module imported process, it would show as process rather than __main__
-logger = logging.getLogger()
-
-# Track validation errors by header
-error_count = 0
-current_header = None
-headers_with_errors = set()
-validated_headers = []
-header_config_errors = 0
-
-# Custom logging handler here tracks which headers have errors. This is complex, but the alternative is to
-# return error data directly in od2validation, which would tightly couple the modules (this is bad) and complicate that
-# module even further. So instead we check the logs with regex here
-# Be careful -- if od2validation log messages change, the regex here could break
-
-# Unlike regular handlers, this doesn't output anything -- it just tracks errors
-# class ErrorTrackingHandler(logging.Handler):
-#     """Handler to track which headers have errors"""
-#     # emit() is called automatically by logger for every log
-#     def emit(self, record):
-#         global error_count, current_header, header_config_errors
-        
-#         # Detect header configuration errors (before validation starts)
-#         if record.levelno >= logging.ERROR and "headers_config" in record.msg:
-#             header_config_errors += 1
-#             error_count += 1
-#             return  # Don't process further for config errors
-        
-#         # Detect when we're validating a new header for INFO level logs
-#         if record.levelno == logging.INFO and "Validating" in record.msg:
-#             # Extract header name from message like "Validating 'subject' from config..."
-#             # This is where the regex search through logs happens
-#             match = re.search(r"Validating '([^']+)'", record.msg)
-#             # If the header matches the regex, set it to current header and add it to the validated list (this is how we know total headers later)
-#             if match:
-#                 current_header = match.group(1)
-#                 if current_header not in validated_headers:
-#                     validated_headers.append(current_header)
-        
-#         # Track errors for current header
-#         # Log levels are equivalent to numbers: DEBUG = 10, INFO = 20, WARNING = 30, ERROR = 40, CRITICAL = 50
-#         # So we're checking if the level is ERROR (40) or higher and then adding the current header to the error set
-#         if record.levelno >= logging.ERROR and current_header:
-#             error_count += 1
-#             headers_with_errors.add(current_header)
+# process.py is the entry point for the script, so we set the logging level for the whole program here
+logger = logging.getLogger(__name__)
 
 def count_header_errors(errors, headers) -> dict[str, int]:
     """TODO"""
@@ -65,10 +20,10 @@ def count_header_errors(errors, headers) -> dict[str, int]:
     for h in headers:
         d[h] = 0
     for e in errors:
-        if e.error_header in h:
+        if e.error_header in d:
             d[e.error_header] += 1
         else:
-            logger.error(f"Header {e.error_header} present in errors but not in header list")
+            print(f"Header {e.error_header} present in errors but not in header list")
     return d
 
 def print_errors(errors: List[Optional[ValidationError]]) -> None:
@@ -84,52 +39,39 @@ def print_errors(errors: List[Optional[ValidationError]]) -> None:
             errors_under_h = sorted([e for e in errors if e.error_header == h])
             for e in errors_under_h:
                 print(f"     {e}")
-    
-    # Short error summary at bottom of message
-    print("\nERROR SUMMARY")
-    print("\n" + "="*60)
-    if headers_with_errors:
-        print("Headers with errors:\n")
-        for h in headers_with_errors:
-            print(f"{h}: {errors_per_header[h]}" + '\n')
-    else:
-        print("\nNO ERRORS FOUND")
-    print("\n" + "="*60)
 
 def main():
-    # Add the error tracking handler we made above for this module's (process.py) logger
-    # logging.getLogger().addHandler(ErrorTrackingHandler())
     try:
+        # Run checks and print errors
         collection_name = sys.argv[1]
         processing = Package(collection_name)
         processing.print_filepaths()
         processing.check_headers()
         errors = processing.get_headers_instructions()
         print_errors(errors)
-        
-        logger.info("-- Validation complete --")
+
+        # Derive error variables
+        error_count = len(errors)
+        headers_with_errors = set(e.error_header for e in errors)
+        validated_headers = processing.get_headers()
+
+        # Print summary
+        print("\n" + "="*60)
+        print("-- Validation complete --")
+        print(f"Checked {len(validated_headers)} headers")
         if error_count == 0:
-            logger.info ("No errors found")
-        # Show fixcsv.py suggestion if errors were found
+            print("NO ERRORS FOUND")
         else:
-            logger.warning("\n" + "="*60)
-            # Include header config errors in summary
-            if header_config_errors > 0:
-                logger.warning(f"Found {header_config_errors} header configuration error(s)")
-            if len(headers_with_errors) > 0:
-                logger.warning(f"Validation found {error_count - header_config_errors} error(s) in {len(headers_with_errors)}/{len(validated_headers)} headers")
-                logger.warning(f"Headers with errors: {', '.join(sorted(headers_with_errors))}")
-            else:
-                logger.warning(f"Total errors: {error_count}")
-            logger.warning("")
-            logger.warning("To automatically fix common issues:")
-            logger.warning(f"  python fixcsv.py {collection_name}")
-            logger.warning("Note: this file is not created by default, you will have to make it manually")
-            logger.warning("="*60)
+            print(f"Found {error_count} error(s) in {len(headers_with_errors)}/{len(validated_headers)} headers")
+            print(f"Headers with errors: {', '.join(sorted(headers_with_errors))}")
+            print("\nTo automatically fix common issues:")
+            print(f"  python fixcsv.py {collection_name}")
+            print("Note: this file is not created by default, you will have to make it manually")
+        print("="*60)
         
     except IndexError:
-        logger.error("Missing config file name (do not include file extension)")
-        logger.error("EXAMPLE: python process.py uo-athletics")
+        print("Missing config file name (do not include file extension)")
+        print("EXAMPLE: python process.py uo-athletics")
 
 if __name__ == "__main__":
     main()
