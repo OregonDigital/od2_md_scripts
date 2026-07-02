@@ -256,6 +256,27 @@ def validate_publisher(value: str) -> bool:
     pattern = r'http:\/\/opaquenamespace\.org\/ns\/publisher\/[a-zA-Z]+$'
     return bool(re.match(pattern, value))
 
+def validate_culture(value: str) -> bool:
+    """Validate culture URI format
+    
+    Examples:
+    MAP: "http://opaquenamespace.org/ns/culture/Bolognese"
+
+    Match start through culture/, then at least 1 letter
+    """
+    pattern = r'http:\/\/opaquenamespace\.org\/ns\/culture\/[a-zA-Z]+$'
+    return bool(re.match(pattern, value))
+
+def validate_afs_ethn(value: str) -> bool:
+    """Validate ethnographic thesaurus URI format
+    
+    Examples:
+    MAP: "http://id.loc.gov/vocabulary/ethnographicTerms/afset012178"
+
+    Match start through ethnographicTerms/, then at least 1 letter or number
+    """
+    pattern = r'http:\/\/id\.loc\.gov\/vocabulary\/ethnographicTerms\/[a-zA-Z\d]+$'
+    return bool(re.match(pattern, value))
 
 # If uncommenting a validator, you have to do it here, do the actual function, and in config/validation_mappings.yaml
 VOCABULARY_VALIDATORS = {
@@ -271,11 +292,13 @@ VOCABULARY_VALIDATORS = {
     'subject': validate_subject,
     'lcorgs': validate_lcorgs,
     'itis': validate_itis,
-    # 'ubio': validate_ubio,
+    # 'ubio': validate_ubio, (Deprecated)
     'osubuildings': validate_osubuildings,
     'lcgenreforms': validate_lcgenreforms,
     'bne': validate_bne,
     'homosaurus': validate_homosaurus,
-    'publisher': validate_publisher
+    'publisher': validate_publisher,
+    'culture': validate_culture,
+    'afs_ethn': validate_afs_ethn
     # Add more here as needed
 }
