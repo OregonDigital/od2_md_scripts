@@ -1,4 +1,3 @@
-dmrec: ~
 file:
   - check_filenames_assets: ['file']
     which: all

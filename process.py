@@ -26,19 +26,19 @@ def count_header_errors(errors, headers) -> dict[str, int]:
             print(f"Header {e.error_header} present in errors but not in header list")
     return d
 
-def print_errors(errors: List[Optional[ValidationError]]) -> None:
-    """TODO"""
-    headers_with_errors = set([h.error_header for h in errors])
-    error_count = len(errors)
-    errors_per_header = count_header_errors(errors, headers_with_errors)
+# def print_errors(errors: List[Optional[ValidationError]]) -> None:
+#     """TODO"""
+#     headers_with_errors = set([h.error_header for h in errors])
+#     error_count = len(errors)
+#     errors_per_header = count_header_errors(errors, headers_with_errors)
     
-    # List of errors under each header
-    if headers_with_errors:
-        for h in headers_with_errors:
-            print(h + '\n')
-            errors_under_h = sorted([e for e in errors if e.error_header == h])
-            for e in errors_under_h:
-                print(f"     {e}")
+#     # List of errors under each header
+#     if headers_with_errors:
+#         for h in headers_with_errors:
+#             print(h + '\n')
+#             errors_under_h = sorted([e for e in errors if e.error_header == h])
+#             for e in errors_under_h:
+#                 print(f"     {e}")
 
 def main():
     try:
@@ -48,7 +48,7 @@ def main():
         processing.print_filepaths()
         processing.check_headers()
         errors = processing.get_headers_instructions()
-        print_errors(errors)
+        # print_errors(errors)
 
         # Derive error variables
         error_count = len(errors)
@@ -56,7 +56,7 @@ def main():
         validated_headers = processing.get_headers()
 
         # Print summary
-        print("\n" + "="*60)
+        print("\n" + "="*70)
         print("-- Validation complete --")
         print(f"Checked {len(validated_headers)} headers")
         if error_count == 0:
@@ -66,8 +66,8 @@ def main():
             print(f"Headers with errors: {', '.join(sorted(headers_with_errors))}")
             print("\nTo automatically fix common issues:")
             print(f"  python fixcsv.py {collection_name}")
-            print("Note: this file is not created by default, you will have to make it manually")
-        print("="*60)
+            print("\nNote: this file is not created by default, you will have to make it manually")
+        print("="*70)
         
     except IndexError:
         print("Missing config file name (do not include file extension)")

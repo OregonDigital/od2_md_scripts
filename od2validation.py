@@ -371,7 +371,7 @@ class IdentifierFileInstruction(Instruction):
             if actual_id == expected_id:
                 continue
             else:
-                validation_errors.append(ValidationError(row, 'identifier', actual_id, expected_id, f"{row['identifier']} doesn't match '{row['file']}'"))
+                validation_errors.append(ValidationError(index + 2, 'identifier', actual_id, expected_id, f"{row['identifier']} doesn't match '{row['file']}'"))
                 logger.error(f"row {index + 2}: '{row['identifier']} doesn't match '{row['file']}'")
 
         return validation_errors
@@ -436,13 +436,13 @@ class ValidationError:
         self.value = value
         self.expected_value = expected_value
         self.error_message = error_message
-        # self.validation_status = (could be bool where true = validated and false = error with validation, or maybe more specific?)
 
     # Define comparison method for <, which is used in sorting
-    def __lt__(self, other: ValidationError):
+    def __lt__(self, other: ValidationError) -> bool:
+        assert type(self.error_row) == int
+        assert type(other.error_row) == int
         return self.error_row < other.error_row
     
     # Define how to print a validation error (this is what's displayed in print(error) where error is type ValidationError)
-    def __str__(self):
+    def __str__(self) -> str:
         return self.error_message
-    
