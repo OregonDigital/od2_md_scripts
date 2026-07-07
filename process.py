@@ -15,7 +15,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def count_header_errors(errors, headers) -> dict[str, int]:
-    """TODO"""
+    """Summarize error totals per header"""
     d = {}
     for h in headers:
         d[h] = 0
@@ -26,19 +26,11 @@ def count_header_errors(errors, headers) -> dict[str, int]:
             print(f"Header {e.error_header} present in errors but not in header list")
     return d
 
-# def print_errors(errors: List[Optional[ValidationError]]) -> None:
-#     """TODO"""
-#     headers_with_errors = set([h.error_header for h in errors])
-#     error_count = len(errors)
-#     errors_per_header = count_header_errors(errors, headers_with_errors)
-    
-#     # List of errors under each header
-#     if headers_with_errors:
-#         for h in headers_with_errors:
-#             print(h + '\n')
-#             errors_under_h = sorted([e for e in errors if e.error_header == h])
-#             for e in errors_under_h:
-#                 print(f"     {e}")
+def print_error_totals(error_totals: dict[str, int]) -> None:
+    print("\nERROR TOTALS:\n")
+    for header in error_totals:
+        if error_totals[header] != 0:
+            print(f"{header}: {error_totals[header]}")
 
 def main():
     try:
@@ -48,7 +40,8 @@ def main():
         processing.print_filepaths()
         processing.check_headers()
         errors = processing.get_headers_instructions()
-        # print_errors(errors)
+        error_totals = count_header_errors(errors, processing.get_headers())
+        print_error_totals(error_totals)
 
         # Derive error variables
         error_count = len(errors)

@@ -160,7 +160,7 @@ class Package(object):
 
     def get_headers_instructions(self) -> List[Optional[ValidationError]]:
         """
-        Run the whole instruction loop: check each header, apply checks to rows under the header
+        Run the whole instruction loop: check each header, apply checks to rows under the header. Return list of errors
         """
         df = self.get_dataframe()
         errors = []
