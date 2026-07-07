@@ -15,7 +15,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def count_header_errors(errors, headers) -> dict[str, int]:
-    """Summarize error totals per header"""
+    """Return dict with error totals per header"""
     d = {}
     for h in headers:
         d[h] = 0
@@ -26,11 +26,29 @@ def count_header_errors(errors, headers) -> dict[str, int]:
             print(f"Header {e.error_header} present in errors but not in header list")
     return d
 
-def print_error_totals(error_totals: dict[str, int]) -> None:
-    print("\nERROR TOTALS:\n")
-    for header in error_totals:
-        if error_totals[header] != 0:
-            print(f"{header}: {error_totals[header]}")
+def print_error_summary(processing, errors, collection_name) -> None:
+    """Print each header with corresponding error total (don't print if 0)"""
+    # Derive error variables
+    error_count = len(errors)
+    headers_with_errors = set(e.error_header for e in errors)
+    validated_headers = processing.get_headers()
+    error_totals = count_header_errors(errors, processing.get_headers())
+
+    # Print summary
+    print("\n" + "="*80)
+    print("-- Validation complete --")
+    print(f"Checked {len(validated_headers)} headers")
+    if error_count == 0:
+        print("NO ERRORS FOUND")
+    else:
+        print(f"Found {error_count} error(s) in {len(headers_with_errors)}/{len(validated_headers)} headers")
+        for header in error_totals:
+            if error_totals[header] != 0:
+                print(f"{header}: {error_totals[header]}")
+        print("\nTo automatically fix common issues:")
+        print(f"  python fixcsv.py {collection_name}")
+        print("\nNote: this file is not created by default, you will have to make it manually")
+    print("="*80)
 
 def main():
     try:
@@ -40,27 +58,7 @@ def main():
         processing.print_filepaths()
         processing.check_headers()
         errors = processing.get_headers_instructions()
-        error_totals = count_header_errors(errors, processing.get_headers())
-        print_error_totals(error_totals)
-
-        # Derive error variables
-        error_count = len(errors)
-        headers_with_errors = set(e.error_header for e in errors)
-        validated_headers = processing.get_headers()
-
-        # Print summary
-        print("\n" + "="*70)
-        print("-- Validation complete --")
-        print(f"Checked {len(validated_headers)} headers")
-        if error_count == 0:
-            print("NO ERRORS FOUND")
-        else:
-            print(f"Found {error_count} error(s) in {len(headers_with_errors)}/{len(validated_headers)} headers")
-            print(f"Headers with errors: {', '.join(sorted(headers_with_errors))}")
-            print("\nTo automatically fix common issues:")
-            print(f"  python fixcsv.py {collection_name}")
-            print("\nNote: this file is not created by default, you will have to make it manually")
-        print("="*70)
+        print_error_summary(processing, errors, collection_name)
         
     except IndexError:
         print("Missing config file name (do not include file extension)")
