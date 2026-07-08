@@ -1,0 +1,13 @@
+file:
+  - check_filenames_assets: ['file']
+    which: all
+subject:
+  - validate_controlled_vocab: ['subject']
+    which: all
+creator:
+  - validate_controlled_vocab: ['creator']
+    which: all
+
+species: ~
+# many more: # to do
+# geonames add ending with /?

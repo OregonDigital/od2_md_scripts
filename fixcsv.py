@@ -47,7 +47,7 @@ def load_dataframe(metadata_path: list[str]) -> pd.DataFrame:
 
 def load_fix_config(collection_name: str) -> dict[str, Any]:
     """Load collection-specific fix config if it exists"""
-    fix_config_path = f"config/{collection_name}-fixes.yaml"
+    fix_config_path = f"headers_fixes_config/{collection_name}-fixes.yaml"
     
     if not Path(fix_config_path).exists():
         logger.error(f"Fix config not found: {fix_config_path}")
@@ -66,7 +66,7 @@ def load_fix_config(collection_name: str) -> dict[str, Any]:
 
 def load_validation_config(collection_name: str) -> dict[str, Any]:
     """Load the validation config to get expected values"""
-    with open(f"config/{collection_name}.yaml", "r") as yf:
+    with open(f"headers_fixes_config/{collection_name}.yaml", "r") as yf:
         return yaml.safe_load(yf)
 
 
@@ -217,7 +217,7 @@ def main() -> None:
     
     # Load fix configuration
     fix_config = load_fix_config(collection)
-    logger.info(f"Loaded {len(fix_config['fixes'])} fix rules from config/{collection}-fixes.yaml")
+    logger.info(f"Loaded {len(fix_config['fixes'])} fix rules from headers_fixes_config/{collection}-fixes.yaml")
     
     # Load file path
     metadata_path = load_filepaths()
@@ -248,10 +248,10 @@ def main() -> None:
     if total_changes > 0:
         logger.info("")
         save_dataframe(df, metadata_path)
-        logger.info(f"\n✓ Applied {total_changes} fixes")
+        logger.info(f"\n! Applied {total_changes} fixes")
         logger.info(f"Run 'python3 process.py {collection}' to validate")
     else:
-        logger.info(f"\n✓ No issues found - file is clean")
+        logger.info(f"\n! No issues found - file is clean")
     
     logger.info("="*60)
 

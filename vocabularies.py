@@ -1,4 +1,4 @@
-"""URI validation functiosn for controlled vocabularies"""
+"""URI validation functions for controlled vocabularies"""
 import re
 import logging
 
@@ -98,11 +98,12 @@ def validate_lcsh(value: str) ->  bool:
     from website: "http://id.loc.gov/authorities/subjects/sh85055245"
     from website: "http://id.loc.gov/authorities/subjects/sh85104841"
     od2 map: "http://id.loc.gov/authorities/subjects/sh85105182"
+    bmr test case: "http://id.loc.gov/authorities/subjects/sh2010012822"
     TODO slightly suspicious that these all have the same starting 'sh' given that lcnaf didn't, and there's not very many examples in the solr select. Check more extensively 
 
-    Match start through subjects/sh, then 8 digits
+    Match start through subjects/sh, then any number digits > 0
     """
-    pattern = r'http:\/\/id\.loc\.gov\/authorities\/subjects\/sh\d{8}$'
+    pattern = r'http:\/\/id\.loc\.gov\/authorities\/subjects\/sh\d+$'
     return bool(re.match(pattern, value))
 
 def validate_tgm(value: str) ->  bool:
@@ -151,13 +152,12 @@ def validate_lcorgs(value: str) ->  bool:
     
     Examples:
     website: "http://id.loc.gov/vocabulary/organizations/orul"
-    website: ""
+    BMR: "http://id.loc.gov/vocabulary/organizations/nnmm"
     od2 map: "http://id.loc.gov/vocabulary/organizations/orumu"
 
-    Match start through organizations/oru, then 1 or more letters
-    TODO find more examples
+    Match start through organizations/, then 1 or more letters
     """
-    pattern = r'http:\/\/id\.loc\.gov\/vocabulary\/organizations\/oru[a-zA-Z]+$'
+    pattern = r'http:\/\/id\.loc\.gov\/vocabulary\/organizations\/[a-zA-Z]+$'
     return bool(re.match(pattern, value))
 
 def validate_itis(value: str) ->  bool:
@@ -240,11 +240,43 @@ def validate_homosaurus(value: str) ->  bool:
     website: "https://homosaurus.org/v4/homoit0002075"
     website: "<https://homosaurus.org/v3/homoit0001218"
 
-    Match start through.org/, then either v3 or v4, then /homoit, then 7 integers
+    Match start through .org/, then either v3 or v4, then /homoit, then 7 integers
     """
     pattern = r'https:\/\/homosaurus\.org\/(v3|v4)\/homoit\d{7}$'
     return bool(re.match(pattern, value))
 
+def validate_publisher(value: str) -> bool:
+    """Validate publisher URI format
+    
+    Examples:
+    MAP: "http://opaquenamespace.org/ns/publisher/BergstromMusicCompany"
+
+    Match start through publisher/, then at least 1 letter
+    """
+    pattern = r'http:\/\/opaquenamespace\.org\/ns\/publisher\/[a-zA-Z]+$'
+    return bool(re.match(pattern, value))
+
+def validate_culture(value: str) -> bool:
+    """Validate culture URI format
+    
+    Examples:
+    MAP: "http://opaquenamespace.org/ns/culture/Bolognese"
+
+    Match start through culture/, then at least 1 letter
+    """
+    pattern = r'http:\/\/opaquenamespace\.org\/ns\/culture\/[a-zA-Z]+$'
+    return bool(re.match(pattern, value))
+
+def validate_afs_ethn(value: str) -> bool:
+    """Validate ethnographic thesaurus URI format
+    
+    Examples:
+    MAP: "http://id.loc.gov/vocabulary/ethnographicTerms/afset012178"
+
+    Match start through ethnographicTerms/, then at least 1 letter or number
+    """
+    pattern = r'http:\/\/id\.loc\.gov\/vocabulary\/ethnographicTerms\/[a-zA-Z\d]+$'
+    return bool(re.match(pattern, value))
 
 # If uncommenting a validator, you have to do it here, do the actual function, and in config/validation_mappings.yaml
 VOCABULARY_VALIDATORS = {
@@ -260,10 +292,13 @@ VOCABULARY_VALIDATORS = {
     'subject': validate_subject,
     'lcorgs': validate_lcorgs,
     'itis': validate_itis,
-    # 'ubio': validate_ubio,
+    # 'ubio': validate_ubio, (Deprecated)
     'osubuildings': validate_osubuildings,
     'lcgenreforms': validate_lcgenreforms,
     'bne': validate_bne,
-    'homosaurus': validate_homosaurus
-    # Add rest here
+    'homosaurus': validate_homosaurus,
+    'publisher': validate_publisher,
+    'culture': validate_culture,
+    'afs_ethn': validate_afs_ethn
+    # Add more here as needed
 }

@@ -182,7 +182,10 @@ def main():
     num_found = response['response']['numFound']
     docs = response['response']['docs']
 
-    logger.info(f"{num_found} / {args.in_importer} works in Solr / works in importer # {args.importer_no}")
+    if num_found != args.in_importer:
+        logger.error(f"{num_found} / {args.in_importer} works in Solr / works in importer # {args.importer_no}")
+    else:
+        logger.info(f"All works found ({num_found} / {args.in_importer}) in importer # {args.importer_no}")
 
     # Analyze works
     no_file_set, coll_ids, no_coll_id, bad_thumbnail, suppressed_works, bad_workflow, bad_visibility = analyze_works(docs)

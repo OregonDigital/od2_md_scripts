@@ -10,9 +10,7 @@ field_validators:
     - cartographer
     - collector
     - composer
-    - creator_display
     - contributor
-    - arranger
     - dedicatee
     - designer
     - donor
@@ -30,18 +28,11 @@ field_validators:
     - translator
   subject:
     - subject
-    - award
-    - cultural_context
-    - ethnographic_term
-    - event
-    - keyword
-    - legal_name
     - military_branch
-    - sports_team
-    - state_or_edition
-    - style_or_period
-    - tribal_classes
-    - tribal_terms
+  ethnographic_term:
+    - ethnographic_term
+  cultural_context:
+    - cultural_context
 
 # Tell od2validation.py which vocabs correspond to each controlled vocab, so that they can all be checked
 controlled_vocab_map:
@@ -52,7 +43,7 @@ controlled_vocab_map:
     - people
     - wikidata
     - osuacademicunits
-
+    - publisher
   subject:
     - lcsh
     - lcnaf
@@ -71,3 +62,10 @@ controlled_vocab_map:
     - osuacademicunits
     - bne
     - homosaurus
+  ethnographic_term:
+    - afs_ethn
+  cultural_context:
+    - aat
+    - lcsh
+    - lcnaf
+    - culture
