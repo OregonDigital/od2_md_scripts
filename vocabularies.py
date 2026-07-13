@@ -286,7 +286,7 @@ def validate_worktype(value: str) -> bool:
     vocab: "http://opaquenamespace.org/ns/workType/maryjanes"
     vocab: "http://opaquenamespace.org/ns/workType/Palmleafbooks"
     """
-    pattern = r'http:\/\/opaquenamespace\.org\/ns\/workType\/[a-zA-Z\-_0-9]+$'
+    pattern = r'^http:\/\/opaquenamespace\.org\/ns\/workType\/[a-zA-Z\-_0-9]+$'
     return bool(re.match(pattern, value))
 
 # If uncommenting a validator, you have to do it here, do the actual function, and in config/validation_mappings.yaml
