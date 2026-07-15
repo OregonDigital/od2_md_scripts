@@ -289,7 +289,7 @@ def validate_worktype(value: str) -> bool:
     pattern = r'^http:\/\/opaquenamespace\.org\/ns\/workType\/[a-zA-Z\-_0-9]+$'
     return bool(re.match(pattern, value))
 
-# If uncommenting a validator, you have to do it here, do the actual function, and in config/validation_mappings.yaml
+# If uncommenting a validator, you have to do it here, do the actual function, in config/validation_mappings.yaml, and write it in default.yaml as a check if relevant.
 VOCABULARY_VALIDATORS = {
     'lcnaf': validate_lcnaf,
     'ulan': validate_ulan,
