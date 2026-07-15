@@ -7,7 +7,6 @@ subject:
 creator:
   - validate_controlled_vocab: ['creator']
     which: all
-
-species: ~
-# many more: # to do
-# geonames add ending with /?
+workType:
+  - validate_controlled_vocab: ['workType']
+    which: all
