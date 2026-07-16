@@ -1,4 +1,5 @@
 """Define Package class for data reading and parsing and Instructions classes to run validation checks"""
+from __future__ import annotations
 import yaml, os, json, re
 import pandas as pd
 import logging

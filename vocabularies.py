@@ -278,7 +278,18 @@ def validate_afs_ethn(value: str) -> bool:
     pattern = r'http:\/\/id\.loc\.gov\/vocabulary\/ethnographicTerms\/[a-zA-Z\d]+$'
     return bool(re.match(pattern, value))
 
-# If uncommenting a validator, you have to do it here, do the actual function, and in config/validation_mappings.yaml
+def validate_worktype(value: str) -> bool:
+    """Validate URI strings for ONS workType vocabulary
+
+    Examples:
+    MAP: "http://opaquenamespace.org/ns/workType/Frenchdoorbooks"
+    vocab: "http://opaquenamespace.org/ns/workType/maryjanes"
+    vocab: "http://opaquenamespace.org/ns/workType/Palmleafbooks"
+    """
+    pattern = r'^http:\/\/opaquenamespace\.org\/ns\/workType\/[a-zA-Z\-_0-9]+$'
+    return bool(re.match(pattern, value))
+
+# If uncommenting a validator, you have to do it here, do the actual function, in config/validation_mappings.yaml, and write it in default.yaml as a check if relevant.
 VOCABULARY_VALIDATORS = {
     'lcnaf': validate_lcnaf,
     'ulan': validate_ulan,
@@ -299,6 +310,7 @@ VOCABULARY_VALIDATORS = {
     'homosaurus': validate_homosaurus,
     'publisher': validate_publisher,
     'culture': validate_culture,
-    'afs_ethn': validate_afs_ethn
+    'afs_ethn': validate_afs_ethn,
+    'worktype': validate_worktype
     # Add more here as needed
 }
