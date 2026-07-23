@@ -23,7 +23,7 @@ def count_header_errors(errors, headers) -> dict[str, int]:
         if e.error_header in d:
             d[e.error_header] += 1
         else:
-            print(f"Header {e.error_header} present in errors but not in header list")
+            print(f"PROGRAM ERROR: Header '{e.error_header}' present in errors but not in header list")
     return d
 
 def print_error_summary(processing, errors, collection_name) -> None:
@@ -32,7 +32,7 @@ def print_error_summary(processing, errors, collection_name) -> None:
     error_count = len(errors)
     headers_with_errors = set(e.error_header for e in errors)
     validated_headers = processing.get_headers()
-    error_totals = count_header_errors(errors, processing.get_headers())
+    error_totals = count_header_errors(errors, processing.get_headers() + ["global"])
 
     # Print summary
     print("\n" + "="*80)

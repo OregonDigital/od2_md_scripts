@@ -1,3 +1,7 @@
+# Global is a special reserved keyword for checks that should run on every single row and column
+global:
+  - row_limit_from_assets: true
+
 file:
   - check_filenames_assets: ['file']
     which: all
