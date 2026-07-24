@@ -445,8 +445,11 @@ class RowLimitFromAssetsInstruction(Instruction):
         if not self.enabled:
             return validation_errors
 
+        # Note that this can miss errors if there are unexpected files (like thumbs.db) in the assets/ folder, since it increases the number of files. 
+        # Thankfully that should be caught by FilenamesAssetsInstruction
         last_valid_row_idx = len(package.assets) + 1 # Add 1 for header row
 
+        # 
         for idx in df.index:
             csv_row_num = idx+2
             if csv_row_num <= last_valid_row_idx:
