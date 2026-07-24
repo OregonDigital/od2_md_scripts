@@ -168,7 +168,8 @@ class Package(object):
         # Run global instructions on every row and column in the csv
         global_config = self.headers_config.get("global", []) + self.default_config.get("global", [])
         for instruction in global_config:
-            logger.info("Validating {} from global")
+            #FIXME: This looks ugly in terminal because it prints "Validating {'row_limit_from_assets': True} from global"
+            logger.info(f"Validating '{instruction}' from global")
             errors.extend(self._run_instruction(df, "global", instruction))
 
         # Loop through each header, running instructions for each
