@@ -30,6 +30,8 @@ from pathlib import Path
 # More complicated version that gives progress count
 def collect_files(paths: list[Path]) -> list[Path]:
     all_files = []
+
+    # Loop through paths and add files to list
     for path in paths:
         if path.is_dir():
             all_files.extend(file for file in path.rglob('*') if file.is_file())
@@ -38,13 +40,16 @@ def collect_files(paths: list[Path]) -> list[Path]:
     return all_files
 
 def zip_files(files: list[Path], name: str, dir: Path) -> None:
+    # Add zip extension if missing in name argument
     if not name.endswith(".zip"):
         name += ".zip"
 
+    # Make output path and get file list
     output_path = dir / name
     all_files = collect_files(files)
     total = len(all_files)
 
+    # Zip the files into chosen location
     with zipfile.ZipFile(output_path, "w") as zipf:
         for idx, file in enumerate(all_files, start=1):
             print(f"Zipping {idx}/{total}: {file}")
@@ -53,6 +58,7 @@ def zip_files(files: list[Path], name: str, dir: Path) -> None:
     print("Done")
 
 def main():
+    # Get directory structure from filepaths.yaml
     with open('filepaths.yaml') as file:
         f = yaml.safe_load(file)
         f1 = Path(f['metadata'][0])
@@ -60,6 +66,7 @@ def main():
         f2 = Path(f['assets'])
         print(f"F2: {f2}")
 
+    # Write where directory to put zip is
     target_dir = Path(str(f2).replace("\\files", ''))
     print(target_dir)
 
