@@ -274,8 +274,6 @@ class Instruction(ABC):
             return IdentifierFileInstruction(d["identifier_file_match"])
         if "validate_controlled_vocab" in d:
             return ValidateControlledVocabInstruction(d["validate_controlled_vocab"])
-        if "row_limit_from_assets" in d:
-            return RowLimitFromAssetsInstruction(d["row_limit_from_assets"])
         raise ValueError(f"Unknown instruction type: {d}")
 
 class StringInstruction(Instruction):
