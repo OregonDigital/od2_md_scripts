@@ -1,4 +1,5 @@
 """Define Package class for data reading and parsing and Instructions classes to run validation checks"""
+from __future__ import annotations
 import yaml, os, json, re
 import pandas as pd
 import logging
@@ -164,13 +165,6 @@ class Package(object):
         """
         df = self.get_dataframe()
         errors = []
-
-        # Run global instructions on every row and column in the csv
-        global_config = self.headers_config.get("global", []) + self.default_config.get("global", [])
-        for instruction in global_config:
-            #FIXME: This looks ugly in terminal because it prints "Validating {'row_limit_from_assets': True} from global"
-            logger.info(f"Validating '{instruction}' from global")
-            errors.extend(self._run_instruction(df, "global", instruction))
 
         # Loop through each header, running instructions for each
         for real_header in self.get_headers():
@@ -434,32 +428,6 @@ class ValidateControlledVocabInstruction(Instruction):
                 if not valid:
                     validation_errors.append(ValidationError(idx+2, header, value, None, f"'{value}' does not match any vocabulary in ({', '.join(vocab_list)})"))
                     logger.error(f"row {idx + 2}: '{value}' does not match any vocabulary in ({', '.join(vocab_list)})")
-
-        return validation_errors
-
-class RowLimitFromAssetsInstruction(Instruction):
-    def __init__(self, enabled: bool):
-        self.enabled = enabled
-
-    def execute(self, package, df, header, rows) -> List[Optional[ValidationError]]:
-        validation_errors = []
-        if not self.enabled:
-            return validation_errors
-
-        # Note that this can miss errors if there are unexpected files (like thumbs.db) in the assets/ folder, since it increases the number of files. 
-        # Thankfully that should be caught by FilenamesAssetsInstruction
-        last_valid_row_idx = len(package.assets) + 1 # Add 1 for header row
-
-        # 
-        for idx in df.index:
-            csv_row_num = idx+2
-            if csv_row_num <= last_valid_row_idx:
-                continue
-
-            row = df.iloc[idx]
-            if any(pd.notna(value) and str(value.strip()) for value in row):
-                validation_errors.append(ValidationError(csv_row_num, "global", None, last_valid_row_idx, f"row {csv_row_num} has metadata beyond expected file count"))
-                logger.error(f"row {csv_row_num}: metadata beyond expected file count")
 
         return validation_errors
 

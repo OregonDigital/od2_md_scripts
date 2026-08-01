@@ -32,7 +32,7 @@ def print_error_summary(processing, errors, collection_name) -> None:
     error_count = len(errors)
     headers_with_errors = set(e.error_header for e in errors)
     validated_headers = processing.get_headers()
-    error_totals = count_header_errors(errors, processing.get_headers() + ["global"])
+    error_totals = count_header_errors(errors, processing.get_headers())
 
     # Print summary
     print("\n" + "="*80)
