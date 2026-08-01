@@ -23,7 +23,7 @@ def count_header_errors(errors, headers) -> dict[str, int]:
         if e.error_header in d:
             d[e.error_header] += 1
         else:
-            print(f"Header {e.error_header} present in errors but not in header list")
+            print(f"PROGRAM ERROR: Header '{e.error_header}' present in errors but not in header list")
     return d
 
 def print_error_summary(processing, errors, collection_name) -> None:

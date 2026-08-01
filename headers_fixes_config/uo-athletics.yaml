@@ -21,7 +21,7 @@ date:
   - regex: ^202[0-9]{1}-\d{2}-\d{2}$
     which: all
 subject:
-  - regex: (^http:\/\/id\.loc\.gov\/authorities\/subjects\/sh\d{1,15}$|^http:\/\/opaquenamespace\.org\/ns\/people\/\S*$)
+  - regex: ^(?:http:\/\/id\.loc\.gov\/authorities\/subjects\/sh\d{1,15}|http:\/\/opaquenamespace\.org\/ns\/people\/[A-Za-z\d]+)$
     which: all
 location: 
   - regex: ^https:\/\/sws.geonames.org/\S*\/$

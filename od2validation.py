@@ -165,6 +165,7 @@ class Package(object):
         """
         df = self.get_dataframe()
         errors = []
+
         # Loop through each header, running instructions for each
         for real_header in self.get_headers():
             # Loop through resolved (either from specific config or default) instructions
