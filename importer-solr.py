@@ -37,6 +37,7 @@ def build_solr_query_url(importer_no: int) -> tuple[str, Dict[str, str]]:
     }
     return base_url, params
 
+#FIXME: Type checking expects only 3 results but now we have 7
 def analyze_works(docs: List[Dict]) -> tuple[List[str], List[Any], List[str]]:
     """Check if works have missing file sets or collection membership
     
