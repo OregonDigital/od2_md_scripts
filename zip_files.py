@@ -1,34 +1,13 @@
+"""Automatically zip files/ and metadata csv"""
 import yaml
 import zipfile
 from pathlib import Path
 
+#FIXME: This will zip hidden files, like .DS_Store on mac. Users should just check that that doesn't show in the logs, or
+# we could add a bigger fix by filtering for it in collect_files.
 
-# Simpler version that doesn't give progress count
-
-# def zip_files(files: list[Path], name: str, dir: Path) -> None:
-#     """Create a zip from a list of file names. Input only names and not filepaths"""
-#     # Add zip to end if no extension
-#     if not name.endswith('.zip'):
-#         name += '.zip'
-
-#     output_path = dir / name
-
-#     # Zip the files
-#     with zipfile.ZipFile(output_path, "w") as zipf:
-#         for path in files:
-#             if path.is_dir():
-#                 for file in path.rglob("*"):
-#                     if file.is_file():
-#                         print(f"Zipping files...")
-#                         zipf.write(file, arcname=file.relative_to(dir))
-#             else:
-#                 print("Zipping files...")
-#                 zipf.write(path, arcname=path.relative_to(dir))
-#     print("Done")
-
-
-# More complicated version that gives progress count
 def collect_files(paths: list[Path]) -> list[Path]:
+    """Return all files (counting recursively) from a given list of paths"""
     all_files = []
 
     # Loop through paths and add files to list
@@ -39,21 +18,22 @@ def collect_files(paths: list[Path]) -> list[Path]:
             all_files.append(path)
     return all_files
 
-def zip_files(files: list[Path], name: str, dir: Path) -> None:
+def zip_files(csv_and_metadata_files: list[Path], name: str, root_dir: Path) -> None:
+    """Zip all files from a list of paths with given name inside the root directory"""
     # Add zip extension if missing in name argument
     if not name.endswith(".zip"):
         name += ".zip"
 
     # Make output path and get file list
-    output_path = dir / name
-    all_files = collect_files(files)
+    output_path = root_dir / name
+    all_files = collect_files(csv_and_metadata_files)
     total = len(all_files)
 
     # Zip the files into chosen location
     with zipfile.ZipFile(output_path, "w") as zipf:
         for idx, file in enumerate(all_files, start=1):
             print(f"Zipping {idx}/{total}: {file}")
-            zipf.write(file, arcname=file.relative_to(dir))
+            zipf.write(file, arcname=file.relative_to(root_dir))
 
     print("Done")
 
@@ -66,14 +46,14 @@ def main():
         f2 = Path(f['assets'])
         print(f"F2: {f2}")
 
-    # Write where directory to put zip is
-    target_dir = Path(str(f2).replace("\\files", ''))
-    print(target_dir)
+    # Write where directory to put zip is (root of all our operations, likely the work folder)
+    root_dir = f2.parent
+    print(root_dir)
 
-    # Can rename test to desired folder name. In future could have it be a filepaths field.
-    # Could try to extract it from filepaths but this will be annoying and hard to verify
-    zip_files([f1, f2], "test", target_dir)
-
+    # Guess desired zip name from the yaml file input
+    zip_folder_name = f1.stem
+    # Save assets/ and metadata csv (f1 and f2) to a folder in the root directory
+    zip_files([f1, f2], zip_folder_name, root_dir)
 
 if __name__ == "__main__":
     main()
