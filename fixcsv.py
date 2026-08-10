@@ -14,6 +14,7 @@ import shutil
 import sys
 import re
 from typing import Any, Tuple
+from utils import is_complex
 
 
 # Configure logging
@@ -78,14 +79,35 @@ def backup_original(filepath: str) -> str:
     return backup_path
 
 
-def fix_strip_column(df: pd.DataFrame, column: str) -> Tuple[pd.DataFrame, int]:
+def get_apply_to(fix: dict[str, Any]) -> str:
+    """Return the row scope for a fix"""
+    return str(fix.get("apply_to", "all"))
+
+
+def should_apply_fix(row: pd.Series, apply_to: str) -> bool:
+    """Return True when a fix should run on the given row"""
+    if apply_to == "all":
+        return True
+    if apply_to == "complex":
+        return is_complex(row)
+    if apply_to == "non_complex":
+        return not is_complex(row)
+
+    raise ValueError(f"ERROR: Unknown apply_to value: {apply_to}")
+
+
+def fix_strip_column(df: pd.DataFrame, column: str, fix: dict[str, Any]) -> Tuple[pd.DataFrame, int]:
     """Strip leading/trailing whitespace from all values in a column"""
     if column not in df.columns:
         logger.warning(f"Column '{column}' not found in CSV, skipping")
         return df, 0
+
+    apply_to = get_apply_to(fix)
     
     changes = 0
     for idx in df.index:
+        if not should_apply_fix(df.loc[idx], apply_to):
+            continue
         if pd.notna(df.at[idx, column]):
             original = str(df.at[idx, column])
             stripped = original.strip()
@@ -97,11 +119,13 @@ def fix_strip_column(df: pd.DataFrame, column: str) -> Tuple[pd.DataFrame, int]:
     return df, changes
 
 
-def fix_regex_replace(df: pd.DataFrame, column: str, pattern: str, replacement: str) -> Tuple[pd.DataFrame, int]:
+def fix_regex_replace(df: pd.DataFrame, column: str, pattern: str, replacement: str, fix: dict[str, Any]) -> Tuple[pd.DataFrame, int]:
     """Apply regex replacement to all values in a column"""
     if column not in df.columns:
         logger.warning(f"Column '{column}' not found in CSV, skipping")
         return df, 0
+
+    apply_to = get_apply_to(fix)
     
     changes = 0
     compiled_pattern = re.compile(pattern)
@@ -110,6 +134,8 @@ def fix_regex_replace(df: pd.DataFrame, column: str, pattern: str, replacement: 
     # If it's the same, then it was good before
     # This doesn't repeat things like .tif extensions because the fix yaml already specifies to exclude things ending in .tif.
     for idx in df.index:
+        if not should_apply_fix(df.loc[idx], apply_to):
+            continue
         if pd.notna(df.at[idx, column]):
             original = str(df.at[idx, column])
             replaced = compiled_pattern.sub(replacement, original)
@@ -121,12 +147,14 @@ def fix_regex_replace(df: pd.DataFrame, column: str, pattern: str, replacement: 
     return df, changes
 
 
-def fix_enforce_string(df: pd.DataFrame, column: str, validation_config: dict[str, Any]) -> Tuple[pd.DataFrame, int]:
+def fix_enforce_string(df: pd.DataFrame, column: str, validation_config: dict[str, Any], fix: dict[str, Any]) -> Tuple[pd.DataFrame, int]:
     """Enforce the string value defined in validation config"""
     # Look up what the string should be
     if column not in validation_config or not validation_config[column]:
         logger.warning(f"No validation rule for '{column}', skipping")
         return df, 0
+
+    apply_to = get_apply_to(fix)
     
     # Find the string validation rule
     expected_value = None
@@ -142,6 +170,8 @@ def fix_enforce_string(df: pd.DataFrame, column: str, validation_config: dict[st
     # Apply the fix
     changes = 0
     for idx in df.index:
+        if not should_apply_fix(df.loc[idx], apply_to):
+            continue
         if pd.notna(df.at[idx, column]):
             current = str(df.at[idx, column])
             if current != expected_value:
@@ -164,7 +194,7 @@ def apply_collection_fixes(df: pd.DataFrame, fix_config: dict[str, Any], validat
                 logger.error(f"Fix missing 'column' field: {fix}")
                 continue
             
-            df, changes = fix_strip_column(df, column)
+            df, changes = fix_strip_column(df, column, fix)
             logger.info(f"  Strip whitespace in '{column}': {changes} changes")
             total_changes += changes
             
@@ -177,13 +207,13 @@ def apply_collection_fixes(df: pd.DataFrame, fix_config: dict[str, Any], validat
                 logger.error(f"regex_replace missing required fields: {fix}")
                 continue
             
-            df, changes = fix_regex_replace(df, column, pattern, replacement)
+            df, changes = fix_regex_replace(df, column, pattern, replacement, fix)
             logger.info(f"  Regex replace in '{column}': {changes} changes")
             total_changes += changes
             
         elif fix_type == 'enforce_string':
             column = fix.get('column')
-            df, changes = fix_enforce_string(df, column, validation_config)
+            df, changes = fix_enforce_string(df, column, validation_config, fix)
             logger.info(f"  Enforce string in '{column}': {changes} changes")
             total_changes += changes
 
