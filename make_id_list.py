@@ -3,6 +3,7 @@ import csv, os
 
 # Could make a function that does this outside of main, so that you can call that to automate this whole part of the process
 
+#FIXME: Currently includes complex object id in the list. Skip this using is_complex from utils
 def main():
     filepath = input("Enter filepath to csv: ")
     with open(filepath, "r", encoding="utf-8-sig") as csvf:
