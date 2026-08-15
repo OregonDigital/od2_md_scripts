@@ -180,6 +180,8 @@ class Package(object):
         if which == "all":
             return df
 
+        # Create a mask by checking for complex objects in each row in the df. 
+        # Return the mask itself or the inversion of the mask (all non-complex objects), depending on filter.
         complex_mask = df.apply(utils.is_complex, axis=1)
         if which == "complex":
             return df[complex_mask]
