@@ -33,6 +33,8 @@ field_validators:
     - ethnographic_term
   cultural_context:
     - cultural_context
+  workType:
+    - workType
 
 # Tell od2validation.py which vocabs correspond to each controlled vocab, so that they can all be checked
 controlled_vocab_map:
@@ -69,3 +71,6 @@ controlled_vocab_map:
     - lcsh
     - lcnaf
     - culture
+  workType:
+  - aat
+  - worktype

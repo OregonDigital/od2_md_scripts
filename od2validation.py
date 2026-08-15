@@ -1,4 +1,5 @@
 """Define Package class for data reading and parsing and Instructions classes to run validation checks"""
+from __future__ import annotations
 import yaml, os, json, re
 import pandas as pd
 import logging
@@ -164,6 +165,7 @@ class Package(object):
         """
         df = self.get_dataframe()
         errors = []
+
         # Loop through each header, running instructions for each
         for real_header in self.get_headers():
             # Loop through resolved (either from specific config or default) instructions
@@ -171,21 +173,21 @@ class Package(object):
             for instruction in self._resolve_instructions(real_header):
                 errors.extend(self._run_instruction(df, real_header, instruction))
         return errors
-    
+
+    #FIXME: Swap the complex check here to use utils.py version
     def _select_rows(self, df: pd.DataFrame, which: str) -> pd.DataFrame:
         """Return filtered df that filters for all, only complex objects, or only items"""
         if which == "all":
             return df
+
+        # Create a mask by checking for complex objects in each row in the df. 
+        # Return the mask itself or the inversion of the mask (all non-complex objects), depending on filter.
+        complex_mask = df.apply(utils.is_complex, axis=1)
         if which == "complex":
-            if "format" not in df.columns:
-                logger.error("complex objects need 'format' col")
-                return df.iloc[0:0]
-            return df[df["format"] == "https://w3id.org/spar/mediatype/application/xml"]
+            return df[complex_mask]
         if which == "item":
-            if "format" not in df.columns:
-                logger.error("complex object has unexpected 'format' value")
-                return df.iloc[0:0]
-            return df[(df["format"].isna()) | (df["format"] != "https://w3id.org/spar/mediatype/application/xml")]
+            return df[~complex_mask]
+
         logger.error(f"Invalid 'which' parameter: {which}")
         return df.iloc[0:0]
     
@@ -322,8 +324,8 @@ class FilenamesAssetsInstruction(Instruction):
         # Building dict mapping file names to the row where each filename appears 
         # (this assumes file names are unique per sheet)
         filenames_by_value: Dict[str, int] = {}
-        for idx in df.index:
-            for v in package.values_for_header(df, base_col, idx):
+        for idx in rows.index:
+            for v in package.values_for_header(rows, base_col, idx):
                 #FIXME Skip empty? That's what we do now with the strip and 'if not v'
                 v = v.strip()
                 if not v:
@@ -361,10 +363,9 @@ class IdentifierFileInstruction(Instruction):
     
     def execute(self, package, df, header, rows) -> None:
         substring: str = self.args[0]
-        df_for_method: pd.DataFrame = package.get_dataframe()
         validation_errors = []
-        
-        for index, row in df_for_method.iterrows():
+
+        for index, row in rows.iterrows():
             actual_id = str(row['identifier'])
             # Remove file ending from file (leftover should match identifier)
             expected_id = str(row['file']).replace(substring, '')
