@@ -1,6 +1,6 @@
 file:
   - check_filenames_assets: ['file']
-    which: all
+    which: item
 subject:
   - validate_controlled_vocab: ['subject']
     which: all

@@ -22,4 +22,4 @@ fixes:
     column: file
     pattern: '^(.*?)(?<!\.tif)$'
     replacement: '\1.tif'
-    apply_to: non_complex
+    which: item

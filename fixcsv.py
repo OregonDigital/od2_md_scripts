@@ -79,21 +79,23 @@ def backup_original(filepath: str) -> str:
     return backup_path
 
 
-def get_apply_to(fix: dict[str, Any]) -> str:
-    """Return the row scope for a fix"""
-    return str(fix.get("apply_to", "all"))
+def get_which(fix: dict[str, Any]) -> str:
+    """Return the row scope for a fix."""
+    if "which" in fix:
+        return str(fix["which"])
+    return "all"
 
 
-def should_apply_fix(row: pd.Series, apply_to: str) -> bool:
-    """Return True when a fix should run on the given row"""
-    if apply_to == "all":
+def should_apply_fix(row: pd.Series, which: str) -> bool:
+    """Return True when a fix should run on the given row."""
+    if which == "all":
         return True
-    if apply_to == "complex":
+    elif which == "complex":
         return is_complex(row)
-    if apply_to == "non_complex":
+    elif which in {"item"}:
         return not is_complex(row)
-
-    raise ValueError(f"ERROR: Unknown apply_to value: {apply_to}")
+    else:
+        raise ValueError(f"ERROR: Unknown which value: {which}")
 
 
 def fix_strip_column(df: pd.DataFrame, column: str, fix: dict[str, Any]) -> Tuple[pd.DataFrame, int]:
@@ -102,11 +104,11 @@ def fix_strip_column(df: pd.DataFrame, column: str, fix: dict[str, Any]) -> Tupl
         logger.warning(f"Column '{column}' not found in CSV, skipping")
         return df, 0
 
-    apply_to = get_apply_to(fix)
+    which = get_which(fix)
     
     changes = 0
     for idx in df.index:
-        if not should_apply_fix(df.loc[idx], apply_to):
+        if not should_apply_fix(df.loc[idx], which):
             continue
         if pd.notna(df.at[idx, column]):
             original = str(df.at[idx, column])
@@ -125,7 +127,7 @@ def fix_regex_replace(df: pd.DataFrame, column: str, pattern: str, replacement: 
         logger.warning(f"Column '{column}' not found in CSV, skipping")
         return df, 0
 
-    apply_to = get_apply_to(fix)
+    which = get_which(fix)
     
     changes = 0
     compiled_pattern = re.compile(pattern)
@@ -134,7 +136,7 @@ def fix_regex_replace(df: pd.DataFrame, column: str, pattern: str, replacement: 
     # If it's the same, then it was good before
     # This doesn't repeat things like .tif extensions because the fix yaml already specifies to exclude things ending in .tif.
     for idx in df.index:
-        if not should_apply_fix(df.loc[idx], apply_to):
+        if not should_apply_fix(df.loc[idx], which):
             continue
         if pd.notna(df.at[idx, column]):
             original = str(df.at[idx, column])
@@ -154,7 +156,7 @@ def fix_enforce_string(df: pd.DataFrame, column: str, validation_config: dict[st
         logger.warning(f"No validation rule for '{column}', skipping")
         return df, 0
 
-    apply_to = get_apply_to(fix)
+    which = get_which(fix)
     
     # Find the string validation rule
     expected_value = None
@@ -170,7 +172,7 @@ def fix_enforce_string(df: pd.DataFrame, column: str, validation_config: dict[st
     # Apply the fix
     changes = 0
     for idx in df.index:
-        if not should_apply_fix(df.loc[idx], apply_to):
+        if not should_apply_fix(df.loc[idx], which):
             continue
         if pd.notna(df.at[idx, column]):
             current = str(df.at[idx, column])
