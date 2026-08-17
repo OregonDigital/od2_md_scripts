@@ -79,6 +79,15 @@ python fixcsv.py [collection-name]
 ```
 This is all there is to it, and you'll get a list of errors that were fixed. If you get an error, make sure you're typing the collection name, not the collection name with '-fixes' at the end. Also make sure your fixes file is exactly named "[collection name]-fixes". You can re-run process.py to check if everything was fixed now.
 
+## Generating ID Lists for Child Works (Reimporter)
+When you want to attach works as children of another work in OD2, you need to list all the children IDs. This can be tedious to pipe separate if there are many children. Running make_id_list will do this for you. All it takes is running:
+```bash
+python make_id_list.py
+```
+Then fill out the prompt for the filepath, and copy the output to the child field of the complex object. 
+
+Note: This copies *all* non-complex object IDs in the CSV (specifically all values under the "id" column header). If you have multiple complex objects you want to attach children to, you need to separate them yourself.
+
 ## Checking Status of Uploaded Works
 You can see a variety of features about works you've uploaded with the importer-solr.py module. This will let you check if there are any glitches with importing that need to be resolved, and give a high-level overview of the works before you manually review them.
 
