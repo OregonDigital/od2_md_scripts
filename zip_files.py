@@ -24,16 +24,22 @@ def zip_files(csv_and_metadata_files: list[Path], name: str, root_dir: Path) -> 
     if not name.endswith(".zip"):
         name += ".zip"
 
-    # Make output path and get file list
+    # Make output path
     output_path = root_dir / name
+
+    # Get file list before zipping so we can count progress
     all_files = collect_files(csv_and_metadata_files)
     total = len(all_files)
 
     # Zip the files into chosen location
-    with zipfile.ZipFile(output_path, "w") as zipf:
-        for idx, file in enumerate(all_files, start=1):
-            print(f"Zipping {idx}/{total}: {file}")
-            zipf.write(file, arcname=file.relative_to(root_dir))
+    try:
+        with zipfile.ZipFile(output_path, "x") as zipf:
+            for idx, file in enumerate(all_files, start=1):
+                print(f"Zipping {idx}/{total}: {file}")
+                zipf.write(file, arcname=file.relative_to(root_dir))
+    except FileExistsError:
+        print(f"\nFailure: zip file already exists: {output_path}\n")
+        return
 
     print("Done")
 
