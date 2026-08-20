@@ -174,7 +174,6 @@ class Package(object):
                 errors.extend(self._run_instruction(df, real_header, instruction))
         return errors
 
-    #FIXME: Swap the complex check here to use utils.py version
     def _select_rows(self, df: pd.DataFrame, which: str) -> pd.DataFrame:
         """Return filtered df that filters for all, only complex objects, or only items"""
         if which == "all":
