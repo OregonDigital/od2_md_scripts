@@ -266,7 +266,7 @@ class Instruction(ABC):
         if "string" in d:
             return StringInstruction(d["string"])
         if "regex" in d:
-            return RegexInstruction(re.compile(str(d["regex"])))
+            return RegexInstruction(re.compile(rf"{str(d['regex'])}"))
         if "check_filenames_assets" in d:
             return FilenamesAssetsInstruction(d["check_filenames_assets"])
         if "identifier_file_match" in d:
