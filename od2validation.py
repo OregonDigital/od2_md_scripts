@@ -167,11 +167,12 @@ class Package(object):
         errors = []
 
         # Loop through each header, running instructions for each
-        for real_header in self.get_headers():
+        for header in self.get_headers():
             # Loop through resolved (either from specific config or default) instructions
             # Generally there's only 1, but possible to have more like in file in uo-athletics
-            for instruction in self._resolve_instructions(real_header):
-                errors.extend(self._run_instruction(df, real_header, instruction))
+            for instruction in self._resolve_instructions(header):
+                # Add errors from each check to our list and log them as we go
+                errors.extend(self._run_instruction(df, header, instruction))
         return errors
 
     def _select_rows(self, df: pd.DataFrame, which: str) -> pd.DataFrame:
@@ -236,7 +237,7 @@ class Package(object):
     
     def _flatten_cell_values(self, value: Any) -> List[str]:
         """
-        Normalize one cell into a flat list of values. Splits pipe-delimited cells and removes empty cells
+        Normalize one cell into a flat list of values. Splits pipe-separated cells and removes empty cells
         """
         if pd.isna(value):
             return []
@@ -361,13 +362,13 @@ class IdentifierFileInstruction(Instruction):
         self.args = args
     
     def execute(self, package, df, header, rows) -> None:
-        substring: str = self.args[0]
+        extension: str = self.args[0]
         validation_errors = []
 
         for index, row in rows.iterrows():
             actual_id = str(row['identifier'])
             # Remove file ending from file (leftover should match identifier)
-            expected_id = str(row['file']).replace(substring, '')
+            expected_id = str(row['file']).replace(extension, '')
             if actual_id == expected_id:
                 continue
             else:

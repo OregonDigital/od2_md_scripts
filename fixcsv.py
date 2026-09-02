@@ -131,7 +131,8 @@ def fix_regex_replace(df: pd.DataFrame, column: str, pattern: str, replacement: 
     
     changes = 0
     compiled_pattern = re.compile(pattern)
-    
+
+    #FIXME: Not true now
     # Apply the replacement to every value -- if it's different than the original, it must have been changed (and an error before)
     # If it's the same, then it was good before
     # This doesn't repeat things like .tif extensions because the fix yaml already specifies to exclude things ending in .tif.
@@ -240,8 +241,8 @@ def main() -> None:
     
     # Get collection name from command line
     if len(sys.argv) < 2:
-        logger.error("Usage: python3 fixcsv.py <collection-name>")
-        logger.error("Example: python3 fixcsv.py uo-athletics")
+        logger.error("Usage: python fixcsv.py <collection-name>")
+        logger.error("Example: python fixcsv.py uo-athletics")
         sys.exit(1)
     
     collection = sys.argv[1]
@@ -265,7 +266,9 @@ def main() -> None:
     # Load validation config
     validation_config = load_validation_config(collection)
     logger.info(f"Loaded validation config for {collection}")
-    
+
+    #FIXME: This isn't correct anymore since we filter, update it.
+
     # You might expect to see process.py run here or some method to determine what to fix. There isn't any, 
     # because every fix is running every time. For some, redundancy doesn't matter (like strip) and for others (regex_replace),
     # it's being checked against a pattern. That pattern should already exclude valid entries in the case of using regex_replace to append to the end,
@@ -281,7 +284,7 @@ def main() -> None:
         logger.info("")
         save_dataframe(df, metadata_path)
         logger.info(f"\n! Applied {total_changes} fixes")
-        logger.info(f"Run 'python3 process.py {collection}' to validate")
+        logger.info(f"Run 'python process.py {collection}' to validate")
     else:
         logger.info(f"\n! No issues found - file is clean")
     
