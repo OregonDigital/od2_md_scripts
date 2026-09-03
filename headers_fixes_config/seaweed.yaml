@@ -1,5 +1,36 @@
-file: ~
+file: 
+- regex: ^\S+\.tif$
+  which: all
+- identifier_file_match: ['.tif']
+  which: all
+identifier: 
+  - regex: ^OIMBHC_\d{4}$
+    which: all
+collected_date:
+  - regex: ^(\d{4}-\d{2}-\d{2}|\d{4}\?|\d{4}/\d{4}\?)$
+    which: all
+    # https://regex101.com/r/gQWVnt
+    # FIXME: full validation for EDTF possible here?
+    # note -- will this throw error for no date values?
+collector: ~
 genus: ~
 species: ~
-identifier: ~
-related_url: ~
+# FIXME: implement default validation for Scientific CV
+related_url:
+- regex: ^http(s)?://\S+$
+original_filename:
+# FIXME: implement validation for original_filename == file
+- regex: ^\S+\.tif$
+  which: all
+rights_holder:
+- string: Oregon Institute of Marine Biology
+  which: all
+rights_statement:
+- string: http://rightsstatements.org/vocab/InC/1.0/
+  which: all
+# use_restrictions
+# workType
+# location
+# model
+# resource_type
+# institution
