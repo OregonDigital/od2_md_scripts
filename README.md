@@ -88,7 +88,7 @@ python make_id_list.py
 ```
 Then fill out the prompt for the filepath, and copy the output to the child field of the complex object. 
 
-Note: This copies *all* non-complex object IDs in the CSV (specifically all values under the "id" column header, so make sure this is the correct column name). If you have multiple complex objects you want to attach children to, you need to separate them yourself.
+Note: This copies *all* non-complex object IDs in the CSV (specifically all values under the "id" column header, so make sure this is the correct column name). If you have multiple complex objects you want to attach children to, you need to separate them yourself. Also note that it does not include file set IDs, as you don't use them for complex object creation.
 
 ## Checking Status of Uploaded Works
 You can see a variety of features about works you've uploaded with the importer-solr.py module. This will let you check if there are any glitches with importing that need to be resolved, and give a high-level overview of the works before you manually review them.
