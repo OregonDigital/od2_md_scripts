@@ -1,6 +1,6 @@
 """Generate pipe-separated list of files"""
 import csv, os
-from utils import is_complex
+from utils import is_complex, is_fileset
 
 # Could make a function that does this outside of main, so that you can call that to automate this whole part of the process
 
@@ -15,7 +15,7 @@ def main():
                 row_id = (row.get("id", "")).strip()
                 if not row_id:
                      raise ValueError(f"Blank id found at row {reader.line_num}")
-                if not is_complex(row):
+                if not is_complex(row) and not is_fileset(row):
                      unformatted_ids.append(row_id)
             
     formatted_ids = '|'.join(unformatted_ids)
