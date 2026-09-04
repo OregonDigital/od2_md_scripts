@@ -1,4 +1,4 @@
-"""Automatically zip files/ and metadata csv"""
+"""Automatically zip files/ and metadata csv (and only these two values) from the filepaths.yaml"""
 import yaml
 import zipfile
 from pathlib import Path
