@@ -1,0 +1,16 @@
+fixes:
+  # enforce strings
+  - type: enforce_string
+    column: rights_holder
+  - type: enforce_string
+    column: rights_statement
+  - type: enforce_string
+    column: workType
+  - type: enforce_string
+    column: format
+  - type: enforce_string
+    column: model
+  - type: enforce_string
+    column: resource_type
+  - type: enforce_string
+    column: institution

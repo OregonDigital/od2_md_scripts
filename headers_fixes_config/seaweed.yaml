@@ -1,8 +1,8 @@
 file: 
-- regex: ^\S+\.tif$
-  which: all
-- identifier_file_match: ['.tif']
-  which: all
+  - check_filenames_assets: ['file']
+    which: all
+  - regex: ^\S+\.tif$
+    which: all
 identifier: 
   - regex: ^OIMBHC_\d{4}$
     which: all
@@ -13,24 +13,39 @@ collected_date:
     # FIXME: full validation for EDTF possible here?
     # note -- will this throw error for no date values?
 collector: ~
+title: ~
+alternative: ~
 genus: ~
 species: ~
 # FIXME: implement default validation for Scientific CV
+location: 
+  - regex: ^https:\/\/sws.geonames.org/\S*\/$
+    which: all
 related_url:
-- regex: ^http(s)?://\S+$
+  - regex: ^http(s)?://\S+$
 original_filename:
 # FIXME: implement validation for original_filename == file
-- regex: ^\S+\.tif$
-  which: all
+  - regex: ^\S+\.tif$
+    which: all
 rights_holder:
-- string: Oregon Institute of Marine Biology
-  which: all
+  - string: Oregon Institute of Marine Biology
+    which: all
 rights_statement:
-- string: http://rightsstatements.org/vocab/InC/1.0/
-  which: all
-# use_restrictions
-# workType
-# location
-# model
-# resource_type
-# institution
+  - string: http://rightsstatements.org/vocab/InC/1.0/
+    which: all
+# TO DO: use_restrictions
+workType: 
+  - string: http://vocab.getty.edu/aat/300440768
+    which: all
+format: # this metadata doesn't go anywhere??
+  - string: https://w3id.org/spar/mediatype/image/tiff
+    which: all
+model:
+  - string: Image
+    which: all
+resource_type:
+  - string: http://purl.org/dc/dcmitype/Image
+    which: all
+institution: 
+  - string: http://id.loc.gov/authorities/names/n80126183
+    which: all
