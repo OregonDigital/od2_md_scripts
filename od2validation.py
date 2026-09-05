@@ -349,7 +349,7 @@ class FilenamesAssetsInstruction(Instruction):
         
         for asset in sorted(missing_assets):
             validation_errors.append(ValidationError(None, col, asset, None, f"'{asset}' exists in assets but not in csv"))
-            logger.error(f"row {row}: '{asset}' exists in assets but not in csv")
+            logger.error(f"'{asset}' exists in assets but not in csv")
             
         return validation_errors
 
