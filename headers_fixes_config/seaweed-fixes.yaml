@@ -14,3 +14,9 @@ fixes:
     column: resource_type
   - type: enforce_string
     column: institution
+  - type: enforce_string
+    column: parents
+  - type: enforce_string
+    column: visibility
+  - type: enforce_string
+    column: full_size_download_allowed

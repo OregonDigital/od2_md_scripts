@@ -3,7 +3,7 @@ file:
     which: all
   - regex: ^\S+\.tif$
     which: all
-identifier: 
+identifier:
   - regex: ^OIMBHC_\d{4}$
     which: all
 collected_date:
@@ -49,3 +49,16 @@ resource_type:
 institution: 
   - string: http://id.loc.gov/authorities/names/n80126183
     which: all
+parents:
+  - string: oimb-herbarium
+    which: all
+visibility:
+  - string: open
+    which: all
+full_size_download_allowed:
+  - string: '0' # unclear why integers must be quoted
+    which: all
+accessibilityFeature:
+  - string: alternativeText
+    which: all
+accessibility_summary: ~
