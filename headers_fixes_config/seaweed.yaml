@@ -12,12 +12,12 @@ collected_date:
     # https://regex101.com/r/gQWVnt
     # FIXME: full validation for EDTF possible here?
     # note -- will this throw error for no date values?
-collector: ~
+collector: ~ # use creator default validation
 title: ~
 alternative: ~
+# FIXME: implement default validation for Scientific CV
 genus: ~
 species: ~
-# FIXME: implement default validation for Scientific CV
 location: 
   - regex: ^https:\/\/sws.geonames.org/\S*\/$
     which: all
