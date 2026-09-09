@@ -13,7 +13,7 @@ def main():
             for row in reader:
                 # Should be "id" column from export by default, but possible to change this if needed
                 row_id = (row.get("id", "")).strip()
-                if not row_id:
+                if not row_id and not is_complex(row):
                      raise ValueError(f"Blank id found at row {reader.line_num}")
                 if not is_complex(row) and not is_fileset(row):
                      unformatted_ids.append(row_id)
