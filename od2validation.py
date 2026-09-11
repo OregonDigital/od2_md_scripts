@@ -283,13 +283,22 @@ class StringInstruction(Instruction):
 
     def execute(self, package, df, header, rows) -> List[Optional[ValidationError]]:
         validation_errors = []
+
         for idx in rows.index:
-            # Check all values that are part of the header, whether enumerated or pipe separated
-            for value in package.values_for_header(rows, header, idx):
+            values = package.values_for_header(rows, header, idx)
+            
+            if not values: 
+                error = ValidationError(idx+2, header, "", self.expected, f"row {idx+2}: empty value != '{self.expected}'")
+                validation_errors.append(error)
+                logger.error(error.error_message)
+                continue
+
+            for value in values:
                 if self.expected != value:
-                    error = ValidationError(idx+2, header, value, self.expected, f"row {idx + 2}: '{value}' != string '{self.expected}")
+                    error = ValidationError(idx+2, header, value, self.expected, f"row {idx+2}: '{value}' != string '{self.expected}'")
                     validation_errors.append(error)
-                    logger.error(f"row {idx + 2}: '{value}' != string '{self.expected}")
+                    logger.error(error.error_message)
+        
         return validation_errors
 
 class RegexInstruction(Instruction):

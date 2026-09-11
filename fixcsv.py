@@ -173,11 +173,9 @@ def fix_enforce_string(df: pd.DataFrame, column: str, validation_config: dict[st
     # Apply the fix
     changes = 0
     for idx in df.index:
-        if not should_apply_fix(df.loc[idx], which):
-            continue
-        if pd.notna(df.at[idx, column]):
-            current = str(df.at[idx, column])
-            if current != expected_value:
+        if should_apply_fix(df.loc[idx], which):
+            current = df.at[idx, column]
+            if pd.isna(current) or str(current) != expected_value:
                 df.at[idx, column] = expected_value
                 changes += 1
     
