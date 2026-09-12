@@ -1,6 +1,7 @@
 import sys, requests, json, argparse
 import logging
 from typing import List, Any, Dict
+from utils import is_complex_solr
 
 
 
@@ -32,7 +33,7 @@ def build_solr_query_url(importer_no: int) -> tuple[str, Dict[str, str]]:
     base_url = "https://solr-od2.library.oregonstate.edu/solr/prod/select?"
     params = {
         'q': f'bulkrax_identifier_sim:{importer_no}*',
-        'fl': 'id,member_of_collection_ids_ssim,member_of_collections_ssim,file_set_ids_ssim,thumbnail_path_ss,suppressed_bsi,workflow_state_name_ssim,visibility_ssi',
+        'fl': 'id,member_of_collection_ids_ssim,member_of_collections_ssim,file_set_ids_ssim,thumbnail_path_ss,suppressed_bsi,workflow_state_name_ssim,visibility_ssi,has_model_ssim,resource_type_label_ssim',
         'rows': '1000'
     }
     return base_url, params
@@ -55,11 +56,21 @@ def analyze_works(docs: List[Dict]) -> tuple[List[str], List[Any], List[str]]:
 
     for work in docs:
         work_id = work['id']
+        is_complex = is_complex_solr(work)
 
-        # Check for file set value
-        if 'file_set_ids_ssim' not in work:
-            no_file_set.append(work_id)
-
+        # Checks that only apply to non-complex objects
+        if not is_complex:
+            # Check for file set value
+            if 'file_set_ids_ssim' not in work:
+                no_file_set.append(work_id)
+            # Check thumbnail path format
+            if 'thumbnail_path_ss' in work:
+                thumbnail = work['thumbnail_path_ss']
+                if not (thumbnail.startswith('/downloads/') and '?file=thumbnail' in thumbnail):
+                    bad_thumbnail.append(f"{work_id} (thumbnail: {thumbnail})")
+            else:
+                bad_thumbnail.append(f"{work_id} (no thumbnail)")
+        
         # Check for collection value
         if 'member_of_collection_ids_ssim' in work:
             coll_id = work['member_of_collection_ids_ssim']
@@ -67,14 +78,6 @@ def analyze_works(docs: List[Dict]) -> tuple[List[str], List[Any], List[str]]:
                 coll_ids.append(coll_id)
         else:
             no_coll_id.append(work_id)
-        
-        # Check thumbnail path format
-        if 'thumbnail_path_ss' in work:
-            thumbnail = work['thumbnail_path_ss']
-            if not (thumbnail.startswith('/downloads/') and '?file=thumbnail' in thumbnail):
-                bad_thumbnail.append(f"{work_id} (thumbnail: {thumbnail})")
-        else:
-            bad_thumbnail.append(f"{work_id} (no thumbnail)")
         
         # Check suppressed status
         if work.get('suppressed_bsi') == True:
