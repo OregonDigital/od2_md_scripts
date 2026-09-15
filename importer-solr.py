@@ -27,13 +27,15 @@ parser.add_argument('--print-response', '-p', action='store_true',
                     help='Print the full Solr query response')
 parser.add_argument('--verbose', '-v', action='store_true',
                     help='Print PIDs and data for works with errors')
+parser.add_argument('--list-complex', '-c', action='store_true',
+                    help='Print the complex object relationships')
 
 def build_solr_query_url(importer_no: int) -> tuple[str, Dict[str, str]]:
     """Create Solr query URL for a given importer"""
     base_url = "https://solr-od2.library.oregonstate.edu/solr/prod/select?"
     params = {
         'q': f'bulkrax_identifier_sim:{importer_no}*',
-        'fl': 'id,member_of_collection_ids_ssim,member_of_collections_ssim,file_set_ids_ssim,thumbnail_path_ss,suppressed_bsi,workflow_state_name_ssim,visibility_ssi,has_model_ssim,resource_type_label_ssim',
+        'fl': 'id,member_of_collection_ids_ssim,member_of_collections_ssim,file_set_ids_ssim,thumbnail_path_ss,suppressed_bsi,workflow_state_name_ssim,visibility_ssi,has_model_ssim,resource_type_label_ssim,member_ids_ssim',
         'rows': '1000'
     }
     return base_url, params
@@ -168,7 +170,7 @@ def log_visibility_status(bad_visibility: List[str], total_works: int, verbose: 
         logger.info(f"All {total_works} works have correct visibility")
 
 def main():
-    """Run file"""
+    """Run status checks for an importer and log the summary"""
     args = parser.parse_args()
 
     logger.info(f"Querying Solr for importer {args.importer_no}")
@@ -201,6 +203,20 @@ def main():
     log_suppression_status(suppressed_works, num_found, args.verbose)
     log_workflow_status(bad_workflow, num_found, args.verbose)
     log_visibility_status(bad_visibility, num_found, args.verbose)
+
+    # Print the complex relationships
+    if args.list_complex:
+        relationships = {
+            work["id"]: work.get("member_ids_ssim", [])
+            for work in docs
+            if is_complex_solr(work)
+        }
+
+        print("Complex object relationships:")
+        for parent_id, child_ids in relationships.items():
+            print(f"{parent_id}:")
+            for child_id in child_ids:
+                print(f"  {child_id}")
 
     # Print response if requested
     if args.print_response:
