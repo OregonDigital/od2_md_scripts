@@ -24,9 +24,7 @@ location:
 related_url:
   - regex: ^http(s)?://\S+$
 original_filename:
-# FIXME: implement validation for original_filename == file
-  - regex: ^\S+\.tif$
-    which: all
+  - original_filename_match: ~
 rights_holder:
   - string: Oregon Institute of Marine Biology
     which: all
