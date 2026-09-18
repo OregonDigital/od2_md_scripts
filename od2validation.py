@@ -392,18 +392,20 @@ class OriginalFilenameInstruction(Instruction):
     """
     Check that in each row, original_filename header cell value matches file header cell value.
     """
-    def __init__(self, args: None):
-        self.args = args # don't need this if not expecting args?
+    def __init__(self, args: bool):
+        self.args = args
 
     def execute(self, package, df, header, rows) -> None:
+        activate = self.args # it's not a list!
         validation_errors = []
 
-        for index, row in rows.iterrows():
-            if str(row['original_filename']) == str(row['file']):
-                continue
-            else:
-                validation_errors.append(ValidationError(index + 2, 'original_filename', row['original_filename'], row['file'], "original_filename value doesn't match file value"))
-                logger.error(f"row {index + 2}: original_filename value '{row['original_filename']}' doesn't match file value")
+        if activate:
+            for index, row in rows.iterrows():
+                if str(row['original_filename']) == str(row['file']):
+                    continue
+                else:
+                    validation_errors.append(ValidationError(index + 2, 'original_filename', row['original_filename'], row['file'], "original_filename value doesn't match file value"))
+                    logger.error(f"row {index + 2}: original_filename value '{row['original_filename']}' doesn't match file value")
 
         return validation_errors
     

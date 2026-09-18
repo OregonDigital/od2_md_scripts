@@ -24,7 +24,7 @@ location:
 related_url:
   - regex: ^http(s)?://\S+$
 original_filename:
-  - original_filename_match: ~
+  - original_filename_match: true
 rights_holder:
   - string: Oregon Institute of Marine Biology
     which: all
