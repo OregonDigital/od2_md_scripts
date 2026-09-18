@@ -272,6 +272,8 @@ class Instruction(ABC):
             return FilenamesAssetsInstruction(d["check_filenames_assets"])
         if "identifier_file_match" in d:
             return IdentifierFileInstruction(d["identifier_file_match"])
+        if "original_filename_match" in d:
+            return OriginalFilenameInstruction(d["original_filename_match"])
         if "validate_controlled_vocab" in d:
             return ValidateControlledVocabInstruction(d["validate_controlled_vocab"])
         raise ValueError(f"Unknown instruction type: {d}")
@@ -383,6 +385,27 @@ class IdentifierFileInstruction(Instruction):
             else:
                 validation_errors.append(ValidationError(index + 2, 'identifier', actual_id, expected_id, f"{row['identifier']} doesn't match '{row['file']}'"))
                 logger.error(f"row {index + 2}: '{row['identifier']} doesn't match '{row['file']}'")
+
+        return validation_errors
+
+class OriginalFilenameInstruction(Instruction):
+    """
+    Check that in each row, original_filename header cell value matches file header cell value.
+    """
+    def __init__(self, args: bool):
+        self.args = args
+
+    def execute(self, package, df, header, rows) -> None:
+        activate = self.args # it's not a list!
+        validation_errors = []
+
+        if activate:
+            for index, row in rows.iterrows():
+                if str(row['original_filename']) == str(row['file']):
+                    continue
+                else:
+                    validation_errors.append(ValidationError(index + 2, 'original_filename', row['original_filename'], row['file'], "original_filename value doesn't match file value"))
+                    logger.error(f"row {index + 2}: original_filename value '{row['original_filename']}' doesn't match file value")
 
         return validation_errors
     
