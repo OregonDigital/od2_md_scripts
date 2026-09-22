@@ -40,6 +40,13 @@ def build_solr_query_url(importer_no: int) -> tuple[str, Dict[str, str]]:
     }
     return base_url, params
 
+def count_complex_works(docs: List[Dict]) -> int:
+    count = 0
+    for work in docs:
+        if is_complex_solr(work):
+            count += 1
+    return count
+
 #FIXME: Type checking expects only 3 results but now we have 7
 def analyze_works(docs: List[Dict]) -> tuple[List[str], List[Any], List[str]]:
     """Check if works have missing file sets or collection membership
@@ -55,21 +62,30 @@ def analyze_works(docs: List[Dict]) -> tuple[List[str], List[Any], List[str]]:
     suppressed_works = []
     bad_workflow = []
     bad_visibility = []
+    complex_no_file_set = []
+    complex_bad_thumbnail = []
 
     for work in docs:
         work_id = work['id']
         is_complex = is_complex_solr(work)
 
-        # Checks that only apply to non-complex objects
-        if not is_complex:
-            # Check for file set value
-            if 'file_set_ids_ssim' not in work:
+        # Check for file set value
+        if 'file_set_ids_ssim' not in work:
+            if is_complex_solr(work):
+                complex_no_file_set.append(work_id)
+            else:
                 no_file_set.append(work_id)
-            # Check thumbnail path format
-            if 'thumbnail_path_ss' in work:
-                thumbnail = work['thumbnail_path_ss']
-                if not (thumbnail.startswith('/downloads/') and '?file=thumbnail' in thumbnail):
+        # Check thumbnail path format
+        if 'thumbnail_path_ss' in work:
+            thumbnail = work['thumbnail_path_ss']
+            if not (thumbnail.startswith('/downloads/') and '?file=thumbnail' in thumbnail):
+                if is_complex_solr(work):
+                    complex_bad_thumbnail.append(f"{work_id} (thumbnail: {thumbnail})")
+                else:
                     bad_thumbnail.append(f"{work_id} (thumbnail: {thumbnail})")
+        else:
+            if is_complex_solr(work):
+                complex_bad_thumbnail.append(f"{work_id} (no thumbnail)")
             else:
                 bad_thumbnail.append(f"{work_id} (no thumbnail)")
         
@@ -96,12 +112,13 @@ def analyze_works(docs: List[Dict]) -> tuple[List[str], List[Any], List[str]]:
         visibility = work.get('visibility_ssi', '')
         if visibility == 'private':
             bad_visibility.append(f"{work_id} (private)")
-    return no_file_set, coll_ids, no_coll_id, bad_thumbnail, suppressed_works, bad_workflow, bad_visibility
+    return no_file_set, coll_ids, no_coll_id, bad_thumbnail, suppressed_works, bad_workflow, bad_visibility, complex_no_file_set, complex_bad_thumbnail
 
-def log_file_set_status(no_file_set: List[str], total_works: int, verbose: bool) -> None:
+def log_file_set_status(no_file_set: List[str], total_works: int, verbose: bool, total_complex_works: int, complex_no_file_set: list[str]) -> None:
     """Log status of file sets in works"""
-    if no_file_set:
-        logger.error(f"{len(no_file_set)} / {total_works} work(s) have no file set id")
+    if no_file_set or complex_no_file_set:
+        logger.error(f"{len(no_file_set)} / {total_works - total_complex_works} item work(s) have no file set id")
+        logger.warning(f"{len(complex_no_file_set)} / {total_complex_works} complex object(s) have no file set id")
         if verbose:
             logger.error("PID(s) for works missing file set id:")
             for pid in sorted(no_file_set):
@@ -125,10 +142,11 @@ def log_collection_status(no_coll_id: List[str], coll_ids: List[Any], total_work
         for coll_id in sorted(coll_ids):
             logger.info(f"  {coll_id}")
 
-def log_thumbnail_status(bad_thumbnail: List[str], total_works: int, verbose: bool) -> None:
+def log_thumbnail_status(bad_thumbnail: List[str], total_works: int, verbose: bool, total_complex_works: int, complex_bad_thumbnail: list[str]) -> None:
     """Log status of thumbnail paths"""
-    if bad_thumbnail:
+    if bad_thumbnail or complex_bad_thumbnail:
         logger.error(f"{len(bad_thumbnail)} / {total_works} work(s) have missing or bad thumbnail paths")
+        logger.warning(f"{len(complex_bad_thumbnail)} / {total_complex_works} complex object(s) have missing or bad thumbnail paths")
         if verbose:
             logger.error("Works with thumbnail issues:")
             for item in sorted(bad_thumbnail):
@@ -194,12 +212,13 @@ def main():
         logger.info(f"All works found ({num_found} / {args.in_importer}) in importer # {args.importer_no}")
 
     # Analyze works
-    no_file_set, coll_ids, no_coll_id, bad_thumbnail, suppressed_works, bad_workflow, bad_visibility = analyze_works(docs)
+    no_file_set, coll_ids, no_coll_id, bad_thumbnail, suppressed_works, bad_workflow, bad_visibility, complex_no_file_set, complex_bad_thumbnail = analyze_works(docs)
+    total_complex_works = count_complex_works(docs)
 
     # Report results
-    log_file_set_status(no_file_set, num_found, args.verbose)
+    log_file_set_status(no_file_set, num_found, args.verbose, total_complex_works, complex_no_file_set)
     log_collection_status(no_coll_id, coll_ids, num_found, args.importer_no, args.verbose)
-    log_thumbnail_status(bad_thumbnail, num_found, args.verbose)
+    log_thumbnail_status(bad_thumbnail, num_found, args.verbose, total_complex_works, complex_bad_thumbnail)
     log_suppression_status(suppressed_works, num_found, args.verbose)
     log_workflow_status(bad_workflow, num_found, args.verbose)
     log_visibility_status(bad_visibility, num_found, args.verbose)
