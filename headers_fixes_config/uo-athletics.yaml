@@ -69,6 +69,8 @@ repository:
   - string: http://id.loc.gov/authorities/names/no2003116678
     which: all
 full_size_download_allowed:
-  - string: '0' # unclear why integers (and presumably
-    # other numbers) must be quoted
+  - string: '0'
+    which: all
+accessibility_feature:
+  - string: alternativeText
     which: all
