@@ -254,8 +254,6 @@ class Package(object):
         return values
 
 class Instruction(ABC):
-    row_scoped = True #FIXME find better name
-
     @abstractmethod
     def execute(self, package, df, header, rows) -> List[Optional[ValidationError]]:
         """Run an instruction, where package is the Package instance"""
