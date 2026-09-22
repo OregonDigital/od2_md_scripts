@@ -6,3 +6,4 @@ filepaths.yaml
 .coverage
 .vscode
 .pytest_cache
+.DS_Store
