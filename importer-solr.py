@@ -145,7 +145,7 @@ def log_collection_status(no_coll_id: List[str], coll_ids: List[Any], total_work
 def log_thumbnail_status(bad_thumbnail: List[str], total_works: int, verbose: bool, total_complex_works: int, complex_bad_thumbnail: list[str]) -> None:
     """Log status of thumbnail paths"""
     if bad_thumbnail or complex_bad_thumbnail:
-        logger.error(f"{len(bad_thumbnail)} / {total_works} work(s) have missing or bad thumbnail paths")
+        logger.error(f"{len(bad_thumbnail)} / {total_works - total_complex_works} item work(s) have missing or bad thumbnail paths")
         logger.warning(f"{len(complex_bad_thumbnail)} / {total_complex_works} complex object(s) have missing or bad thumbnail paths")
         if verbose:
             logger.error("Works with thumbnail issues:")
