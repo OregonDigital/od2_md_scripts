@@ -14,17 +14,19 @@ logger = logging.getLogger(__name__)
 
 class Package(object):
 
-    def __init__(self, headers_config: str) -> None:
-        self.metadata = self.filepaths()[0]
-        self.assets = os.listdir(self.filepaths()[1])
+    def __init__(self, headers_config: str, filepaths_yaml="filepaths.yaml") -> None:
+        # Optionally set filepaths to something different for testing. By default this uses filepaths.yaml,
+        # letting users set filepaths there like normal
+        self.filepaths_yaml = filepaths_yaml
+        self.metadata, self.assets = self.filepaths(self.filepaths_yaml)[0], os.listdir(self.filepaths(self.filepaths_yaml)[1])
         # Running get_config on the yaml file (name passed in through process.py creating Package()) the user specified in the command line
         self.default_config, self.headers_config, self.validation_mappings = self.get_config(headers_config)
         # Build validator map - links auto-validated fields to their common validator (ex. 'photographer' -> 'creator')
         self.validator_mapping = self._build_validator_mapping()
 
-    def filepaths(self) -> Tuple[List[str], str]:
-        """Get the filepaths to metadata and assets"""
-        with open("filepaths.yaml", "r") as yf:
+    def filepaths(self, filepaths_yaml: str = "filepaths.yaml") -> Tuple[List[str], str]:
+        """Get the filepaths to metadata and assets. Default to filepaths.yaml but allow selection"""
+        with open(filepaths_yaml, "r") as yf:
             paths: Dict[str, Any] = yaml.safe_load(yf)
             return (paths['metadata'], paths['assets'],)
             # * self.metadata is 1 or 2 item list
