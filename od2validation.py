@@ -23,6 +23,7 @@ class Package(object):
         self.validator_mapping = self._build_validator_mapping()
 
     def filepaths(self) -> Tuple[List[str], str]:
+        """Get the filepaths to metadata and assets"""
         with open("filepaths.yaml", "r") as yf:
             paths: Dict[str, Any] = yaml.safe_load(yf)
             return (paths['metadata'], paths['assets'],)
