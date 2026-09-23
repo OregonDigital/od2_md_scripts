@@ -58,6 +58,7 @@ def main():
     check_correct_athletics()
     # check_missing_fields()
     # check_bad_values()
+    print("-- TESTING COMPLETE --")
 
 if __name__ == "__main__":
     main()
