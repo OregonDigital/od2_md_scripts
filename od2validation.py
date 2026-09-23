@@ -480,3 +480,7 @@ class ValidationError:
     # Define how to print a validation error (this is what's displayed in print(error) where error is type ValidationError)
     def __str__(self) -> str:
         return self.error_message
+
+    # Defines how to print the validation error object itself -- used in run_tests.py to show which have errors
+    def __repr__(self):
+        return f"{self.error_header}: {self.error_message}"
