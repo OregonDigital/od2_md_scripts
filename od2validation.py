@@ -470,6 +470,8 @@ class ValidationError:
         self.value = value
         self.expected_value = expected_value
         self.error_message = error_message
+        # Use this to get all the errors you expect for testing
+        print(repr(self))
 
     # Define comparison method for <, which is used in sorting
     def __lt__(self, other: ValidationError) -> bool:
