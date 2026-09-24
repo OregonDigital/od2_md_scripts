@@ -175,7 +175,7 @@ class Package(object):
                 errors.extend(self._run_instruction(df, header, instruction))
         return errors
 
-    def _select_rows(self, df: pd.DataFrame, which: str) -> pd.DataFrame:
+    def _filter_df(self, df: pd.DataFrame, which: str) -> pd.DataFrame:
         """Return filtered df that filters for all, only complex objects, or only items"""
         if which == "all":
             return df
@@ -222,9 +222,9 @@ class Package(object):
         """Instantiate Instruction subclass and execute it on given header, selecting rows by 'which' in instruction)"""
         # Get 'which' from the instruction, then select rows based on it (default to "all" if no value found)
         which = instruction.get("which", "all")
-        rows = self._select_rows(df, which)
+        filtered_df = self._filter_df(df, which)
         # Create an instruction subclass (String, Regex, FilenamesAssets, etc.) and execute it
-        errors = Instruction.from_dict(instruction).execute(self, df, header, rows)
+        errors = Instruction.from_dict(instruction).execute(self, df, header, filtered_df)
         return errors
 
     def _combine_enumerated_headers(self, header: str, df: pd.DataFrame) -> List[str]:
@@ -255,7 +255,7 @@ class Package(object):
 
 class Instruction(ABC):
     @abstractmethod
-    def execute(self, package, df, header, rows) -> List[Optional[ValidationError]]:
+    def execute(self, package, df, header, filtered_df) -> List[Optional[ValidationError]]:
         """Run an instruction, where package is the Package instance"""
         raise NotImplementedError
 
@@ -281,11 +281,11 @@ class StringInstruction(Instruction):
     def __init__(self, expected: str):
         self.expected = expected
 
-    def execute(self, package, df, header, rows) -> List[Optional[ValidationError]]:
+    def execute(self, package, df, header, filtered_df) -> List[Optional[ValidationError]]:
         validation_errors = []
 
-        for idx in rows.index:
-            values = package.values_for_header(rows, header, idx)
+        for idx in filtered_df.index:
+            values = package.values_for_header(filtered_df, header, idx)
             
             if not values: 
                 error = ValidationError(idx+2, header, "", self.expected, f"row {idx+2}: empty value != '{self.expected}'")
@@ -306,11 +306,11 @@ class RegexInstruction(Instruction):
     def __init__(self, expected_pattern: Pattern[str]):
         self.expected_pattern = expected_pattern
     
-    def execute(self, package, df, header, rows):
+    def execute(self, package, df, header, filtered_df):
         validation_errors = []
-        for idx in rows.index:
+        for idx in filtered_df.index:
             # Check all values that are part of the header, whether enumerated or pipe separated
-            for value in package.values_for_header(rows, header, idx):
+            for value in package.values_for_header(filtered_df, header, idx):
                 if not re.match(self.expected_pattern, value):
                     error = ValidationError(idx+2, header, value, self.expected_pattern, f"row {idx + 2}: '{value}' does not match regex for header values")
                     validation_errors.append(error)
@@ -325,7 +325,7 @@ class FilenamesAssetsInstruction(Instruction):
     def __init__(self, args: List[Any]):
         self.args = args
     
-    def execute(self, package, df, header, rows) -> List[Optional[ValidationError]]:
+    def execute(self, package, df, header, filtered_df) -> List[Optional[ValidationError]]:
         col: str = self.args[0]
         base_col = utils.base_header(col)
         validation_errors: List[ValidationError] = []
@@ -333,8 +333,8 @@ class FilenamesAssetsInstruction(Instruction):
         # Building dict mapping file names to the row where each filename appears 
         # (this assumes file names are unique per sheet)
         filenames_by_value: Dict[str, int] = {}
-        for idx in rows.index:
-            for v in package.values_for_header(rows, base_col, idx):
+        for idx in filtered_df.index:
+            for v in package.values_for_header(filtered_df, base_col, idx):
                 #FIXME Skip empty? That's what we do now with the strip and 'if not v'
                 v = v.strip()
                 if not v:
@@ -370,11 +370,11 @@ class IdentifierFileInstruction(Instruction):
     def __init__(self, args: List[Any]):
         self.args = args
     
-    def execute(self, package, df, header, rows) -> None:
+    def execute(self, package, df, header, filtered_df) -> None:
         extension: str = self.args[0]
         validation_errors = []
 
-        for index, row in rows.iterrows():
+        for index, row in filtered_df.iterrows():
             actual_id = str(row['identifier'])
             # Remove file ending from file (leftover should match identifier)
             expected_id = str(row['file']).replace(extension, '')
