@@ -198,7 +198,7 @@ class Package(object):
         config = self.headers_config.get(header)
         # Use the project-specific config
         if config is not None:
-            logger.info(f"Validating '{real_header}' from config...")
+            logger.info(f"Validating '{real_header}' from headers config...")
             return config
         
         # Use a mapped validator if one exists (ex. 'collector', 'author', or 'illustrator' could be mapped to Creator and use Creator validation)
