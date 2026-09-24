@@ -38,7 +38,7 @@ resource_type:
     which: complex
 format:
   - string: https://w3id.org/spar/mediatype/image/tiff
-    which: all
+    which: item
 rights_statement:
   - string: http://rightsstatements.org/vocab/InC/1.0/
     which: all
