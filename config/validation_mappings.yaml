@@ -35,6 +35,14 @@ field_validators:
     - cultural_context
   workType:
     - workType
+  scientific:
+    - phylum_or_division
+    - taxon_class
+    - order
+    - family
+    - genus
+    - species
+    - common_name
 
 # Tell od2validation.py which vocabs correspond to each controlled vocab, so that they can all be checked
 controlled_vocab_map:
@@ -74,3 +82,10 @@ controlled_vocab_map:
   workType:
   - aat
   - worktype
+  scientific:
+  - itis
+  - wikidata
+  - scigenus
+  - scicommonnames
+  - sciphylum
+  - sciclass

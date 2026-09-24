@@ -10,3 +10,6 @@ creator:
 workType:
   - validate_controlled_vocab: ['workType']
     which: all
+scientific:
+  - validate_controlled_vocab: ['scientific']
+    which: all
