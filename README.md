@@ -32,7 +32,7 @@ Your headers config file tells the program what you expect your metadata values 
 
 **1. In your terminal, type and enter**
 ```bash
-python makeconfig.py
+python make_headers_config.py
 ```
 Make sure that you're in the project directory when you enter the command, or you'll get an error saying there's no file called makeconfig.py. This can be done with 'cd' and 'ls' (or by default in an IDE). See this [Changing Directories Tutorial](https://www.geeksforgeeks.org/techtips/change-directories-in-command-prompt/) if you're not sure how.
 
