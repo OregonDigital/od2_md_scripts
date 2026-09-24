@@ -74,3 +74,10 @@ controlled_vocab_map:
   workType:
   - aat
   - worktype
+  scientific:
+  - itis
+  - wikidata
+  - scigenus
+  - scicommonnames
+  - sciphylum
+  - sciclass
