@@ -289,6 +289,49 @@ def validate_worktype(value: str) -> bool:
     pattern = r'^http:\/\/opaquenamespace\.org\/ns\/workType\/[a-zA-Z\-_0-9]+$'
     return bool(re.match(pattern, value))
 
+def validate_scigenus(value: str) -> bool:
+    """Validate URI strings for ONS genus vocabulary
+    
+    Examples:
+    MAP: "http://opaquenamespace.org/ns/genus/Griffithsia"
+    vocab: "http://opaquenamespace.org/ns/genus/Cormidium"
+    vocab: "http://opaquenamespace.org/ns/genus/Leucophoyxthula"
+    """
+    pattern = r'^http:\/\/opaquenamespace\.org\/ns\/genus\/[a-zA-Z\-_0-9]+$'
+    return bool(re.match(pattern, value))
+
+def validate_scicommonnames(value: str) -> bool:
+    """Validate URI strings for ONS commonNames vocabulary
+
+    Examples:
+    MAP: "http://opaquenamespace.org/ns/commonNames/Agazzispeanutworm"
+    vocab: "http://opaquenamespace.org/ns/commonNames/bloodworm"
+    vocab: "http://opaquenamespace.org/ns/commonNames/wingedseaslug"
+    """
+    pattern = r'^http:\/\/opaquenamespace\.org\/ns\/commonNames\/[a-zA-Z\-_0-9]+$'
+    return bool(re.match(pattern, value))
+
+def validate_sciphylum(value: str) -> bool:
+    """Validate URI strings for ONS phylum vocabulary
+    
+    Examples:
+    MAP: "http://opaquenamespace.org/ns/phylum/Rhodophyte"
+    vocab: "http://opaquenamespace.org/ns/phylum/Diastoporella"
+    2026-09-23 only *two* terms in vocabulary
+    """
+    pattern = r'^http:\/\/opaquenamespace\.org\/ns\/phylum\/[a-zA-Z\-_0-9]+$'
+    return bool(re.match(pattern, value))
+
+def validate_sciclass(value: str) -> bool:
+    """Validate URI strings for ONS class vocabulary
+    
+    Examples:
+    MAP: "http://opaquenamespace.org/ns/class/Ascidacea"
+    2026-09-23 only *one* term in vocabulary
+    """
+    pattern = r'^http:\/\/opaquenamespace\.org\/ns\/class\/[a-zA-Z\-_0-9]+$'
+    return bool(re.match(pattern, value))
+
 # If uncommenting a validator, you have to do it here, do the actual function, in config/validation_mappings.yaml, and write it in default.yaml as a check if relevant.
 VOCABULARY_VALIDATORS = {
     'lcnaf': validate_lcnaf,
@@ -311,6 +354,10 @@ VOCABULARY_VALIDATORS = {
     'publisher': validate_publisher,
     'culture': validate_culture,
     'afs_ethn': validate_afs_ethn,
-    'worktype': validate_worktype
+    'worktype': validate_worktype,
+    'scigenus': validate_scigenus,
+    'scicommonnames': validate_scicommonnames,
+    'sciphylum': validate_sciphylum,
+    'sciclass': validate_sciclass
     # Add more here as needed
 }
