@@ -35,9 +35,6 @@ rights_statement:
 workType: 
   - string: http://vocab.getty.edu/aat/300440768
     which: all
-format: # this metadata doesn't go anywhere??
-  - string: https://w3id.org/spar/mediatype/image/tiff
-    which: all
 model:
   - string: Image
     which: all
